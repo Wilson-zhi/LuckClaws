@@ -1,0 +1,137 @@
+"use client";
+
+import Image from "next/image";
+import Link from "next/link";
+import { Heart, Plus, Star } from "lucide-react";
+import { AddToCartButton } from "@/components/cart/AddToCartButton";
+import { type Product } from "@/data/products";
+import { cn, formatPrice } from "@/lib/utils";
+
+type ProductCardProps = {
+  product: Product;
+  featured?: boolean;
+  compact?: boolean;
+};
+
+export function ProductCard({ product, featured = false, compact = false }: ProductCardProps) {
+  const href = product.id === "interactive-snuffle-mat" ? "/products/interactive-snuffle-mat" : "#";
+
+  if (featured) {
+    return (
+      <article className="group overflow-hidden rounded-lg bg-surface-container-lowest shadow-ambient">
+        <Link href={href} className="relative block aspect-[1.35] overflow-hidden bg-surface-container">
+          {product.badge && (
+            <span className="absolute left-6 top-5 z-10 rounded-full bg-white px-4 py-2 text-xs font-semibold text-primary shadow-soft">
+              {product.badge}
+            </span>
+          )}
+          <button
+            type="button"
+            className="absolute right-5 top-5 z-10 grid h-12 w-12 place-items-center rounded-full bg-white/90 text-on-surface-variant shadow-soft transition hover:text-primary"
+            aria-label={`Add ${product.name} to wishlist`}
+          >
+            <Heart aria-hidden className="h-6 w-6" />
+          </button>
+          <Image
+            src={product.image}
+            alt={product.alt}
+            fill
+            loading="eager"
+            sizes="(min-width: 1024px) 520px, 100vw"
+            className="object-cover transition duration-500 group-hover:scale-105"
+          />
+        </Link>
+        <div className="p-6 md:p-7">
+          <div className="flex items-start justify-between gap-6">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">
+                {product.subcategory?.replace(" Toys", "") ?? product.category}
+              </p>
+              <Link href={href} className="mt-2 block font-heading text-2xl font-bold hover:text-primary">
+                {product.name}
+              </Link>
+              {product.rating && (
+                <p className="mt-2 flex items-center gap-2 text-sm text-on-surface-variant">
+                  <Star aria-hidden className="h-4 w-4 fill-primary-container text-primary-container" />
+                  {product.rating} ({product.reviewCount} reviews)
+                </p>
+              )}
+            </div>
+            <div className="text-right">
+              <p className="font-heading text-3xl font-bold text-error">{formatPrice(product.price)}</p>
+              {product.regularPrice && (
+                <p className="text-sm text-on-surface-variant line-through">
+                  {formatPrice(product.regularPrice)}
+                </p>
+              )}
+            </div>
+          </div>
+          <p className="mt-4 max-w-xl text-sm leading-6 text-on-surface-variant">{product.description}</p>
+          <AddToCartButton product={product} className="mt-6 w-full" />
+        </div>
+      </article>
+    );
+  }
+
+  return (
+    <article
+      className={cn(
+        "group overflow-hidden rounded-lg bg-surface-container-lowest shadow-ambient transition hover:-translate-y-1 hover:shadow-lift",
+        compact && "rounded-md"
+      )}
+    >
+      <Link href={href} className="relative block aspect-square overflow-hidden bg-surface-container">
+        {(product.badge || product.isNew) && (
+          <span className="absolute left-4 top-4 z-10 rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-primary shadow-soft">
+            {product.badge ?? "New"}
+          </span>
+        )}
+        <button
+          type="button"
+          className="absolute right-3 top-3 z-10 grid h-9 w-9 place-items-center rounded-full bg-white/90 text-on-surface-variant shadow-soft transition hover:text-primary"
+          aria-label={`Add ${product.name} to wishlist`}
+        >
+          <Heart aria-hidden className="h-5 w-5" />
+        </button>
+        <Image
+          src={product.image}
+          alt={product.alt}
+          fill
+          loading="eager"
+          sizes="(min-width: 1024px) 280px, 45vw"
+          className="object-cover transition duration-500 group-hover:scale-105"
+        />
+      </Link>
+      <div className="p-4 md:p-5">
+        <div className="flex min-h-[88px] flex-col">
+          <p className="text-[11px] font-semibold uppercase tracking-widest text-on-surface-variant">
+            {product.category}
+          </p>
+          <Link href={href} className="mt-1 line-clamp-2 font-heading text-base font-bold hover:text-primary md:text-lg">
+            {product.name}
+          </Link>
+          {product.rating && (
+            <p className="mt-2 flex items-center gap-1 text-xs text-on-surface-variant">
+              <Star aria-hidden className="h-3.5 w-3.5 fill-primary-container text-primary-container" />
+              {product.rating}
+              {product.reviewCount ? ` (${product.reviewCount})` : ""}
+            </p>
+          )}
+        </div>
+        <div className="mt-4 flex items-center justify-between gap-3">
+          <div className="flex items-baseline gap-2">
+            <p className="font-semibold text-on-surface">{formatPrice(product.price)}</p>
+            {product.regularPrice && (
+              <p className="text-sm text-on-surface-variant line-through">
+                {formatPrice(product.regularPrice)}
+              </p>
+            )}
+          </div>
+          <AddToCartButton product={product} variant="icon">
+            <Plus aria-hidden className="h-5 w-5" />
+          </AddToCartButton>
+        </div>
+      </div>
+    </article>
+  );
+}
