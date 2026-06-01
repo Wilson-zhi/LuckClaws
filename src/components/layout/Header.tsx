@@ -16,7 +16,7 @@ const navItems = [
   { label: "Pet Apparel", href: "#" },
   { label: "Walking Essentials", href: "#" },
   { label: "Beds & Blankets", href: "#" },
-  { label: "New Arrivals", href: "#" },
+  { label: "About Us", href: "/about" },
   { label: "Sale", href: "#", sale: true }
 ];
 
@@ -140,4 +140,3 @@ export function Header() {
     </>
   );
 }
-
