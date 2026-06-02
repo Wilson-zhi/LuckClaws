@@ -1,5 +1,10 @@
 import Link from "next/link";
-import { shopFooterLinks } from "@/data/navigation";
+import {
+  companyFooterLinks,
+  legalFooterLinks,
+  shopFooterLinks,
+  supportFooterLinks
+} from "@/data/navigation";
 import { brandName } from "@/data/products";
 
 const footerGroups = [
@@ -9,28 +14,15 @@ const footerGroups = [
   },
   {
     title: "Support",
-    links: [
-      { label: "Contact Us", href: "#" },
-      { label: "Shipping & Returns", href: "#" },
-      { label: "FAQ", href: "#" },
-      { label: "Track Order", href: "#" }
-    ]
+    links: supportFooterLinks
   },
   {
     title: "Company",
-    links: [
-      { label: "About Us", href: "/about" },
-      { label: "Sustainability", href: "#" },
-      { label: "Community", href: "#" }
-    ]
+    links: companyFooterLinks
   },
   {
     title: "Legal",
-    links: [
-      { label: "Privacy Policy", href: "#" },
-      { label: "Terms of Service", href: "#" },
-      { label: "Refund Policy", href: "#" }
-    ]
+    links: legalFooterLinks
   }
 ];
 

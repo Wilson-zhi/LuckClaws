@@ -17,3 +17,21 @@ export const shopFooterLinks = [
   { label: "Beds & Blankets", href: "/collections/beds-blankets" }
 ];
 
+export const supportFooterLinks = [
+  { label: "Contact Us", href: "/contact" },
+  { label: "Shipping & Returns", href: "/shipping-returns" },
+  { label: "FAQ", href: "/faq" },
+  { label: "Track Order", href: "/track-order" }
+];
+
+export const companyFooterLinks = [
+  { label: "About Us", href: "/about" },
+  { label: "Sustainability", href: "/about" },
+  { label: "Community", href: "/about" }
+];
+
+export const legalFooterLinks = [
+  { label: "Privacy Policy", href: "/privacy-policy" },
+  { label: "Terms of Service", href: "/terms-of-service" },
+  { label: "Refund Policy", href: "/refund-policy" }
+];
