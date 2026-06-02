@@ -1,7 +1,17 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, Package, RotateCcw, Truck } from "lucide-react";
+import {
+  ArrowRight,
+  CheckCircle2,
+  Heart,
+  ListChecks,
+  Mail,
+  Package,
+  RotateCcw,
+  ShieldCheck,
+  Truck
+} from "lucide-react";
 import { AddBundleButton } from "@/components/cart/AddBundleButton";
 import { ViewItemListTracker, ViewItemTracker } from "@/components/analytics/EcommerceEventTrackers";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
@@ -34,7 +44,7 @@ const accordions = [
   {
     title: "Product Details",
     content:
-      "Designed to turn mealtime into an enriching scent game, with layered fleece petals that invite sniffing and foraging."
+      "Designed to turn treats or a portion of meals into an enriching scent game, with layered fleece folds that invite sniffing and foraging."
   },
   {
     title: "Materials & Care",
@@ -48,12 +58,93 @@ const accordions = [
   {
     title: "Shipping Information",
     content:
-      "Orders ship from our studio within 1-2 business days. Free shipping applies to qualifying orders over $50."
+      "Free shipping applies to qualifying orders over $50. Shipping rates and delivery options are calculated at checkout."
   },
   {
     title: "Returns & Exchanges",
     content:
-      "Unused items can be returned within 30 days. If something arrives damaged, contact us and we will make it right."
+      "Eligible unused items can be returned within 30 days. If something arrives damaged or incorrect, contact support for help."
+  }
+];
+
+const trustItems = [
+  { label: "Free shipping over $50", Icon: Truck },
+  { label: "30-day easy returns", Icon: RotateCcw },
+  { label: "Secure checkout", Icon: ShieldCheck },
+  { label: "Pet-conscious materials", Icon: Heart }
+];
+
+const productSpecs = [
+  ["Product type", "Enrichment / snuffle mat"],
+  ["Color", "Forest Green & Cream"],
+  ["Size", "Large"],
+  ["Material", "Soft fleece surface with anti-slip backing"],
+  ["Care", "Machine wash cold, air dry recommended"],
+  ["Use", "Supervised enrichment and slower feeding"],
+  ["Safety", "Remove if damaged"]
+];
+
+const bestFor = [
+  "Dogs who eat too quickly",
+  "Bored or high-energy dogs",
+  "Indoor enrichment",
+  "Treat-based training routines"
+];
+
+const notIdealFor = [
+  "Aggressive chewers",
+  "Unsupervised play",
+  "Pets who destroy fabric toys"
+];
+
+const careInstructions = [
+  "Shake out crumbs after use",
+  "Machine wash cold on gentle cycle",
+  "Air dry fully before reuse",
+  "Inspect regularly and remove if damaged"
+];
+
+const shippingReturns = [
+  "Free shipping on orders over $50",
+  "Shipping calculated at checkout",
+  "30-day easy returns on eligible items"
+];
+
+const productFaqs = [
+  {
+    title: "How do I use a snuffle mat?",
+    content:
+      "Sprinkle dry treats or kibble between the fleece folds, place the mat on a flat surface, and let your dog sniff and search under supervision."
+  },
+  {
+    title: "Can this help slow down eating?",
+    content:
+      "Yes. Using a portion of dry food in the folds can encourage slower, more focused eating compared with an open bowl."
+  },
+  {
+    title: "Is it machine washable?",
+    content:
+      "Yes. Shake out crumbs first, machine wash cold on a gentle cycle, and air dry fully before reuse."
+  },
+  {
+    title: "Is this suitable for puppies?",
+    content:
+      "It can be suitable for puppies who are supervised and gentle with fabric toys. Remove the mat if chewing or damage starts."
+  },
+  {
+    title: "Should my dog use it unsupervised?",
+    content:
+      "No. This mat is intended for supervised enrichment only and should be removed if it becomes damaged."
+  },
+  {
+    title: "What size is this mat?",
+    content:
+      "This product is the Large size in Forest Green & Cream, designed for everyday enrichment and treat-based routines."
+  },
+  {
+    title: "What if my dog chews fabric toys?",
+    content:
+      "Choose a tougher chew-focused toy instead. This snuffle mat is not intended for aggressive chewers or pets who destroy fabric toys."
   }
 ];
 
@@ -62,8 +153,9 @@ export default function ProductPage() {
     "@context": "https://schema.org",
     "@type": "Product",
     name: mainProduct.name,
+    url: absoluteUrl("/products/interactive-snuffle-mat"),
     image: absoluteUrl(mainProduct.image),
-    description: "Dog enrichment snuffle mat for mental stimulation and slower eating.",
+    description: "Dog enrichment snuffle mat for natural foraging, slower eating, and daily mental stimulation.",
     brand: { "@type": "Brand", name: brandName },
     offers: {
       "@type": "Offer",
@@ -92,11 +184,15 @@ export default function ProductPage() {
           <Link href="/" className="hover:text-primary">
             Home
           </Link>
-          <span className="mx-2">›</span>
+          <span className="mx-2" aria-hidden>
+            &rsaquo;
+          </span>
           <Link href="/collections/dog-toys" className="hover:text-primary">
             Dog Toys
           </Link>
-          <span className="mx-2">›</span>
+          <span className="mx-2" aria-hidden>
+            &rsaquo;
+          </span>
           <span className="text-primary">{mainProduct.name}</span>
         </nav>
 
@@ -105,13 +201,16 @@ export default function ProductPage() {
           <div>
             <ProductPurchasePanel product={mainProduct} />
 
-            <div className="mt-7 grid gap-3 text-sm text-on-surface-variant">
-              <p className="flex items-center gap-2">
-                <Truck aria-hidden className="h-5 w-5 text-primary" /> Free shipping on orders over $50
-              </p>
-              <p className="flex items-center gap-2">
-                <RotateCcw aria-hidden className="h-5 w-5 text-primary" /> 30-day easy returns
-              </p>
+            <div className="mt-7 grid grid-cols-2 gap-3 text-sm">
+              {trustItems.map(({ label, Icon }) => (
+                <div
+                  key={label}
+                  className="flex min-h-14 items-center gap-2 rounded-md bg-surface-container-lowest px-3 py-3 text-on-surface-variant shadow-soft"
+                >
+                  <Icon aria-hidden className="h-5 w-5 shrink-0 text-primary" />
+                  <span className="font-semibold">{label}</span>
+                </div>
+              ))}
             </div>
 
             <div className="mt-7">
@@ -122,6 +221,104 @@ export default function ProductPage() {
       </section>
 
       <ProductBenefits />
+
+      <section className="section-shell py-14 md:py-20">
+        <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
+          <div className="ambient-card p-6 md:p-8">
+            <div className="flex items-center gap-3">
+              <span className="grid h-11 w-11 place-items-center rounded-full bg-primary-container/20 text-primary">
+                <ListChecks aria-hidden className="h-5 w-5" />
+              </span>
+              <h2 className="font-heading text-2xl font-bold">Details at a Glance</h2>
+            </div>
+            <dl className="mt-6 divide-y divide-outline-variant/70">
+              {productSpecs.map(([label, value]) => (
+                <div key={label} className="grid gap-1 py-3 text-sm sm:grid-cols-[160px_1fr] sm:gap-5">
+                  <dt className="font-semibold text-on-surface">{label}</dt>
+                  <dd className="text-on-surface-variant">{value}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+
+          <div className="grid gap-6">
+            <div className="ambient-card p-6 md:p-8">
+              <h2 className="font-heading text-2xl font-bold">Best For</h2>
+              <div className="mt-5 grid gap-6 sm:grid-cols-2">
+                <div>
+                  <p className="text-sm font-bold uppercase tracking-wide text-primary">Best for</p>
+                  <ul className="mt-3 space-y-3 text-sm text-on-surface-variant">
+                    {bestFor.map((item) => (
+                      <li key={item} className="flex gap-2">
+                        <CheckCircle2 aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <p className="text-sm font-bold uppercase tracking-wide text-on-surface-variant">
+                    Not ideal for
+                  </p>
+                  <ul className="mt-3 space-y-3 text-sm text-on-surface-variant">
+                    {notIdealFor.map((item) => (
+                      <li key={item} className="flex gap-2">
+                        <CheckCircle2 aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div className="ambient-card p-6 md:p-8">
+              <h2 className="font-heading text-2xl font-bold">Care Instructions</h2>
+              <ul className="mt-5 grid gap-3 text-sm text-on-surface-variant sm:grid-cols-2">
+                {careInstructions.map((item) => (
+                  <li key={item} className="flex gap-2">
+                    <CheckCircle2 aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="section-shell pb-14 md:pb-20">
+        <div className="grid gap-6 lg:grid-cols-[0.85fr_1.15fr]">
+          <div className="ambient-card p-6 md:p-8">
+            <h2 className="font-heading text-2xl font-bold">Shipping & Returns</h2>
+            <ul className="mt-5 space-y-3 text-sm text-on-surface-variant">
+              {shippingReturns.map((item) => (
+                <li key={item} className="flex gap-2">
+                  <CheckCircle2 aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-5 flex gap-2 text-sm leading-6 text-on-surface-variant">
+              <Mail aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+              <span>
+                Contact{" "}
+                <a href="mailto:support@luckclaws.com" className="font-semibold text-primary underline underline-offset-4">
+                  support@luckclaws.com
+                </a>{" "}
+                for order help.
+              </span>
+            </p>
+          </div>
+
+          <div className="ambient-card p-6 md:p-8">
+            <h2 className="font-heading text-2xl font-bold">Product Questions</h2>
+            <div className="mt-4">
+              <ProductAccordion items={productFaqs} />
+            </div>
+          </div>
+        </div>
+      </section>
 
       <section className="section-shell py-14 md:py-20">
         <h2 className="font-heading text-2xl font-bold">Frequently Bought Together</h2>
@@ -161,9 +358,9 @@ export default function ProductPage() {
             <h2 className="font-heading text-2xl font-bold">Real Dogs, Real Joy</h2>
             <p className="mt-1 text-sm text-on-surface-variant">Photos from our happy customers.</p>
           </div>
-          <a href="#" className="hidden items-center gap-2 text-sm font-semibold text-primary md:flex">
+          <Link href="#reviews" className="hidden items-center gap-2 text-sm font-semibold text-primary md:flex">
             View All Reviews <ArrowRight aria-hidden className="h-4 w-4" />
-          </a>
+          </Link>
         </div>
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           {mainProduct.gallery?.map((image, index) => (
@@ -176,14 +373,14 @@ export default function ProductPage() {
                 className="object-cover"
               />
               <span className="absolute bottom-3 left-3 rounded-full bg-white px-2 py-1 text-xs font-bold text-primary">
-                ★ {index === 2 ? "4.8" : "5.0"}
+                &#9733; {index === 2 ? "4.8" : "5.0"}
               </span>
             </div>
           ))}
         </div>
       </section>
 
-      <section className="section-shell pb-16 md:pb-20">
+      <section className="section-shell pb-28 md:pb-20">
         <h2 className="font-heading text-2xl font-bold">You Might Also Like</h2>
         <div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
           {recommendedProducts.map((product) => (
@@ -193,10 +390,16 @@ export default function ProductPage() {
       </section>
 
       <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-outline-variant bg-surface-container-lowest p-3 shadow-lift md:hidden">
-        <AddToCartButton product={mainProduct} className="w-full">
-          <Package aria-hidden className="h-4 w-4" />
-          Add to Cart - {formatPrice(mainProduct.price)}
-        </AddToCartButton>
+        <div className="mx-auto flex max-w-screen-sm items-center gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-bold">{mainProduct.name}</p>
+            <p className="text-sm font-semibold text-primary">{formatPrice(mainProduct.price)}</p>
+          </div>
+          <AddToCartButton product={mainProduct} className="shrink-0 px-5 py-3">
+            <Package aria-hidden className="h-4 w-4" />
+            Add to Cart
+          </AddToCartButton>
+        </div>
       </div>
 
       <div className="fixed bottom-24 right-4 hidden rounded-full bg-surface-container-lowest p-3 text-primary shadow-soft md:block">

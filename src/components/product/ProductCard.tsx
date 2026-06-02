@@ -14,8 +14,24 @@ type ProductCardProps = {
   compact?: boolean;
 };
 
+const productRouteById: Record<string, string> = {
+  "interactive-snuffle-mat": "/products/interactive-snuffle-mat"
+};
+
+const collectionRouteByCategory: Record<string, string> = {
+  "Beds & Blankets": "/collections/beds-blankets",
+  "Cat Toys": "/collections/cat-toys",
+  "Dog Toys": "/collections/dog-toys",
+  "Pet Apparel": "/collections/pet-apparel",
+  "Walking Essentials": "/collections/walking-essentials"
+};
+
+function getProductHref(product: Product) {
+  return productRouteById[product.id] ?? collectionRouteByCategory[product.category] ?? "/collections";
+}
+
 export function ProductCard({ product, featured = false, compact = false }: ProductCardProps) {
-  const href = product.id === "interactive-snuffle-mat" ? "/products/interactive-snuffle-mat" : "#";
+  const href = getProductHref(product);
 
   if (featured) {
     return (

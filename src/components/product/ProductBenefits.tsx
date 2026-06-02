@@ -1,23 +1,23 @@
-import { Brain, Flower2, Sparkles, WashingMachine } from "lucide-react";
+import { Brain, Search, Utensils, WashingMachine } from "lucide-react";
 import { mainProduct } from "@/data/products";
 
-const icons = [Brain, Flower2, Sparkles, WashingMachine];
+const icons = [Search, Utensils, Brain, WashingMachine];
 
 const benefitCopy = [
-  "10 mins of sniffing burns as many calories as an hour's walk.",
-  "Turns mealtime into a fun puzzle, preventing gulping and digestive issues.",
-  "Foraging releases dopamine, helping to calm stressed or hyperactive pups.",
-  "Machine washable for easy cleaning after messy foraging sessions."
+  "Hide dry treats or kibble between the fleece folds to invite sniffing and searching.",
+  "Use with snacks or a portion of meals to encourage slower, more focused eating.",
+  "Adds a simple indoor activity that supports daily enrichment.",
+  "Shake out crumbs, machine wash cold, and air dry fully before reuse."
 ];
 
 export function ProductBenefits() {
   return (
     <section className="section-shell">
       <div className="rounded-lg bg-surface-container-lowest p-6 shadow-ambient md:p-8">
-        <h2 className="font-heading text-2xl font-bold">Why Dogs Love It</h2>
+        <h2 className="font-heading text-2xl font-bold">Product Highlights</h2>
         <div className="mt-6 grid gap-4 md:grid-cols-4">
           {mainProduct.benefits?.map((benefit, index) => {
-            const Icon = icons[index] ?? Sparkles;
+            const Icon = icons[index] ?? Brain;
             return (
               <div key={benefit} className="rounded-md bg-surface-container-low p-5 text-center">
                 <div className="mx-auto grid h-11 w-11 place-items-center rounded-full bg-primary-container/20 text-primary">
@@ -33,4 +33,3 @@ export function ProductBenefits() {
     </section>
   );
 }
-

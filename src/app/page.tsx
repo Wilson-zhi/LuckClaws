@@ -130,9 +130,9 @@ export default function HomePage() {
               Discover the latest premium additions to our collection.
             </p>
           </div>
-          <a href="#" className="hidden items-center gap-2 text-sm font-semibold text-primary md:flex">
+          <Link href="/collections" className="hidden items-center gap-2 text-sm font-semibold text-primary md:flex">
             Shop All New <ArrowRight aria-hidden className="h-4 w-4" />
-          </a>
+          </Link>
         </div>
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
           {newArrivals.map((product) => (

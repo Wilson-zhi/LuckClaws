@@ -11,9 +11,9 @@ export function CheckoutForm() {
           <h1 className="font-heading text-4xl font-bold md:text-5xl">Contact Information</h1>
           <p className="text-on-surface-variant">
             Already have an account?{" "}
-            <a href="#" className="font-bold text-primary">
+            <span className="font-bold text-primary">
               Log in
-            </a>
+            </span>
           </p>
         </div>
         <div className="mt-6">
@@ -114,4 +114,3 @@ export function CheckoutForm() {
     </form>
   );
 }
-

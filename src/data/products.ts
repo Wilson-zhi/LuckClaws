@@ -39,8 +39,13 @@ export const mainProduct: Product = {
   selectedColor: "Forest Green & Cream",
   colors: ["Forest Green & Cream", "Natural Beige", "Sunset Amber"],
   size: "Large",
-  material: "Non-toxic fleece with anti-slip backing",
-  benefits: ["Mental stimulation", "Slower eating", "Anxiety relief", "Washable design"],
+  material: "Soft fleece surface with anti-slip backing",
+  benefits: [
+    "Encourages natural foraging",
+    "Helps slow down mealtime",
+    "Supports mental stimulation",
+    "Machine-washable design"
+  ],
   safetyNotice:
     "For supervised play only. Remove if damaged. Not intended for aggressive chewers.",
   description:

@@ -19,19 +19,25 @@ export function CheckoutHeader() {
 }
 
 export function CheckoutFooter() {
-  const links = ["Shipping & Returns", "Privacy Policy", "Terms of Service", "Contact Us", "Refund Policy"];
+  const links = [
+    { label: "Shipping & Returns", href: "/shipping-returns" },
+    { label: "Privacy Policy", href: "/privacy-policy" },
+    { label: "Terms of Service", href: "/terms-of-service" },
+    { label: "Contact Us", href: "/contact" },
+    { label: "Refund Policy", href: "/refund-policy" }
+  ];
 
   return (
     <footer className="bg-surface-container-high py-8">
       <div className="section-shell flex flex-col gap-6 text-sm text-on-surface-variant md:flex-row md:items-center md:justify-between">
-        <p>© 2024 {brandName}</p>
+        <p>&copy; 2024 {brandName}</p>
         <nav aria-label="Checkout footer">
           <ul className="flex flex-wrap gap-x-8 gap-y-3">
             {links.map((link) => (
-              <li key={link}>
-                <a href="#" className="transition hover:text-primary">
-                  {link}
-                </a>
+              <li key={link.label}>
+                <Link href={link.href} className="transition hover:text-primary">
+                  {link.label}
+                </Link>
               </li>
             ))}
           </ul>
@@ -40,4 +46,3 @@ export function CheckoutFooter() {
     </footer>
   );
 }
-
