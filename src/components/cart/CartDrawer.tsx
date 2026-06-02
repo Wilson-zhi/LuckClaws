@@ -7,6 +7,7 @@ import { AddToCartButton } from "@/components/cart/AddToCartButton";
 import { FreeShippingBar } from "@/components/cart/FreeShippingBar";
 import { QuantitySelector } from "@/components/cart/QuantitySelector";
 import { frequentlyBoughtTogether } from "@/data/products";
+import { trackBeginCheckout, trackRemoveFromCart } from "@/lib/ga4-ecommerce";
 import { formatPrice } from "@/lib/utils";
 import { getCartTotals, useCartStore } from "@/store/cart-store";
 
@@ -20,6 +21,16 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
   const updateQuantity = useCartStore((state) => state.updateQuantity);
   const removeItem = useCartStore((state) => state.removeItem);
   const totals = getCartTotals(items);
+
+  const handleRemoveItem = (itemId: string) => {
+    const item = items.find((cartItem) => cartItem.id === itemId);
+
+    if (item) {
+      trackRemoveFromCart(item);
+    }
+
+    removeItem(itemId);
+  };
 
   if (!open) {
     return null;
@@ -71,7 +82,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                     <button
                       type="button"
                       className="text-on-surface-variant hover:text-error"
-                      onClick={() => removeItem(item.id)}
+                      onClick={() => handleRemoveItem(item.id)}
                       aria-label={`Remove ${item.name}`}
                     >
                       <X aria-hidden className="h-5 w-5" />
@@ -148,7 +159,10 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
           <Link
             href="/checkout/information"
             className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-primary-container px-6 py-4 font-heading font-bold text-on-primary-container transition hover:bg-[#e08f00]"
-            onClick={onClose}
+            onClick={() => {
+              trackBeginCheckout(items);
+              onClose();
+            }}
           >
             Proceed to Checkout
             <Lock aria-hidden className="h-5 w-5" />

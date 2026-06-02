@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Lock, RotateCcw, ShieldCheck, Truck } from "lucide-react";
+import { trackBeginCheckout } from "@/lib/ga4-ecommerce";
 import { formatPrice } from "@/lib/utils";
 import { getCartTotals, useCartStore } from "@/store/cart-store";
 
@@ -46,6 +47,7 @@ export function CartOrderSummary() {
       <Link
         href="/checkout/information"
         className="mt-8 flex w-full items-center justify-center gap-2 rounded-full bg-primary-container px-6 py-4 font-heading text-lg font-bold text-on-primary-container transition hover:bg-[#e08f00]"
+        onClick={() => trackBeginCheckout(items)}
       >
         Proceed to Checkout
         <Lock aria-hidden className="h-5 w-5" />

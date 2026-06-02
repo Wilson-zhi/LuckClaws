@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
+import { ViewItemListTracker } from "@/components/analytics/EcommerceEventTrackers";
 import { FilterSidebar } from "@/components/collection/FilterSidebar";
 import { SiteShell } from "@/components/layout/SiteShell";
 import { ProductCard } from "@/components/product/ProductCard";
@@ -17,6 +18,7 @@ export function CollectionPage({ config }: CollectionPageProps) {
 
   return (
     <SiteShell>
+      <ViewItemListTracker products={config.products} itemListName={config.title} />
       <section className="section-shell py-10 md:py-14">
         <nav className="text-sm font-semibold text-on-surface-variant" aria-label="Breadcrumb">
           <Link href="/" className="hover:text-primary">

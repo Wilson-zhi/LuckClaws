@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { BeginCheckoutTracker } from "@/components/analytics/EcommerceEventTrackers";
 import { useCartStore, getCartTotals } from "@/store/cart-store";
 import { formatPrice } from "@/lib/utils";
 
@@ -10,6 +11,7 @@ export function CheckoutOrderSummary() {
 
   return (
     <aside className="rounded-lg border border-outline-variant bg-surface-container-low p-6 shadow-soft md:p-10">
+      <BeginCheckoutTracker items={items} />
       <h2 className="font-heading text-3xl font-bold">Order Summary</h2>
       <div className="mt-7 space-y-5">
         {items.map((item) => (

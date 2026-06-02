@@ -3,6 +3,7 @@
 import { ShoppingCart } from "lucide-react";
 import { useState } from "react";
 import { type Product } from "@/data/products";
+import { trackAddToCart } from "@/lib/ga4-ecommerce";
 import { cn, formatPrice } from "@/lib/utils";
 import { useCartStore } from "@/store/cart-store";
 
@@ -50,6 +51,7 @@ export function AddToCartButton({
           color: product.selectedColor,
           size: product.size
         });
+        trackAddToCart(product, quantity);
         window.dispatchEvent(new Event("luck-claws:open-cart"));
         setAdded(true);
         window.setTimeout(() => setAdded(false), 1200);

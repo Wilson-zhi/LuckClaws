@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { Plus } from "lucide-react";
+import { ViewCartTracker } from "@/components/analytics/EcommerceEventTrackers";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
 import { CartItemRow } from "@/components/cart/CartItemRow";
 import { CartOrderSummary } from "@/components/cart/CartOrderSummary";
@@ -14,6 +15,7 @@ export function CartPageContent() {
 
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_420px]">
+      <ViewCartTracker items={items} />
       <div>
         <div className="rounded-lg bg-surface-container-lowest p-5 shadow-ambient md:p-8">
           {items.length === 0 ? (

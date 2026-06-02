@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Heart, Plus, Star } from "lucide-react";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
 import { type Product } from "@/data/products";
+import { trackSelectItem } from "@/lib/ga4-ecommerce";
 import { cn, formatPrice } from "@/lib/utils";
 
 type ProductCardProps = {
@@ -19,7 +20,11 @@ export function ProductCard({ product, featured = false, compact = false }: Prod
   if (featured) {
     return (
       <article className="group overflow-hidden rounded-lg bg-surface-container-lowest shadow-ambient">
-        <Link href={href} className="relative block aspect-[1.35] overflow-hidden bg-surface-container">
+        <Link
+          href={href}
+          className="relative block aspect-[1.35] overflow-hidden bg-surface-container"
+          onClick={() => trackSelectItem(product)}
+        >
           {product.badge && (
             <span className="absolute left-6 top-5 z-10 rounded-full bg-white px-4 py-2 text-xs font-semibold text-primary shadow-soft">
               {product.badge}
@@ -47,7 +52,11 @@ export function ProductCard({ product, featured = false, compact = false }: Prod
               <p className="text-xs font-semibold uppercase tracking-widest text-on-surface-variant">
                 {product.subcategory?.replace(" Toys", "") ?? product.category}
               </p>
-              <Link href={href} className="mt-2 block font-heading text-2xl font-bold hover:text-primary">
+              <Link
+                href={href}
+                className="mt-2 block font-heading text-2xl font-bold hover:text-primary"
+                onClick={() => trackSelectItem(product)}
+              >
                 {product.name}
               </Link>
               {product.rating && (
@@ -80,7 +89,11 @@ export function ProductCard({ product, featured = false, compact = false }: Prod
         compact && "rounded-md"
       )}
     >
-      <Link href={href} className="relative block aspect-square overflow-hidden bg-surface-container">
+      <Link
+        href={href}
+        className="relative block aspect-square overflow-hidden bg-surface-container"
+        onClick={() => trackSelectItem(product)}
+      >
         {(product.badge || product.isNew) && (
           <span className="absolute left-4 top-4 z-10 rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-primary shadow-soft">
             {product.badge ?? "New"}
@@ -107,7 +120,11 @@ export function ProductCard({ product, featured = false, compact = false }: Prod
           <p className="text-[11px] font-semibold uppercase tracking-widest text-on-surface-variant">
             {product.category}
           </p>
-          <Link href={href} className="mt-1 line-clamp-2 font-heading text-base font-bold hover:text-primary md:text-lg">
+          <Link
+            href={href}
+            className="mt-1 line-clamp-2 font-heading text-base font-bold hover:text-primary md:text-lg"
+            onClick={() => trackSelectItem(product)}
+          >
             {product.name}
           </Link>
           {product.rating && (

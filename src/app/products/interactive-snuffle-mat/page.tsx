@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, Package, RotateCcw, Truck } from "lucide-react";
 import { AddBundleButton } from "@/components/cart/AddBundleButton";
+import { ViewItemListTracker, ViewItemTracker } from "@/components/analytics/EcommerceEventTrackers";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
 import { ProductAccordion } from "@/components/product/ProductAccordion";
 import { ProductBenefits } from "@/components/product/ProductBenefits";
@@ -80,6 +81,8 @@ export default function ProductPage() {
 
   return (
     <SiteShell>
+      <ViewItemTracker product={mainProduct} />
+      <ViewItemListTracker products={recommendedProducts} itemListName="You Might Also Like" />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}

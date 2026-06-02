@@ -9,6 +9,7 @@ import { topLevelNavigation } from "@/data/navigation";
 import { brandName } from "@/data/products";
 import { cn } from "@/lib/utils";
 import { getCartTotals, useCartStore } from "@/store/cart-store";
+import { trackViewCart } from "@/lib/ga4-ecommerce";
 
 export function Header() {
   const pathname = usePathname();
@@ -18,7 +19,10 @@ export function Header() {
   const totals = getCartTotals(items);
 
   useEffect(() => {
-    const openCartDrawer = () => setDrawerOpen(true);
+    const openCartDrawer = () => {
+      trackViewCart(useCartStore.getState().items);
+      setDrawerOpen(true);
+    };
 
     window.addEventListener("luck-claws:open-cart", openCartDrawer);
     return () => window.removeEventListener("luck-claws:open-cart", openCartDrawer);
@@ -59,7 +63,10 @@ export function Header() {
             <button
               type="button"
               className="relative transition hover:text-on-surface"
-              onClick={() => setDrawerOpen(true)}
+              onClick={() => {
+                trackViewCart(items);
+                setDrawerOpen(true);
+              }}
               aria-label={`Open cart with ${totals.count} items`}
             >
               <ShoppingBag aria-hidden className="h-6 w-6" />
@@ -90,7 +97,10 @@ export function Header() {
           <button
             type="button"
             className="relative grid h-10 w-10 place-items-center rounded-full text-primary transition hover:bg-surface-container"
-            onClick={() => setDrawerOpen(true)}
+            onClick={() => {
+              trackViewCart(items);
+              setDrawerOpen(true);
+            }}
             aria-label={`Open cart with ${totals.count} items`}
           >
             <ShoppingBag aria-hidden className="h-5 w-5" />

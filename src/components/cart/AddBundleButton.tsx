@@ -2,6 +2,7 @@
 
 import { ShoppingCart } from "lucide-react";
 import { type Product } from "@/data/products";
+import { trackAddBundleToCart } from "@/lib/ga4-ecommerce";
 import { cn, formatPrice } from "@/lib/utils";
 import { useCartStore } from "@/store/cart-store";
 
@@ -29,6 +30,7 @@ export function AddBundleButton({ products, className, children }: AddBundleButt
             size: product.size
           });
         });
+        trackAddBundleToCart(products);
         window.dispatchEvent(new Event("luck-claws:open-cart"));
       }}
       aria-label={`Add bundle to cart for ${formatPrice(total)}`}

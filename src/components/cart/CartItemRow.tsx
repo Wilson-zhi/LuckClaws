@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { Trash2 } from "lucide-react";
 import { QuantitySelector } from "@/components/cart/QuantitySelector";
+import { trackRemoveFromCart } from "@/lib/ga4-ecommerce";
 import { formatPrice } from "@/lib/utils";
 import { type CartItem, useCartStore } from "@/store/cart-store";
 
@@ -14,6 +15,11 @@ type CartItemRowProps = {
 export function CartItemRow({ item, compact = false }: CartItemRowProps) {
   const updateQuantity = useCartStore((state) => state.updateQuantity);
   const removeItem = useCartStore((state) => state.removeItem);
+
+  const handleRemoveItem = () => {
+    trackRemoveFromCart(item);
+    removeItem(item.id);
+  };
 
   return (
     <article className="flex gap-4">
@@ -50,7 +56,7 @@ export function CartItemRow({ item, compact = false }: CartItemRowProps) {
             <button
               type="button"
               className="text-sm font-semibold text-on-surface-variant underline underline-offset-4 hover:text-primary"
-              onClick={() => removeItem(item.id)}
+              onClick={handleRemoveItem}
             >
               Remove
             </button>
@@ -61,7 +67,7 @@ export function CartItemRow({ item, compact = false }: CartItemRowProps) {
           <button
             type="button"
             className="grid h-10 w-10 place-items-center rounded-full text-on-surface-variant transition hover:bg-surface-container hover:text-error"
-            onClick={() => removeItem(item.id)}
+            onClick={handleRemoveItem}
             aria-label={`Remove ${item.name}`}
           >
             <Trash2 aria-hidden className="h-5 w-5" />
