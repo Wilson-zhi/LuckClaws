@@ -13,6 +13,7 @@ type ProductCardProps = {
   featured?: boolean;
   compact?: boolean;
   itemListName?: string;
+  badgeLabel?: string;
 };
 
 const productRouteById: Record<string, string> = {
@@ -31,8 +32,15 @@ function getProductHref(product: Product) {
   return productRouteById[product.id] ?? collectionRouteByCategory[product.category] ?? "/collections";
 }
 
-export function ProductCard({ product, featured = false, compact = false, itemListName }: ProductCardProps) {
+export function ProductCard({
+  product,
+  featured = false,
+  compact = false,
+  itemListName,
+  badgeLabel
+}: ProductCardProps) {
   const href = getProductHref(product);
+  const displayBadge = badgeLabel ?? product.badge;
 
   if (featured) {
     return (
@@ -42,9 +50,9 @@ export function ProductCard({ product, featured = false, compact = false, itemLi
           className="relative block aspect-[1.35] overflow-hidden bg-surface-container"
           onClick={() => trackSelectItem(product, itemListName)}
         >
-          {product.badge && (
+          {displayBadge && (
             <span className="absolute left-6 top-5 z-10 rounded-full bg-white px-4 py-2 text-xs font-semibold text-primary shadow-soft">
-              {product.badge}
+              {displayBadge}
             </span>
           )}
           <button

@@ -17,7 +17,7 @@ const getFilterGroups = (categoryOptions: string[]) => [
   },
   {
     title: "Material",
-    chips: ["Rubber", "Fabric", "Rope", "Silicone", "Pet-Safe Materials"]
+    chips: ["Rubber", "Fabric", "Rope", "Silicone", "Pet-Conscious Materials"]
   },
   {
     title: "Price",
@@ -32,17 +32,17 @@ export function FilterSidebar({ categoryOptions = defaultCategoryOptions }: Filt
     <aside className="hidden w-64 shrink-0 lg:block">
       <div className="sticky top-28 space-y-8">
         {filterGroups.map((group) => (
-          <section key={group.title} className="border-b border-outline-variant/60 pb-8 last:border-b-0">
-            <h2 className="mb-4 text-sm font-bold uppercase tracking-wide text-on-surface">
+          <fieldset key={group.title} className="border-b border-outline-variant/60 pb-8 last:border-b-0">
+            <legend className="mb-4 text-sm font-bold uppercase tracking-wide text-on-surface">
               {group.title}
-            </h2>
+            </legend>
             {group.options && (
               <div className="space-y-4">
                 {group.options.map((option, index) => (
-                  <label key={option} className="flex items-center gap-3 text-on-surface-variant">
+                  <label key={option} className="flex items-center gap-3 text-sm leading-6 text-on-surface-variant">
                     <input
                       type="radio"
-                      name={group.title}
+                      name={`filter-${group.title.toLowerCase()}`}
                       defaultChecked={group.title === "Category" && index === 0}
                       className="h-5 w-5 border-outline-variant text-primary-container focus:ring-primary-container"
                     />
@@ -57,14 +57,14 @@ export function FilterSidebar({ categoryOptions = defaultCategoryOptions }: Filt
                   <button
                     type="button"
                     key={chip}
-                    className="rounded-full border border-outline-variant bg-surface-container-lowest px-4 py-2 text-sm text-on-surface-variant transition hover:border-primary hover:text-primary"
+                    className="rounded-full border border-outline-variant bg-surface-container-lowest px-4 py-2 text-sm leading-5 text-on-surface-variant transition hover:border-primary hover:text-primary"
                   >
                     {chip}
                   </button>
                 ))}
               </div>
             )}
-          </section>
+          </fieldset>
         ))}
       </div>
     </aside>

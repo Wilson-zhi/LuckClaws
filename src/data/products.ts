@@ -58,7 +58,7 @@ export const mainProduct: Product = {
     "/images/interactive-snuffle-mat-washable.jpg"
   ],
   alt: "Golden retriever using the LUCK CLAWS Interactive Snuffle Mat in Forest Green and Cream.",
-  materialTags: ["Fabric", "Pet-Safe Materials"]
+  materialTags: ["Fabric", "Pet-Conscious Materials"]
 };
 
 export const products: Product[] = [
@@ -72,7 +72,7 @@ export const products: Product[] = [
     description: "Small-batch reward treats for daily training moments.",
     image: "/images/organic-training-treats.jpg",
     alt: "LUCK CLAWS Organic Training Treats bag.",
-    materialTags: ["Pet-Safe Materials"]
+    materialTags: ["Pet-Conscious Materials"]
   },
   {
     id: "calming-lick-mat",
@@ -86,7 +86,7 @@ export const products: Product[] = [
     description: "A soothing enrichment mat for slow licking and calmer routines.",
     image: "/images/calming-lick-mat.jpg",
     alt: "Green LUCK CLAWS Calming Lick Mat.",
-    materialTags: ["Silicone", "Pet-Safe Materials"]
+    materialTags: ["Silicone", "Pet-Conscious Materials"]
   },
   {
     id: "chunky-knit-sweater",
