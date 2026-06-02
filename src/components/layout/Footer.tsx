@@ -1,22 +1,36 @@
 import Link from "next/link";
+import { shopFooterLinks } from "@/data/navigation";
 import { brandName } from "@/data/products";
 
 const footerGroups = [
   {
     title: "Shop",
-    links: ["Dog Toys", "Cat Toys", "Pet Apparel", "Walking Essentials", "Beds & Blankets"]
+    links: shopFooterLinks
   },
   {
     title: "Support",
-    links: ["Contact Us", "Shipping & Returns", "FAQ", "Track Order"]
+    links: [
+      { label: "Contact Us", href: "#" },
+      { label: "Shipping & Returns", href: "#" },
+      { label: "FAQ", href: "#" },
+      { label: "Track Order", href: "#" }
+    ]
   },
   {
     title: "Company",
-    links: ["About Us", "Sustainability", "Community"]
+    links: [
+      { label: "About Us", href: "/about" },
+      { label: "Sustainability", href: "#" },
+      { label: "Community", href: "#" }
+    ]
   },
   {
     title: "Legal",
-    links: ["Privacy Policy", "Terms of Service", "Refund Policy"]
+    links: [
+      { label: "Privacy Policy", href: "#" },
+      { label: "Terms of Service", href: "#" },
+      { label: "Refund Policy", href: "#" }
+    ]
   }
 ];
 
@@ -39,12 +53,9 @@ export function Footer() {
               <h2 className="font-heading text-sm font-bold uppercase tracking-wide">{group.title}</h2>
               <ul className="mt-5 space-y-3 text-sm text-inverse-on-surface/80">
                 {group.links.map((link) => (
-                  <li key={link}>
-                    <Link
-                      href={link === "About Us" ? "/about" : "#"}
-                      className="transition hover:text-primary-container"
-                    >
-                      {link}
+                  <li key={link.label}>
+                    <Link href={link.href} className="transition hover:text-primary-container">
+                      {link.label}
                     </Link>
                   </li>
                 ))}
@@ -54,10 +65,9 @@ export function Footer() {
         </div>
 
         <div className="mt-14 border-t border-white/10 pt-8 text-sm text-inverse-on-surface/70">
-          © 2024 {brandName}
+          &copy; 2024 {brandName}
         </div>
       </div>
     </footer>
   );
 }
-

@@ -95,6 +95,28 @@ export const products: Product[] = [
     badge: "Pet Apparel"
   },
   {
+    id: "cozy-knit-sweater",
+    slug: "cozy-knit-sweater",
+    name: "Cozy Knit Sweater",
+    category: "Pet Apparel",
+    price: 45,
+    description: "A soft everyday sweater for cozy mornings, cool evenings, and easy layering.",
+    image: "/images/category-pet-apparel.jpg",
+    alt: "Small dog wearing cozy LUCK CLAWS pet apparel.",
+    badge: "Pet Apparel"
+  },
+  {
+    id: "soft-ribbed-pet-tee",
+    slug: "soft-ribbed-pet-tee",
+    name: "Soft Ribbed Pet Tee",
+    category: "Pet Apparel",
+    price: 28,
+    description: "A lightweight ribbed tee designed for relaxed days and simple comfort.",
+    image: "/images/category-pet-apparel.jpg",
+    alt: "Small dog modeling soft LUCK CLAWS everyday apparel.",
+    badge: "Pet Apparel"
+  },
+  {
     id: "heritage-leather-leash",
     slug: "heritage-leather-leash",
     name: "Heritage Leather Leash",
@@ -106,6 +128,28 @@ export const products: Product[] = [
     badge: "Walking Essentials"
   },
   {
+    id: "everyday-collar-set",
+    slug: "everyday-collar-set",
+    name: "Everyday Collar Set",
+    category: "Walking Essentials",
+    price: 36,
+    description: "A polished collar set made for secure, comfortable daily outings.",
+    image: "/images/heritage-leather-leash.jpg",
+    alt: "Brown LUCK CLAWS walking accessory set.",
+    badge: "Walking Essentials"
+  },
+  {
+    id: "trail-walk-accessory-pouch",
+    slug: "trail-walk-accessory-pouch",
+    name: "Trail Walk Accessory Pouch",
+    category: "Walking Essentials",
+    price: 32,
+    description: "A compact walking pouch for treats, bags, and small outing essentials.",
+    image: "/images/comfort-walk-harness.jpg",
+    alt: "Tan LUCK CLAWS walking essentials setup.",
+    badge: "Walking Essentials"
+  },
+  {
     id: "boucle-orthopedic-bed",
     slug: "boucle-orthopedic-bed",
     name: "Boucle Orthopedic Bed",
@@ -114,6 +158,28 @@ export const products: Product[] = [
     description: "A structured, cloud-soft bed for deeper rest.",
     image: "/images/boucle-orthopedic-bed.jpg",
     alt: "Cream LUCK CLAWS Boucle Orthopedic Bed.",
+    badge: "Beds & Blankets"
+  },
+  {
+    id: "cozy-nest-blanket",
+    slug: "cozy-nest-blanket",
+    name: "Cozy Nest Blanket",
+    category: "Beds & Blankets",
+    price: 58,
+    description: "A soft, nestable blanket for crate naps, sofa cuddles, and quiet corners.",
+    image: "/images/category-beds-blankets.jpg",
+    alt: "Cozy LUCK CLAWS pet bed and blanket setup.",
+    badge: "Beds & Blankets"
+  },
+  {
+    id: "quilted-rest-mat",
+    slug: "quilted-rest-mat",
+    name: "Quilted Rest Mat",
+    category: "Beds & Blankets",
+    price: 72,
+    description: "A low-profile rest mat for pets who like a soft place near the family.",
+    image: "/images/boucle-orthopedic-bed.jpg",
+    alt: "Cream LUCK CLAWS rest mat and bed essential.",
     badge: "Beds & Blankets"
   },
   {
@@ -244,6 +310,32 @@ export const products: Product[] = [
     materialTags: ["Fabric"]
   },
   {
+    id: "feather-chase-wand",
+    slug: "feather-chase-wand",
+    name: "Feather Chase Wand",
+    category: "Cat Toys",
+    price: 18,
+    rating: 4.7,
+    reviewCount: 34,
+    description: "A lively feather wand for chasing, pouncing, and daily enrichment.",
+    image: "/images/natural-feather-teaser.jpg",
+    alt: "LUCK CLAWS feather chase cat toy.",
+    materialTags: ["Fabric"]
+  },
+  {
+    id: "catnip-toss-set",
+    slug: "catnip-toss-set",
+    name: "Catnip Toss Set",
+    category: "Cat Toys",
+    price: 16,
+    rating: 4.8,
+    reviewCount: 27,
+    description: "A small set of tossable catnip toys for curious cats and playful homes.",
+    image: "/images/organic-catnip-mouse.jpg",
+    alt: "LUCK CLAWS catnip toss toy set.",
+    materialTags: ["Fabric"]
+  },
+  {
     id: "beginner-snuffle-mat",
     slug: "beginner-snuffle-mat",
     name: "Beginner Snuffle Mat",
@@ -328,21 +420,20 @@ export const categories = [
   },
   {
     name: "Pet Apparel",
-    href: "#",
+    href: "/collections/pet-apparel",
     image: "/images/category-pet-apparel.jpg",
     alt: "Pet apparel category curated by LUCK CLAWS."
   },
   {
     name: "Walking Essentials",
-    href: "#",
+    href: "/collections/walking-essentials",
     image: "/images/category-walking-essentials.jpg",
     alt: "Walking essentials category curated by LUCK CLAWS."
   },
   {
     name: "Beds & Blankets",
-    href: "#",
+    href: "/collections/beds-blankets",
     image: "/images/category-beds-blankets.jpg",
     alt: "Beds and blankets category curated by LUCK CLAWS."
   }
 ];
-

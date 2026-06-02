@@ -5,20 +5,10 @@ import { usePathname } from "next/navigation";
 import { Heart, Menu, Search, ShoppingBag, User, X } from "lucide-react";
 import { useState } from "react";
 import { CartDrawer } from "@/components/cart/CartDrawer";
+import { topLevelNavigation } from "@/data/navigation";
 import { brandName } from "@/data/products";
 import { cn } from "@/lib/utils";
 import { getCartTotals, useCartStore } from "@/store/cart-store";
-
-const navItems = [
-  { label: "Shop All", href: "/" },
-  { label: "Dog Toys", href: "/collections/dog-toys" },
-  { label: "Cat Toys", href: "#" },
-  { label: "Pet Apparel", href: "#" },
-  { label: "Walking Essentials", href: "#" },
-  { label: "Beds & Blankets", href: "#" },
-  { label: "About Us", href: "/about" },
-  { label: "Sale", href: "#", sale: true }
-];
 
 export function Header() {
   const pathname = usePathname();
@@ -36,7 +26,7 @@ export function Header() {
           </Link>
           <nav className="min-w-0 flex-1" aria-label="Primary navigation">
             <ul className="flex items-center gap-6 text-sm font-semibold text-on-surface-variant">
-              {navItems.map((item) => (
+              {topLevelNavigation.map((item) => (
                 <li key={item.label}>
                   <Link
                     href={item.href}
@@ -108,7 +98,7 @@ export function Header() {
         {menuOpen && (
           <nav className="border-t border-outline-variant/50 bg-surface-container-lowest px-4 py-4 lg:hidden" aria-label="Mobile navigation">
             <ul className="grid gap-2">
-              {navItems.map((item) => (
+              {topLevelNavigation.map((item) => (
                 <li key={item.label}>
                   <Link
                     href={item.href}

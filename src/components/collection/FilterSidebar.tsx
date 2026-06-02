@@ -1,7 +1,19 @@
-const filterGroups = [
+const defaultCategoryOptions = [
+  "All Dog Toys",
+  "Interactive & Puzzles",
+  "Chew Toys",
+  "Plush & Squeaky",
+  "Fetch & Toss"
+];
+
+type FilterSidebarProps = {
+  categoryOptions?: string[];
+};
+
+const getFilterGroups = (categoryOptions: string[]) => [
   {
     title: "Category",
-    options: ["All Dog Toys", "Interactive & Puzzles", "Chew Toys", "Plush & Squeaky", "Fetch & Toss"]
+    options: categoryOptions
   },
   {
     title: "Material",
@@ -13,7 +25,9 @@ const filterGroups = [
   }
 ];
 
-export function FilterSidebar() {
+export function FilterSidebar({ categoryOptions = defaultCategoryOptions }: FilterSidebarProps) {
+  const filterGroups = getFilterGroups(categoryOptions);
+
   return (
     <aside className="hidden w-64 shrink-0 lg:block">
       <div className="sticky top-28 space-y-8">
@@ -56,4 +70,3 @@ export function FilterSidebar() {
     </aside>
   );
 }
-
