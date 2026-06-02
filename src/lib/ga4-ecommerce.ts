@@ -125,3 +125,15 @@ export function trackBeginCheckout(items: CartItem[]) {
     items: items.map(cartItemToGtagItem)
   });
 }
+
+export function trackSearch(searchTerm: string) {
+  const trimmedSearchTerm = searchTerm.trim();
+
+  if (!trimmedSearchTerm) {
+    return;
+  }
+
+  sendGtagEvent("search", {
+    search_term: trimmedSearchTerm
+  });
+}
