@@ -9,16 +9,38 @@ import { ReviewCard } from "@/components/sections/ReviewCard";
 import { TrustBadges } from "@/components/sections/TrustBadges";
 import { SiteShell } from "@/components/layout/SiteShell";
 import { bestSellers, brandName, categories, newArrivals } from "@/data/products";
+import { absoluteUrl, createSeoMetadata, iconPath } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: `${brandName} | Premium Pet Essentials for Dogs and Cats`,
-  description:
-    "Shop thoughtfully designed toys, apparel, walking essentials, beds, and cozy pet goods from LUCK CLAWS."
+  ...createSeoMetadata({
+    title: `${brandName} | Premium Pet Toys, Apparel & Everyday Essentials`,
+    description:
+      "Shop thoughtfully designed pet toys, apparel, walking essentials, beds, blankets, and enrichment products for dogs and cats.",
+    path: "/",
+    openGraphTitle: `${brandName} | Premium Pet Essentials`,
+    openGraphDescription:
+      "Thoughtfully designed pet toys, apparel, walking essentials, beds, blankets, and enrichment products for dogs and cats.",
+    twitterTitle: `${brandName} | Premium Pet Essentials`,
+    twitterDescription: "Thoughtfully designed pet essentials for playful pets and modern pet parents."
+  })
 };
 
 export default function HomePage() {
+  const organizationStructuredData = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: brandName,
+    url: absoluteUrl("/"),
+    logo: absoluteUrl(iconPath),
+    sameAs: []
+  };
+
   return (
     <SiteShell>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationStructuredData) }}
+      />
       <section className="section-shell grid min-h-[620px] items-center gap-10 py-10 md:grid-cols-2 md:py-16">
         <div>
           <span className="inline-flex rounded-full bg-primary-container/20 px-4 py-2 text-xs font-bold uppercase tracking-wide text-primary">
@@ -171,4 +193,3 @@ export default function HomePage() {
     </SiteShell>
   );
 }
-

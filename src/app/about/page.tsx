@@ -4,11 +4,15 @@ import Link from "next/link";
 import { HandHeart, PackageCheck, Sparkles, Users } from "lucide-react";
 import { SiteShell } from "@/components/layout/SiteShell";
 import { brandName } from "@/data/products";
+import { createSeoMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: `About ${brandName} | For Pets, By Pet Parents`,
-  description:
-    "Learn about LUCK CLAWS, a premium pet essentials brand focused on thoughtful materials, comfort, and everyday joy."
+  ...createSeoMetadata({
+    title: `About Us | ${brandName}`,
+    description:
+      "Learn about LUCK CLAWS, a pet supplies brand focused on thoughtful design, everyday comfort, and playful essentials.",
+    path: "/about"
+  })
 };
 
 const standards = [
@@ -164,4 +168,3 @@ export default function AboutPage() {
     </SiteShell>
   );
 }
-

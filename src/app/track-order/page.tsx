@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 import { SupportPageLayout } from "@/components/support/SupportPageLayout";
 import { brandName } from "@/data/products";
+import { createSeoMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: `Track Order | ${brandName}`,
-  description:
-    "Track your LUCK CLAWS order status with your email address and order number."
+  ...createSeoMetadata({
+    title: `Track Order | ${brandName}`,
+    description: "Track your LUCK CLAWS order or contact support for order updates.",
+    path: "/track-order"
+  })
 };
 
 export default function TrackOrderPage() {

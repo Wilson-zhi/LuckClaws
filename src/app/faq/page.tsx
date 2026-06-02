@@ -2,11 +2,15 @@ import type { Metadata } from "next";
 import { ProductAccordion } from "@/components/product/ProductAccordion";
 import { SupportPageLayout } from "@/components/support/SupportPageLayout";
 import { brandName } from "@/data/products";
+import { createSeoMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: `FAQ | ${brandName}`,
-  description:
-    "Find answers to common LUCK CLAWS questions about shipping, tracking, returns, product safety, sizing, and support."
+  ...createSeoMetadata({
+    title: `FAQ | ${brandName}`,
+    description:
+      "Find answers to common questions about LUCK CLAWS products, shipping, returns, sizing, and order support.",
+    path: "/faq"
+  })
 };
 
 const questions = [

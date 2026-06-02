@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
 import { PolicySections, SupportPageLayout } from "@/components/support/SupportPageLayout";
 import { brandName } from "@/data/products";
+import { createSeoMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: `Terms of Service | ${brandName}`,
-  description:
-    "Read the LUCK CLAWS terms of service placeholder for website use, orders, payments, product information, and returns."
+  ...createSeoMetadata({
+    title: `Terms of Service | ${brandName}`,
+    description:
+      "Read the LUCK CLAWS terms of service for website use, product information, orders, payments, shipping, and returns.",
+    path: "/terms-of-service"
+  })
 };
 
 const sections = [

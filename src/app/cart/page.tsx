@@ -4,10 +4,15 @@ import { FreeShippingBar } from "@/components/cart/FreeShippingBar";
 import { CartPageContent } from "@/components/cart/CartPageContent";
 import { SiteShell } from "@/components/layout/SiteShell";
 import { brandName } from "@/data/products";
+import { createSeoMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: `Your Cart | ${brandName}`,
-  description: "Review your LUCK CLAWS cart, update quantities, and proceed to secure checkout."
+  ...createSeoMetadata({
+    title: `Your Cart | ${brandName}`,
+    description: "Review your LUCK CLAWS cart and continue to secure checkout.",
+    path: "/cart",
+    noIndex: true
+  })
 };
 
 export default function CartPage() {
@@ -26,4 +31,3 @@ export default function CartPage() {
     </SiteShell>
   );
 }
-

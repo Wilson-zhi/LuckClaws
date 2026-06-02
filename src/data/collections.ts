@@ -25,7 +25,7 @@ export const collectionConfigs = {
       "Explore thoughtfully designed toys, apparel, walking essentials, cozy beds, and everyday pet favorites for dogs and cats.",
     seoTitle: `Shop All Pet Essentials | ${brandName}`,
     seoDescription:
-      "Shop pet toys, apparel, walking essentials, beds, blankets, and everyday favorites from LUCK CLAWS.",
+      "Explore thoughtfully designed toys, apparel, walking essentials, cozy beds, and everyday pet favorites for dogs and cats.",
     mobileFilters: ["All Products", "Dog Toys", "Cat Toys", "Pet Apparel", "Walking", "Beds"],
     loadMoreLabel: "Load More Products",
     products
@@ -37,7 +37,8 @@ export const collectionConfigs = {
     description:
       "Keep your furry friend entertained with our curated selection of durable, interactive, and beautifully designed toys. Built to last and styled for your home.",
     seoTitle: `Dog Toys | ${brandName}`,
-    seoDescription: "Shop durable, interactive, and beautifully designed dog toys from LUCK CLAWS.",
+    seoDescription:
+      "Shop durable, interactive, and thoughtfully designed dog toys for play, enrichment, chewing, and everyday fun.",
     productCountLabel: "24 products",
     mobileFilters: ["All Dog Toys", "Interactive", "Chew Toys", "Plush & Squeaky", "Fetch & Toss"],
     loadMoreLabel: "Load More Toys",
@@ -73,7 +74,8 @@ export const collectionConfigs = {
     description:
       "Soft, comfortable apparel designed for everyday walks, cozy days, and picture-perfect moments.",
     seoTitle: `Pet Apparel | ${brandName}`,
-    seoDescription: "Shop soft and comfortable pet apparel for dogs and cats from LUCK CLAWS.",
+    seoDescription:
+      "Shop soft and comfortable pet apparel for everyday walks, cozy days, and picture-perfect moments.",
     mobileFilters: ["All Apparel", "Sweaters", "Tees", "Cozy Layers", "Everyday"],
     loadMoreLabel: "Load More Apparel",
     products: productList(["chunky-knit-sweater", "cozy-knit-sweater", "soft-ribbed-pet-tee"])
@@ -102,7 +104,7 @@ export const collectionConfigs = {
     description:
       "Cozy beds, soft blankets, and restful essentials made for pets who love comfort as much as play.",
     seoTitle: `Beds & Blankets | ${brandName}`,
-    seoDescription: "Shop cozy pet beds, blankets, and comfort essentials from LUCK CLAWS.",
+    seoDescription: "Shop cozy pet beds, blankets, and restful essentials made for everyday comfort.",
     mobileFilters: ["All Comfort", "Beds", "Blankets", "Rest Mats", "Cozy Favorites"],
     loadMoreLabel: "Load More Comfort",
     products: productList(["boucle-orthopedic-bed", "cozy-nest-blanket", "quilted-rest-mat"])
@@ -120,4 +122,3 @@ export const collectionConfigs = {
     products: productList(["interactive-snuffle-mat"])
   }
 } satisfies Record<string, CollectionConfig>;
-

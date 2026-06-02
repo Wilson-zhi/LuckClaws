@@ -2,11 +2,14 @@ import type { Metadata } from "next";
 import { Clock, Mail, PackageCheck } from "lucide-react";
 import { SupportPageLayout } from "@/components/support/SupportPageLayout";
 import { brandName } from "@/data/products";
+import { createSeoMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: `Contact Us | ${brandName}`,
-  description:
-    "Contact LUCK CLAWS support for help with orders, products, and pet essentials."
+  ...createSeoMetadata({
+    title: `Contact Us | ${brandName}`,
+    description: "Contact LUCK CLAWS for product questions, order support, and customer service.",
+    path: "/contact"
+  })
 };
 
 const fields = [

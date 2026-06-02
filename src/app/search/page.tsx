@@ -3,10 +3,15 @@ import { ProductCard } from "@/components/product/ProductCard";
 import { SearchFilterChips } from "@/components/search/SearchFilterChips";
 import { SiteShell } from "@/components/layout/SiteShell";
 import { brandName, searchProducts } from "@/data/products";
+import { createSeoMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: `Search Results for toys | ${brandName}`,
-  description: "Search results for premium pet toys from LUCK CLAWS."
+  ...createSeoMetadata({
+    title: `Search Pet Products | ${brandName}`,
+    description:
+      "Search LUCK CLAWS pet toys, apparel, walking essentials, beds, blankets, and enrichment products.",
+    path: "/search"
+  })
 };
 
 export default function SearchPage() {

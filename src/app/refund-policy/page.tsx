@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
 import { PolicySections, SupportPageLayout } from "@/components/support/SupportPageLayout";
 import { brandName } from "@/data/products";
+import { createSeoMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: `Refund Policy | ${brandName}`,
-  description:
-    "Review the LUCK CLAWS refund policy for return windows, eligibility, refunds, exchanges, and damaged or incorrect items."
+  ...createSeoMetadata({
+    title: `Refund Policy | ${brandName}`,
+    description:
+      "Read the LUCK CLAWS refund policy, including return eligibility, refund processing, exchanges, and damaged item support.",
+    path: "/refund-policy"
+  })
 };
 
 const sections = [

@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
 import { PolicySections, SupportPageLayout } from "@/components/support/SupportPageLayout";
 import { brandName } from "@/data/products";
+import { createSeoMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: `Privacy Policy | ${brandName}`,
-  description:
-    "Read the LUCK CLAWS privacy policy placeholder for ecommerce information collection, cookies, third-party services, and choices."
+  ...createSeoMetadata({
+    title: `Privacy Policy | ${brandName}`,
+    description:
+      "Read the LUCK CLAWS privacy policy for information about data collection, cookies, analytics, and customer choices.",
+    path: "/privacy-policy"
+  })
 };
 
 const sections = [

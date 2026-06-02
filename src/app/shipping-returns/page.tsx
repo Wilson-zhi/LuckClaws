@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
 import { PolicySections, SupportPageLayout } from "@/components/support/SupportPageLayout";
 import { brandName } from "@/data/products";
+import { createSeoMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: `Shipping & Returns | ${brandName}`,
-  description:
-    "Review LUCK CLAWS shipping, order processing, return, and damaged item support information."
+  ...createSeoMetadata({
+    title: `Shipping & Returns | ${brandName}`,
+    description:
+      "Learn about LUCK CLAWS shipping times, processing, costs, returns, and damaged item support.",
+    path: "/shipping-returns"
+  })
 };
 
 const sections = [

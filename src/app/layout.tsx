@@ -1,19 +1,42 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { brandName } from "@/data/products";
+import { defaultOgImage, siteUrl } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://luckclaws.example"),
-  title: `${brandName} | Premium Pet Essentials for Dogs and Cats`,
+  metadataBase: new URL(siteUrl),
+  title: `${brandName} | Premium Pet Toys, Apparel & Everyday Essentials`,
   description:
-    "Premium pet toys, apparel, walking essentials, beds, and everyday supplies for modern pet parents.",
+    "Shop thoughtfully designed pet toys, apparel, walking essentials, beds, blankets, and enrichment products for dogs and cats.",
   applicationName: brandName,
+  alternates: {
+    canonical: "/"
+  },
+  icons: {
+    icon: "/icon.svg",
+    shortcut: "/icon.svg",
+    apple: "/icon.svg"
+  },
   openGraph: {
-    title: `${brandName} | Premium Pet Essentials for Dogs and Cats`,
-    description:
-      "Warm, premium, playful pet essentials designed for daily comfort and enrichment.",
     siteName: brandName,
-    type: "website"
+    type: "website",
+    locale: "en_US",
+    url: siteUrl,
+    title: `${brandName} | Premium Pet Essentials`,
+    description:
+      "Thoughtfully designed pet toys, apparel, walking essentials, beds, blankets, and enrichment products for dogs and cats.",
+    images: [
+      {
+        url: defaultOgImage,
+        alt: `${brandName} premium pet essentials for dogs and cats`
+      }
+    ]
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${brandName} | Premium Pet Essentials`,
+    description: "Thoughtfully designed pet essentials for playful pets and modern pet parents.",
+    images: [defaultOgImage]
   }
 };
 

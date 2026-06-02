@@ -3,10 +3,16 @@ import { CheckoutForm } from "@/components/checkout/CheckoutForm";
 import { CheckoutOrderSummary } from "@/components/checkout/CheckoutOrderSummary";
 import { CheckoutFooter, CheckoutHeader } from "@/components/layout/CheckoutHeader";
 import { brandName } from "@/data/products";
+import { createSeoMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: `Checkout Information | ${brandName}`,
-  description: "Enter contact and shipping information for your LUCK CLAWS order."
+  ...createSeoMetadata({
+    title: `Checkout Information | ${brandName}`,
+    description:
+      "Enter your contact and shipping information to continue your LUCK CLAWS checkout.",
+    path: "/checkout/information",
+    noIndex: true
+  })
 };
 
 const steps = ["Cart", "Information", "Shipping", "Payment"];
@@ -36,4 +42,3 @@ export default function CheckoutInformationPage() {
     </>
   );
 }
-

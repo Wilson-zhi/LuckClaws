@@ -17,11 +17,16 @@ import {
   recommendedProducts
 } from "@/data/products";
 import { formatPrice } from "@/lib/utils";
+import { absoluteUrl, createSeoMetadata, productOgImage } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: `Interactive Snuffle Mat | ${brandName}`,
-  description:
-    "Shop the LUCK CLAWS Interactive Snuffle Mat in Forest Green & Cream for enriching, slower, calmer feeding routines."
+  ...createSeoMetadata({
+    title: `Interactive Snuffle Mat | ${brandName}`,
+    description:
+      "Shop the LUCK CLAWS Interactive Snuffle Mat, designed for dog enrichment, slower eating, mental stimulation, and everyday play.",
+    path: "/products/interactive-snuffle-mat",
+    image: productOgImage
+  })
 };
 
 const accordions = [
@@ -56,14 +61,15 @@ export default function ProductPage() {
     "@context": "https://schema.org",
     "@type": "Product",
     name: mainProduct.name,
-    image: mainProduct.image,
-    description: mainProduct.description,
+    image: absoluteUrl(mainProduct.image),
+    description: "Dog enrichment snuffle mat for mental stimulation and slower eating.",
     brand: { "@type": "Brand", name: brandName },
     offers: {
       "@type": "Offer",
       price: mainProduct.price,
       priceCurrency: "USD",
-      availability: "https://schema.org/InStock"
+      availability: "https://schema.org/InStock",
+      url: absoluteUrl("/products/interactive-snuffle-mat")
     },
     aggregateRating: {
       "@type": "AggregateRating",
