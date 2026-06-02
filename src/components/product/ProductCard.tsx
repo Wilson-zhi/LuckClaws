@@ -12,6 +12,7 @@ type ProductCardProps = {
   product: Product;
   featured?: boolean;
   compact?: boolean;
+  itemListName?: string;
 };
 
 const productRouteById: Record<string, string> = {
@@ -30,7 +31,7 @@ function getProductHref(product: Product) {
   return productRouteById[product.id] ?? collectionRouteByCategory[product.category] ?? "/collections";
 }
 
-export function ProductCard({ product, featured = false, compact = false }: ProductCardProps) {
+export function ProductCard({ product, featured = false, compact = false, itemListName }: ProductCardProps) {
   const href = getProductHref(product);
 
   if (featured) {
@@ -39,7 +40,7 @@ export function ProductCard({ product, featured = false, compact = false }: Prod
         <Link
           href={href}
           className="relative block aspect-[1.35] overflow-hidden bg-surface-container"
-          onClick={() => trackSelectItem(product)}
+          onClick={() => trackSelectItem(product, itemListName)}
         >
           {product.badge && (
             <span className="absolute left-6 top-5 z-10 rounded-full bg-white px-4 py-2 text-xs font-semibold text-primary shadow-soft">
@@ -71,7 +72,7 @@ export function ProductCard({ product, featured = false, compact = false }: Prod
               <Link
                 href={href}
                 className="mt-2 block font-heading text-2xl font-bold hover:text-primary"
-                onClick={() => trackSelectItem(product)}
+                onClick={() => trackSelectItem(product, itemListName)}
               >
                 {product.name}
               </Link>
@@ -108,7 +109,7 @@ export function ProductCard({ product, featured = false, compact = false }: Prod
       <Link
         href={href}
         className="relative block aspect-square overflow-hidden bg-surface-container"
-        onClick={() => trackSelectItem(product)}
+        onClick={() => trackSelectItem(product, itemListName)}
       >
         {(product.badge || product.isNew) && (
           <span className="absolute left-4 top-4 z-10 rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-primary shadow-soft">
@@ -139,7 +140,7 @@ export function ProductCard({ product, featured = false, compact = false }: Prod
           <Link
             href={href}
             className="mt-1 line-clamp-2 font-heading text-base font-bold hover:text-primary md:text-lg"
-            onClick={() => trackSelectItem(product)}
+            onClick={() => trackSelectItem(product, itemListName)}
           >
             {product.name}
           </Link>

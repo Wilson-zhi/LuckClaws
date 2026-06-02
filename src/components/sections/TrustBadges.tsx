@@ -3,7 +3,7 @@ import { RotateCcw, ShieldCheck, Truck } from "lucide-react";
 const badges = [
   {
     icon: ShieldCheck,
-    title: "Pet-Safe Materials",
+    title: "Pet-Conscious Materials",
     text: "Carefully selected materials designed for everyday comfort and play."
   },
   {
@@ -35,4 +35,3 @@ export function TrustBadges() {
     </section>
   );
 }
-

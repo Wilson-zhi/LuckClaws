@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Award, Sparkles, Truck } from "lucide-react";
+import { ArrowRight, Award, Heart, RotateCcw, ShieldCheck, Sparkles, Truck } from "lucide-react";
+import { ViewItemListTracker } from "@/components/analytics/EcommerceEventTrackers";
 import { CategoryCard } from "@/components/product/CategoryCard";
 import { ProductCard } from "@/components/product/ProductCard";
+import { HomeFeaturedProduct } from "@/components/sections/HomeFeaturedProduct";
 import { NewsletterSignup } from "@/components/sections/NewsletterSignup";
 import { ReviewCard } from "@/components/sections/ReviewCard";
 import { TrustBadges } from "@/components/sections/TrustBadges";
 import { SiteShell } from "@/components/layout/SiteShell";
-import { bestSellers, brandName, categories, newArrivals } from "@/data/products";
+import { bestSellers, brandName, categories, mainProduct, newArrivals } from "@/data/products";
 import { absoluteUrl, createSeoMetadata, iconPath } from "@/lib/seo";
 
 export const metadata: Metadata = {
@@ -24,6 +26,13 @@ export const metadata: Metadata = {
     twitterDescription: "Thoughtfully designed pet essentials for playful pets and modern pet parents."
   })
 };
+
+const topTrustItems = [
+  { label: "Free shipping over $50", Icon: Truck },
+  { label: "30-day easy returns", Icon: RotateCcw },
+  { label: "Secure checkout", Icon: ShieldCheck },
+  { label: "Pet-conscious materials", Icon: Heart }
+];
 
 export default function HomePage() {
   const organizationStructuredData = {
@@ -41,16 +50,20 @@ export default function HomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationStructuredData) }}
       />
+      <ViewItemListTracker products={[mainProduct]} itemListName="Homepage Featured Product" />
+      <ViewItemListTracker products={bestSellers} itemListName="Homepage Best Sellers" />
+      <ViewItemListTracker products={newArrivals} itemListName="Homepage New Arrivals" />
       <section className="section-shell grid min-h-[620px] items-center gap-10 py-10 md:grid-cols-2 md:py-16">
         <div>
           <span className="inline-flex rounded-full bg-primary-container/20 px-4 py-2 text-xs font-bold uppercase tracking-wide text-primary">
-            Premium Care
+            Premium Pet Essentials
           </span>
           <h1 className="mt-5 max-w-xl font-heading text-4xl font-extrabold leading-tight md:text-6xl">
-            Premium Pet Essentials for Happier Everyday Care.
+            Thoughtfully Designed Pet Essentials for Happier Dogs & Cats
           </h1>
           <p className="mt-5 max-w-md text-base leading-7 text-on-surface-variant">
-            Shop thoughtfully designed toys, apparel, walking essentials, and cozy home goods for dogs and cats.
+            Shop enrichment toys, cozy apparel, walking essentials, beds, blankets, and everyday favorites made for
+            modern pet parents.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
@@ -60,7 +73,7 @@ export default function HomePage() {
               Shop Best Sellers
             </Link>
             <Link
-              href="/collections/dog-toys"
+              href="/collections"
               className="rounded-full border border-outline-variant bg-white px-6 py-3 text-sm font-bold text-on-surface transition hover:border-primary hover:text-primary"
             >
               Explore Collections
@@ -92,11 +105,25 @@ export default function HomePage() {
         </div>
       </section>
 
+      <section className="bg-surface-container-low py-4">
+        <div className="section-shell grid grid-cols-2 gap-3 md:grid-cols-4">
+          {topTrustItems.map(({ label, Icon }) => (
+            <div
+              key={label}
+              className="flex min-h-14 items-center gap-3 rounded-md bg-surface-container-lowest px-4 py-3 text-sm font-semibold text-on-surface-variant shadow-soft"
+            >
+              <Icon aria-hidden className="h-5 w-5 shrink-0 text-primary" />
+              <span>{label}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
       <section className="section-shell py-10 md:py-14">
         <div className="mb-6 flex items-center justify-between gap-4">
           <h2 className="font-heading text-2xl font-bold md:text-3xl">Curated For Every Pet</h2>
-          <Link href="/collections/dog-toys" className="hidden items-center gap-2 text-sm font-semibold text-primary md:flex">
-            View All Categories <ArrowRight aria-hidden className="h-4 w-4" />
+          <Link href="/collections" className="hidden items-center gap-2 text-sm font-semibold text-primary md:flex">
+            Explore All Collections <ArrowRight aria-hidden className="h-4 w-4" />
           </Link>
         </div>
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
@@ -104,7 +131,12 @@ export default function HomePage() {
             <CategoryCard key={category.name} {...category} />
           ))}
         </div>
+        <Link href="/collections" className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-primary md:hidden">
+          Explore All Collections <ArrowRight aria-hidden className="h-4 w-4" />
+        </Link>
       </section>
+
+      <HomeFeaturedProduct product={mainProduct} />
 
       <section className="bg-surface-container-low py-14 md:py-20">
         <div className="section-shell">
@@ -116,7 +148,7 @@ export default function HomePage() {
           </div>
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
             {bestSellers.map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard key={product.id} product={product} itemListName="Homepage Best Sellers" />
             ))}
           </div>
         </div>
@@ -136,7 +168,7 @@ export default function HomePage() {
         </div>
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
           {newArrivals.map((product) => (
-            <ProductCard key={product.id} product={product} />
+            <ProductCard key={product.id} product={product} itemListName="Homepage New Arrivals" />
           ))}
         </div>
       </section>
