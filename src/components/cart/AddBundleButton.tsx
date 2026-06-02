@@ -29,6 +29,7 @@ export function AddBundleButton({ products, className, children }: AddBundleButt
             size: product.size
           });
         });
+        window.dispatchEvent(new Event("luck-claws:open-cart"));
       }}
       aria-label={`Add bundle to cart for ${formatPrice(total)}`}
     >
@@ -37,4 +38,3 @@ export function AddBundleButton({ products, className, children }: AddBundleButt
     </button>
   );
 }
-

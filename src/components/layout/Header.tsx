@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Heart, Menu, Search, ShoppingBag, User, X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CartDrawer } from "@/components/cart/CartDrawer";
 import { topLevelNavigation } from "@/data/navigation";
 import { brandName } from "@/data/products";
@@ -16,6 +16,13 @@ export function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const items = useCartStore((state) => state.items);
   const totals = getCartTotals(items);
+
+  useEffect(() => {
+    const openCartDrawer = () => setDrawerOpen(true);
+
+    window.addEventListener("luck-claws:open-cart", openCartDrawer);
+    return () => window.removeEventListener("luck-claws:open-cart", openCartDrawer);
+  }, []);
 
   return (
     <>

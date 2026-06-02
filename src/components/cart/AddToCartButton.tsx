@@ -50,6 +50,7 @@ export function AddToCartButton({
           color: product.selectedColor,
           size: product.size
         });
+        window.dispatchEvent(new Event("luck-claws:open-cart"));
         setAdded(true);
         window.setTimeout(() => setAdded(false), 1200);
       }}
@@ -60,4 +61,3 @@ export function AddToCartButton({
     </button>
   );
 }
-
