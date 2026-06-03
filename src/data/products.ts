@@ -26,6 +26,14 @@ type ProductBase = {
 export const brandName = "LUCK CLAWS";
 
 export type Product = ProductBase & {
+  title: string;
+  brand: typeof brandName;
+  currency: "USD";
+  availability: "in_stock";
+  condition: "new";
+  imageAlt: string;
+  productUrl: string;
+  compareAtPrice?: number;
   collectionSlug: string;
   shortDescription: string;
   productType: string;
@@ -115,6 +123,14 @@ function defaultSafetyNotice(category: string) {
 function createProduct(product: ProductInput): Product {
   return {
     ...product,
+    title: product.name,
+    brand: brandName,
+    currency: "USD",
+    availability: "in_stock",
+    condition: "new",
+    imageAlt: product.alt,
+    productUrl: `/products/${product.slug}`,
+    ...(product.regularPrice ? { compareAtPrice: product.regularPrice } : {}),
     collectionSlug: product.collectionSlug ?? collectionSlugByCategory[product.category] ?? "all",
     shortDescription: product.shortDescription ?? product.description,
     productType: product.productType ?? defaultProductType(product),

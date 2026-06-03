@@ -10,7 +10,7 @@ const collectionHrefBySlug: Record<string, string> = {
 };
 
 export function getProductPath(product: Product) {
-  return `/products/${product.slug}`;
+  return product.productUrl;
 }
 
 export function getProductPathBySlug(slug: string) {

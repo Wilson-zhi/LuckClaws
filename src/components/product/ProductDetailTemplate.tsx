@@ -19,7 +19,7 @@ import { ProductAccordion } from "@/components/product/ProductAccordion";
 import { ProductCard } from "@/components/product/ProductCard";
 import { ProductGallery } from "@/components/product/ProductGallery";
 import { ProductPurchasePanel } from "@/components/product/ProductPurchasePanel";
-import { brandName, type Product } from "@/data/products";
+import { type Product } from "@/data/products";
 import {
   getBestForItems,
   getCareInstructions,
@@ -29,8 +29,8 @@ import {
   getRelatedProducts,
   getShippingReturnItems
 } from "@/lib/product-detail-content";
-import { getCollectionPath, getProductPath } from "@/lib/product-links";
-import { absoluteUrl } from "@/lib/seo";
+import { getCollectionPath } from "@/lib/product-links";
+import { createProductJsonLd } from "@/lib/product-seo";
 import { formatPrice } from "@/lib/utils";
 
 const trustItems = [
@@ -41,35 +41,6 @@ const trustItems = [
 ];
 
 const highlightIcons = [Sparkles, Search, ShieldCheck, RotateCcw];
-
-function getStructuredData(product: Product) {
-  return {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    name: product.name,
-    sku: product.id,
-    url: absoluteUrl(getProductPath(product)),
-    image: absoluteUrl(product.image),
-    description: product.shortDescription,
-    brand: { "@type": "Brand", name: brandName },
-    offers: {
-      "@type": "Offer",
-      price: product.price,
-      priceCurrency: "USD",
-      availability: "https://schema.org/InStock",
-      url: absoluteUrl(getProductPath(product))
-    },
-    ...(product.rating && product.reviewCount
-      ? {
-          aggregateRating: {
-            "@type": "AggregateRating",
-            ratingValue: product.rating,
-            reviewCount: product.reviewCount
-          }
-        }
-      : {})
-  };
-}
 
 export function ProductDetailTemplate({ product }: { product: Product }) {
   const relatedProducts = getRelatedProducts(product);
@@ -112,7 +83,7 @@ export function ProductDetailTemplate({ product }: { product: Product }) {
       <ViewItemListTracker products={relatedProducts} itemListName={itemListName} />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(getStructuredData(product)) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(createProductJsonLd(product)) }}
       />
 
       <section className="section-shell py-8 md:py-14">

@@ -11,6 +11,7 @@ type SeoMetadataOptions = {
   description: string;
   path: string;
   image?: string;
+  imageAlt?: string;
   openGraphTitle?: string;
   openGraphDescription?: string;
   twitterTitle?: string;
@@ -27,29 +28,33 @@ export function createSeoMetadata({
   description,
   path,
   image = defaultOgImage,
+  imageAlt = `${brandName} premium pet essentials`,
   openGraphTitle,
   openGraphDescription,
   twitterTitle,
   twitterDescription,
   noIndex = false
 }: SeoMetadataOptions): Metadata {
+  const canonicalUrl = absoluteUrl(path);
+  const imageUrl = absoluteUrl(image);
+
   return {
     title,
     description,
     alternates: {
-      canonical: path
+      canonical: canonicalUrl
     },
     openGraph: {
       siteName: brandName,
       type: "website",
       locale: "en_US",
-      url: path,
+      url: canonicalUrl,
       title: openGraphTitle ?? title,
       description: openGraphDescription ?? description,
       images: [
         {
-          url: image,
-          alt: `${brandName} premium pet essentials`
+          url: imageUrl,
+          alt: imageAlt
         }
       ]
     },
@@ -57,7 +62,7 @@ export function createSeoMetadata({
       card: "summary_large_image",
       title: twitterTitle ?? title,
       description: twitterDescription ?? description,
-      images: [image]
+      images: [imageUrl]
     },
     robots: noIndex
       ? {

@@ -1,6 +1,5 @@
 import type { MetadataRoute } from "next";
-import { products } from "@/data/products";
-import { getProductPath } from "@/lib/product-links";
+import { getSeoReadyProducts } from "@/lib/product-seo";
 import { absoluteUrl } from "@/lib/seo";
 
 const routes = [
@@ -28,8 +27,8 @@ const routes = [
 }>;
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const productRoutes = products.map((product) => ({
-    path: getProductPath(product),
+  const productRoutes = getSeoReadyProducts().map((product) => ({
+    path: product.productUrl,
     changeFrequency: "weekly" as const,
     priority: product.slug === "interactive-snuffle-mat" ? 0.9 : 0.75
   }));

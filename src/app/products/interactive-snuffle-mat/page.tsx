@@ -21,23 +21,16 @@ import { ProductGallery } from "@/components/product/ProductGallery";
 import { ProductPurchasePanel } from "@/components/product/ProductPurchasePanel";
 import { SiteShell } from "@/components/layout/SiteShell";
 import {
-  brandName,
   frequentlyBoughtTogether,
   mainProduct,
   recommendedProducts
 } from "@/data/products";
 import { getProductPath } from "@/lib/product-links";
+import { createProductJsonLd, createProductMetadata } from "@/lib/product-seo";
 import { formatPrice } from "@/lib/utils";
-import { absoluteUrl, createSeoMetadata, productOgImage } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  ...createSeoMetadata({
-    title: `Interactive Snuffle Mat | ${brandName}`,
-    description:
-      "Shop the LUCK CLAWS Interactive Snuffle Mat, designed for dog enrichment, slower eating, mental stimulation, and everyday play.",
-    path: "/products/interactive-snuffle-mat",
-    image: productOgImage
-  })
+  ...createProductMetadata(mainProduct)
 };
 
 const accordions = [
@@ -149,28 +142,7 @@ const productFaqs = [
 ];
 
 export default function ProductPage() {
-  const structuredData = {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    name: mainProduct.name,
-    sku: mainProduct.id,
-    url: absoluteUrl("/products/interactive-snuffle-mat"),
-    image: absoluteUrl(mainProduct.image),
-    description: mainProduct.shortDescription,
-    brand: { "@type": "Brand", name: brandName },
-    offers: {
-      "@type": "Offer",
-      price: mainProduct.price,
-      priceCurrency: "USD",
-      availability: "https://schema.org/InStock",
-      url: absoluteUrl("/products/interactive-snuffle-mat")
-    },
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: mainProduct.rating,
-      reviewCount: mainProduct.reviewCount
-    }
-  };
+  const structuredData = createProductJsonLd(mainProduct);
 
   return (
     <SiteShell>
