@@ -195,7 +195,8 @@ const productInputs: ProductInput[] = [
     description: "A cozy knit layer made for cool walks and couch naps.",
     image: "/images/chunky-knit-sweater.jpg",
     alt: "Chunky yellow LUCK CLAWS pet sweater.",
-    badge: "Pet Apparel"
+    badge: "Pet Apparel",
+    materialTags: ["Fabric"]
   },
   {
     id: "cozy-knit-sweater",
@@ -206,7 +207,8 @@ const productInputs: ProductInput[] = [
     description: "A soft everyday sweater for cozy mornings, cool evenings, and easy layering.",
     image: "/images/category-pet-apparel.jpg",
     alt: "Small dog wearing cozy LUCK CLAWS pet apparel.",
-    badge: "Pet Apparel"
+    badge: "Pet Apparel",
+    materialTags: ["Fabric"]
   },
   {
     id: "soft-ribbed-pet-tee",
@@ -217,7 +219,8 @@ const productInputs: ProductInput[] = [
     description: "A lightweight ribbed tee designed for relaxed days and simple comfort.",
     image: "/images/category-pet-apparel.jpg",
     alt: "Small dog modeling soft LUCK CLAWS everyday apparel.",
-    badge: "Pet Apparel"
+    badge: "Pet Apparel",
+    materialTags: ["Fabric"]
   },
   {
     id: "heritage-leather-leash",
@@ -228,7 +231,8 @@ const productInputs: ProductInput[] = [
     description: "A refined everyday leash with polished hardware.",
     image: "/images/heritage-leather-leash.jpg",
     alt: "Brown LUCK CLAWS Heritage Leather Leash.",
-    badge: "Walking Essentials"
+    badge: "Walking Essentials",
+    materialTags: ["Leather"]
   },
   {
     id: "everyday-collar-set",
@@ -239,7 +243,8 @@ const productInputs: ProductInput[] = [
     description: "A polished collar set made for secure, comfortable daily outings.",
     image: "/images/heritage-leather-leash.jpg",
     alt: "Brown LUCK CLAWS walking accessory set.",
-    badge: "Walking Essentials"
+    badge: "Walking Essentials",
+    materialTags: ["Leather"]
   },
   {
     id: "trail-walk-accessory-pouch",
@@ -250,7 +255,8 @@ const productInputs: ProductInput[] = [
     description: "A compact walking pouch for treats, bags, and small outing essentials.",
     image: "/images/comfort-walk-harness.jpg",
     alt: "Tan LUCK CLAWS walking essentials setup.",
-    badge: "Walking Essentials"
+    badge: "Walking Essentials",
+    materialTags: ["Fabric"]
   },
   {
     id: "boucle-orthopedic-bed",
@@ -261,7 +267,8 @@ const productInputs: ProductInput[] = [
     description: "A structured, cloud-soft bed for deeper rest.",
     image: "/images/boucle-orthopedic-bed.jpg",
     alt: "Cream LUCK CLAWS Boucle Orthopedic Bed.",
-    badge: "Beds & Blankets"
+    badge: "Beds & Blankets",
+    materialTags: ["Fabric"]
   },
   {
     id: "cozy-nest-blanket",
@@ -272,7 +279,8 @@ const productInputs: ProductInput[] = [
     description: "A soft, nestable blanket for crate naps, sofa cuddles, and quiet corners.",
     image: "/images/category-beds-blankets.jpg",
     alt: "Cozy LUCK CLAWS pet bed and blanket setup.",
-    badge: "Beds & Blankets"
+    badge: "Beds & Blankets",
+    materialTags: ["Fabric"]
   },
   {
     id: "quilted-rest-mat",
@@ -283,7 +291,8 @@ const productInputs: ProductInput[] = [
     description: "A low-profile rest mat for pets who like a soft place near the family.",
     image: "/images/boucle-orthopedic-bed.jpg",
     alt: "Cream LUCK CLAWS rest mat and bed essential.",
-    badge: "Beds & Blankets"
+    badge: "Beds & Blankets",
+    materialTags: ["Fabric"]
   },
   {
     id: "matte-ceramic-bowl",
@@ -294,7 +303,8 @@ const productInputs: ProductInput[] = [
     description: "A low-profile ceramic bowl with an easy-clean matte finish.",
     image: "/images/matte-ceramic-bowl.jpg",
     alt: "Matte green ceramic pet bowl by LUCK CLAWS.",
-    isNew: true
+    isNew: true,
+    materialTags: ["Ceramic"]
   },
   {
     id: "comfort-walk-harness",
@@ -305,7 +315,8 @@ const productInputs: ProductInput[] = [
     description: "A soft, balanced harness for calm everyday walks.",
     image: "/images/comfort-walk-harness.jpg",
     alt: "Tan LUCK CLAWS Comfort Walk Harness.",
-    isNew: true
+    isNew: true,
+    materialTags: ["Fabric"]
   },
   {
     id: "natural-feather-teaser",
@@ -316,7 +327,8 @@ const productInputs: ProductInput[] = [
     description: "A playful wand toy with natural motion and tactile feathers.",
     image: "/images/natural-feather-teaser.jpg",
     alt: "LUCK CLAWS Natural Feather Teaser for cats.",
-    isNew: true
+    isNew: true,
+    materialTags: ["Fabric"]
   },
   {
     id: "airtight-treat-jar",
@@ -327,7 +339,8 @@ const productInputs: ProductInput[] = [
     description: "A countertop jar that keeps treats fresh and close at hand.",
     image: "/images/airtight-treat-jar.jpg",
     alt: "Glass LUCK CLAWS Airtight Treat Jar.",
-    isNew: true
+    isNew: true,
+    materialTags: ["Glass"]
   },
   {
     id: "durable-rubber-bone",
@@ -447,7 +460,8 @@ const productInputs: ProductInput[] = [
     price: 24.99,
     description: "A smaller starter mat for first-time foragers.",
     image: "/images/beginner-snuffle-mat.jpg",
-    alt: "Beginner Snuffle Mat by LUCK CLAWS."
+    alt: "Beginner Snuffle Mat by LUCK CLAWS.",
+    materialTags: ["Fabric"]
   },
   {
     id: "plush-foraging-toy",
@@ -457,7 +471,8 @@ const productInputs: ProductInput[] = [
     price: 19.99,
     description: "A cheerful plush toy that hides small rewards.",
     image: "/images/plush-foraging-toy.jpg",
-    alt: "Carrot-shaped plush foraging toy by LUCK CLAWS."
+    alt: "Carrot-shaped plush foraging toy by LUCK CLAWS.",
+    materialTags: ["Fabric"]
   },
   {
     id: "premium-puzzle-feeder",
@@ -467,7 +482,8 @@ const productInputs: ProductInput[] = [
     price: 34.99,
     description: "A polished puzzle feeder for focused enrichment.",
     image: "/images/premium-puzzle-feeder.jpg",
-    alt: "Round wooden puzzle feeder by LUCK CLAWS."
+    alt: "Round wooden puzzle feeder by LUCK CLAWS.",
+    materialTags: ["Wood"]
   }
 ];
 

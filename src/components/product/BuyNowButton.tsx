@@ -2,9 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { type Product } from "@/data/products";
-import { trackAddToCart } from "@/lib/ga4-ecommerce";
+import { saveBuyNowCheckoutItem } from "@/lib/buy-now-checkout";
 import { cn, formatPrice } from "@/lib/utils";
-import { useCartStore } from "@/store/cart-store";
 
 type BuyNowButtonProps = {
   product: Product;
@@ -14,7 +13,6 @@ type BuyNowButtonProps = {
 
 export function BuyNowButton({ product, quantity = 1, className }: BuyNowButtonProps) {
   const router = useRouter();
-  const addItem = useCartStore((state) => state.addItem);
 
   return (
     <button
@@ -24,13 +22,8 @@ export function BuyNowButton({ product, quantity = 1, className }: BuyNowButtonP
         className
       )}
       onClick={() => {
-        addItem(product, {
-          quantity,
-          color: product.selectedColor,
-          size: product.size
-        });
-        trackAddToCart(product, quantity);
-        router.push("/checkout/information");
+        saveBuyNowCheckoutItem(product, quantity);
+        router.push("/checkout/information?mode=buy-now");
       }}
       aria-label={`Buy ${product.name} now for ${formatPrice(product.price)}`}
     >

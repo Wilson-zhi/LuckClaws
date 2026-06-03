@@ -2,20 +2,64 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import { BeginCheckoutTracker } from "@/components/analytics/EcommerceEventTrackers";
-import { useCartStore, getCartTotals, productById } from "@/store/cart-store";
+import { readBuyNowCheckoutItem } from "@/lib/buy-now-checkout";
+import { useCartStore, getCartTotals, productById, type CartItem } from "@/store/cart-store";
 import { formatPrice } from "@/lib/utils";
 
 export function CheckoutOrderSummary() {
-  const items = useCartStore((state) => state.items);
-  const totals = getCartTotals(items);
+  const searchParams = useSearchParams();
+  const cartItems = useCartStore((state) => state.items);
+  const isBuyNowMode = searchParams.get("mode") === "buy-now";
+  const [buyNowItem, setBuyNowItem] = useState<CartItem | null>(null);
+  const [buyNowLoaded, setBuyNowLoaded] = useState(!isBuyNowMode);
+
+  useEffect(() => {
+    if (!isBuyNowMode) {
+      setBuyNowItem(null);
+      setBuyNowLoaded(true);
+      return;
+    }
+
+    setBuyNowItem(readBuyNowCheckoutItem());
+    setBuyNowLoaded(true);
+  }, [isBuyNowMode]);
+
+  const checkoutItems = useMemo(() => {
+    if (isBuyNowMode && buyNowLoaded && buyNowItem) {
+      return [buyNowItem];
+    }
+
+    return cartItems;
+  }, [buyNowItem, buyNowLoaded, cartItems, isBuyNowMode]);
+
+  const totals = getCartTotals(checkoutItems);
+  const showLoadingState = isBuyNowMode && !buyNowLoaded;
+  const showBuyNowNote = isBuyNowMode && buyNowLoaded && Boolean(buyNowItem);
+  const showBuyNowFallbackNote = isBuyNowMode && buyNowLoaded && !buyNowItem;
 
   return (
     <aside className="rounded-lg border border-outline-variant bg-surface-container-low p-6 shadow-soft md:p-10">
-      <BeginCheckoutTracker items={items} />
+      {!showLoadingState && checkoutItems.length > 0 && <BeginCheckoutTracker items={checkoutItems} />}
       <h2 className="font-heading text-3xl font-bold">Order Summary</h2>
+      {showBuyNowNote && (
+        <p className="mt-3 rounded-md bg-primary-container/15 px-4 py-3 text-sm font-semibold text-primary">
+          Checking out this item only.
+        </p>
+      )}
+      {showBuyNowFallbackNote && (
+        <p className="mt-3 rounded-md bg-surface-container-lowest px-4 py-3 text-sm text-on-surface-variant">
+          Buy Now checkout data was not found, so your cart checkout is shown instead.
+        </p>
+      )}
       <div className="mt-7 space-y-5">
-        {items.length === 0 ? (
+        {showLoadingState ? (
+          <div className="rounded-md bg-surface-container-lowest p-5 text-sm text-on-surface-variant">
+            Loading checkout item...
+          </div>
+        ) : checkoutItems.length === 0 ? (
           <div className="rounded-md bg-surface-container-lowest p-5 text-sm text-on-surface-variant">
             No items are in checkout yet.{" "}
             <Link href="/collections" className="font-semibold text-primary">
@@ -24,7 +68,7 @@ export function CheckoutOrderSummary() {
             .
           </div>
         ) : (
-          items.map((item) => {
+          checkoutItems.map((item) => {
             const product = productById(item.id);
             const image = product?.image ?? item.image;
             const alt = product?.alt ?? item.alt;
