@@ -126,6 +126,26 @@ export function trackBeginCheckout(items: CartItem[]) {
   });
 }
 
+export function trackPurchase({
+  transactionId,
+  items,
+  value,
+  shipping
+}: {
+  transactionId: string;
+  items: CartItem[];
+  value: number;
+  shipping: number;
+}) {
+  sendGtagEvent("purchase", {
+    transaction_id: transactionId,
+    currency,
+    value,
+    shipping,
+    items: items.map(cartItemToGtagItem)
+  });
+}
+
 export function trackSearch(searchTerm: string) {
   const trimmedSearchTerm = searchTerm.trim();
 

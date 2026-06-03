@@ -1,14 +1,43 @@
+"use client";
+
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { type FormEvent } from "react";
 import { Mail, RotateCcw, ShieldCheck, Truck } from "lucide-react";
-import { PreviewSubmitButton } from "@/components/forms/PreviewSubmitButton";
+import { saveCheckoutInfo } from "@/lib/checkout-info";
 import { freeShippingLabel, standardShippingSentence, variableShippingSentence } from "@/lib/shipping";
 
 const inputClass =
   "min-h-14 w-full rounded-md border-outline bg-surface-container-lowest px-4 text-base focus:border-primary focus:ring-primary";
 
 export function CheckoutForm() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const isBuyNowMode = searchParams.get("mode") === "buy-now";
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const formData = new FormData(event.currentTarget);
+
+    saveCheckoutInfo({
+      email: String(formData.get("email") ?? ""),
+      firstName: String(formData.get("firstName") ?? ""),
+      lastName: String(formData.get("lastName") ?? ""),
+      country: String(formData.get("country") ?? ""),
+      address: String(formData.get("address") ?? ""),
+      apartment: String(formData.get("apartment") ?? ""),
+      city: String(formData.get("city") ?? ""),
+      state: String(formData.get("state") ?? ""),
+      zip: String(formData.get("zip") ?? ""),
+      phone: String(formData.get("phone") ?? "")
+    });
+
+    router.push(`/checkout/payment${isBuyNowMode ? "?mode=buy-now" : ""}`);
+  };
+
   return (
-    <form className="space-y-8" aria-label="Checkout information form">
+    <form className="space-y-8" aria-label="Checkout information form" onSubmit={handleSubmit}>
       <section>
         <h1 className="font-heading text-4xl font-bold md:text-5xl">Checkout Information</h1>
         <p className="mt-3 text-on-surface-variant">
@@ -194,12 +223,12 @@ export function CheckoutForm() {
         <Link href="/cart" className="font-semibold text-primary">
           Return to cart
         </Link>
-        <PreviewSubmitButton
-          className="px-10 py-4"
-          message="The next checkout step is for preview only. Payment will be connected later."
+        <button
+          type="submit"
+          className="inline-flex justify-center rounded-full bg-primary-container px-10 py-4 font-heading font-bold text-on-primary-container transition hover:bg-[#e08f00]"
         >
-          Continue to Shipping
-        </PreviewSubmitButton>
+          Continue to Payment
+        </button>
       </div>
     </form>
   );

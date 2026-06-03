@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   })
 };
 
-const steps = ["Cart", "Information", "Shipping", "Payment"];
+const steps = ["Cart", "Information", "Payment"];
 
 export default function CheckoutInformationPage() {
   return (
@@ -39,7 +39,9 @@ export default function CheckoutInformationPage() {
         </nav>
 
         <div className="grid gap-12 lg:grid-cols-[1fr_520px] lg:items-start">
-          <CheckoutForm />
+          <Suspense fallback={<CheckoutFormFallback />}>
+            <CheckoutForm />
+          </Suspense>
           <Suspense fallback={<CheckoutSummaryFallback />}>
             <CheckoutOrderSummary />
           </Suspense>
@@ -47,6 +49,14 @@ export default function CheckoutInformationPage() {
       </main>
       <CheckoutFooter />
     </>
+  );
+}
+
+function CheckoutFormFallback() {
+  return (
+    <div className="rounded-lg bg-surface-container-low p-6 text-sm text-on-surface-variant shadow-soft">
+      Loading checkout form...
+    </div>
   );
 }
 
