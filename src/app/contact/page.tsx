@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Clock, Mail, PackageCheck } from "lucide-react";
-import { PreviewSubmitButton } from "@/components/forms/PreviewSubmitButton";
 import { SupportPageLayout } from "@/components/support/SupportPageLayout";
 import { brandName } from "@/data/products";
 import { createSeoMetadata } from "@/lib/seo";
@@ -13,11 +12,8 @@ export const metadata: Metadata = {
   })
 };
 
-const fields = [
-  { label: "Name", id: "name", type: "text", required: true },
-  { label: "Email", id: "email", type: "email", required: true },
-  { label: "Order Number (optional)", id: "order-number", type: "text", required: false }
-];
+const supportEmailHref =
+  "mailto:support@luckclaws.com?subject=LUCK%20CLAWS%20Support%20Request&body=Name:%0AEmail:%0AOrder%20Number:%0AMessage:";
 
 export default function ContactPage() {
   return (
@@ -71,47 +67,37 @@ export default function ContactPage() {
           </div>
         </aside>
 
-        <form className="ambient-card p-6 md:p-8" aria-label="Contact support form">
-          <h2 className="font-heading text-2xl font-bold">Send a Message</h2>
+        <section className="ambient-card p-6 md:p-8" aria-labelledby="email-support-heading">
+          <h2 id="email-support-heading" className="font-heading text-2xl font-bold">
+            Email Support
+          </h2>
           <p className="mt-3 text-sm leading-6 text-on-surface-variant">
-            This contact form is for preview only and is not connected to a backend yet. For urgent
-            order help, email{" "}
+            Send us an email and we will respond within 1-2 business days. For order help, include
+            your order number and any relevant details.
+          </p>
+          <div className="mt-6 rounded-md bg-surface-container-low p-5 text-sm leading-7 text-on-surface-variant">
+            <p className="font-semibold text-on-surface">Please include:</p>
+            <ul className="mt-3 list-disc space-y-2 pl-5">
+              <li>Your name and email address</li>
+              <li>Your order number, if available</li>
+              <li>A short description of your question or issue</li>
+              <li>Photos of the item and packaging for damaged, defective, or incorrect items</li>
+            </ul>
+          </div>
+          <a
+            href={supportEmailHref}
+            className="mt-6 inline-flex w-full justify-center rounded-full bg-primary-container px-8 py-3 font-heading font-bold text-on-primary-container transition hover:bg-[#e08f00] md:w-auto"
+          >
+            Email Support
+          </a>
+          <p className="mt-4 text-sm leading-6 text-on-surface-variant">
+            If the button does not open your email app, email{" "}
             <a href="mailto:support@luckclaws.com" className="font-semibold text-primary hover:underline">
               support@luckclaws.com
-            </a>
-            .
+            </a>{" "}
+            directly.
           </p>
-          <div className="mt-6 grid gap-5">
-            {fields.map((field) => (
-              <label key={field.id} className="grid gap-2 text-sm font-semibold text-on-surface">
-                {field.label}
-                <input
-                  id={field.id}
-                  name={field.id}
-                  type={field.type}
-                  required={field.required}
-                  className="rounded-md border border-outline-variant bg-white px-4 py-3 font-normal text-on-surface outline-none transition focus:border-primary focus:ring-2 focus:ring-primary-container/30"
-                />
-              </label>
-            ))}
-            <label className="grid gap-2 text-sm font-semibold text-on-surface">
-              Message
-              <textarea
-                id="message"
-                name="message"
-                rows={6}
-                required
-                className="resize-y rounded-md border border-outline-variant bg-white px-4 py-3 font-normal text-on-surface outline-none transition focus:border-primary focus:ring-2 focus:ring-primary-container/30"
-              />
-            </label>
-            <PreviewSubmitButton
-              className="mt-2 w-full md:w-auto"
-              message="This is a preview contact form and is not connected to a backend yet. For order help, email support@luckclaws.com."
-            >
-              Submit
-            </PreviewSubmitButton>
-          </div>
-        </form>
+        </section>
       </div>
     </SupportPageLayout>
   );
