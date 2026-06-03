@@ -26,6 +26,7 @@ import {
   mainProduct,
   recommendedProducts
 } from "@/data/products";
+import { getProductPath } from "@/lib/product-links";
 import { formatPrice } from "@/lib/utils";
 import { absoluteUrl, createSeoMetadata, productOgImage } from "@/lib/seo";
 
@@ -152,9 +153,10 @@ export default function ProductPage() {
     "@context": "https://schema.org",
     "@type": "Product",
     name: mainProduct.name,
+    sku: mainProduct.id,
     url: absoluteUrl("/products/interactive-snuffle-mat"),
     image: absoluteUrl(mainProduct.image),
-    description: "Dog enrichment snuffle mat for natural foraging, slower eating, and daily mental stimulation.",
+    description: mainProduct.shortDescription,
     brand: { "@type": "Brand", name: brandName },
     offers: {
       "@type": "Offer",
@@ -326,11 +328,17 @@ export default function ProductPage() {
             {[mainProduct, ...frequentlyBoughtTogether].map((product, index) => (
               <div key={product.id} className="flex items-center gap-4 md:block md:text-center">
                 {index > 0 && <span className="hidden text-2xl text-on-surface-variant md:block">+</span>}
-                <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-md bg-surface-container md:mx-auto md:h-28 md:w-28">
+                <Link
+                  href={getProductPath(product)}
+                  className="relative h-20 w-20 shrink-0 overflow-hidden rounded-md bg-surface-container md:mx-auto md:block md:h-28 md:w-28"
+                  aria-label={`View ${product.name}`}
+                >
                   <Image src={product.image} alt={product.alt} fill sizes="112px" className="object-cover" />
-                </div>
+                </Link>
                 <div className="mt-2">
-                  <p className="text-sm font-semibold">{index === 0 ? "This item" : product.name}</p>
+                  <Link href={getProductPath(product)} className="text-sm font-semibold hover:text-primary">
+                    {index === 0 ? "This item" : product.name}
+                  </Link>
                   <p className="text-sm text-primary">{formatPrice(product.price)}</p>
                 </div>
               </div>

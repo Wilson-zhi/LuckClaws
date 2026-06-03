@@ -1,9 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { ShoppingCart, Star } from "lucide-react";
 import { useState } from "react";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
+import { BuyNowButton } from "@/components/product/BuyNowButton";
 import { QuantitySelector } from "@/components/cart/QuantitySelector";
 import { type Product } from "@/data/products";
 import { cn, formatPrice } from "@/lib/utils";
@@ -11,19 +11,28 @@ import { cn, formatPrice } from "@/lib/utils";
 export function ProductPurchasePanel({ product }: { product: Product }) {
   const [selectedColor, setSelectedColor] = useState(product.selectedColor ?? product.colors?.[0] ?? "");
   const [quantity, setQuantity] = useState(1);
+  const productForCart = { ...product, selectedColor };
+  const discountPercent = product.regularPrice
+    ? Math.round(((product.regularPrice - product.price) / product.regularPrice) * 100)
+    : null;
 
   return (
     <div>
-      <div className="flex items-center gap-2 text-sm">
-        <span className="flex text-primary-container" aria-label={`${product.rating} star rating`}>
-          {Array.from({ length: 5 }).map((_, index) => (
-            <Star key={index} aria-hidden className="h-4 w-4 fill-current" />
-          ))}
+      <div className="flex flex-wrap items-center gap-2 text-sm">
+        <span className="rounded-full bg-primary-container/20 px-3 py-1 text-xs font-bold uppercase tracking-wide text-primary">
+          {product.category}
         </span>
-        <span className="font-semibold">{product.rating}</span>
-        <span className="text-on-surface-variant">
-          ({product.reviewCount} Reviews)
-        </span>
+        {product.rating && product.reviewCount && (
+          <>
+            <span className="flex text-primary-container" aria-label={`${product.rating} star rating`}>
+              {Array.from({ length: 5 }).map((_, index) => (
+                <Star key={index} aria-hidden className="h-4 w-4 fill-current" />
+              ))}
+            </span>
+            <span className="font-semibold">{product.rating}</span>
+            <span className="text-on-surface-variant">({product.reviewCount} Reviews)</span>
+          </>
+        )}
       </div>
 
       <h1 className="mt-3 font-heading text-4xl font-extrabold leading-tight md:text-5xl">
@@ -37,8 +46,10 @@ export function ProductPurchasePanel({ product }: { product: Product }) {
         )}
         <div className="flex items-center gap-3">
           <p className="font-heading text-3xl font-bold text-primary">{formatPrice(product.price)}</p>
-          {product.regularPrice && (
-            <span className="rounded-full bg-error/10 px-3 py-1 text-xs font-bold text-error">Save 25%</span>
+          {discountPercent && (
+            <span className="rounded-full bg-error/10 px-3 py-1 text-xs font-bold text-error">
+              Save {discountPercent}%
+            </span>
           )}
         </div>
       </div>
@@ -75,16 +86,11 @@ export function ProductPurchasePanel({ product }: { product: Product }) {
       </div>
 
       <div className="mt-6 grid gap-3 sm:grid-cols-2">
-        <AddToCartButton product={{ ...product, selectedColor }} quantity={quantity} className="w-full">
+        <AddToCartButton product={productForCart} quantity={quantity} className="w-full">
           <ShoppingCart aria-hidden className="h-4 w-4" />
           Add to Cart
         </AddToCartButton>
-        <Link
-          href="/cart"
-          className="inline-flex items-center justify-center rounded-full border border-primary px-6 py-3 font-semibold text-primary transition hover:bg-primary-container/10"
-        >
-          View Cart
-        </Link>
+        <BuyNowButton product={productForCart} quantity={quantity} className="w-full" />
       </div>
     </div>
   );

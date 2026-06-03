@@ -12,6 +12,7 @@ import { ProductCard } from "@/components/product/ProductCard";
 import { SearchFilterChips } from "@/components/search/SearchFilterChips";
 import { mainProduct, products, type Product } from "@/data/products";
 import { trackSearch, trackSelectItem } from "@/lib/ga4-ecommerce";
+import { getProductPath } from "@/lib/product-links";
 import { formatPrice } from "@/lib/utils";
 
 const trustItems = [
@@ -81,7 +82,7 @@ function FeaturedSearchResult({
   product: Product;
   itemListName: string;
 }) {
-  const productHref = "/products/interactive-snuffle-mat";
+  const productHref = getProductPath(product);
   const handleSelect = () => trackSelectItem(product, itemListName);
 
   return (

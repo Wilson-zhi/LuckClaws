@@ -6,16 +6,17 @@ import { ShoppingCart, Star } from "lucide-react";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
 import { type Product } from "@/data/products";
 import { trackSelectItem } from "@/lib/ga4-ecommerce";
+import { getProductPath } from "@/lib/product-links";
 import { formatPrice } from "@/lib/utils";
 
 type HomeFeaturedProductProps = {
   product: Product;
 };
 
-const href = "/products/interactive-snuffle-mat";
 const itemListName = "Homepage Featured Product";
 
 export function HomeFeaturedProduct({ product }: HomeFeaturedProductProps) {
+  const href = getProductPath(product);
   const handleSelect = () => trackSelectItem(product, itemListName);
 
   return (

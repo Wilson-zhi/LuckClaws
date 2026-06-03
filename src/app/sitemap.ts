@@ -1,4 +1,6 @@
 import type { MetadataRoute } from "next";
+import { products } from "@/data/products";
+import { getProductPath } from "@/lib/product-links";
 import { absoluteUrl } from "@/lib/seo";
 
 const routes = [
@@ -10,7 +12,6 @@ const routes = [
   { path: "/collections/walking-essentials", changeFrequency: "weekly", priority: 0.85 },
   { path: "/collections/beds-blankets", changeFrequency: "weekly", priority: 0.85 },
   { path: "/sale", changeFrequency: "weekly", priority: 0.8 },
-  { path: "/products/interactive-snuffle-mat", changeFrequency: "weekly", priority: 0.9 },
   { path: "/search", changeFrequency: "weekly", priority: 0.6 },
   { path: "/about", changeFrequency: "monthly", priority: 0.7 },
   { path: "/contact", changeFrequency: "monthly", priority: 0.6 },
@@ -27,7 +28,13 @@ const routes = [
 }>;
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  return routes.map((route) => ({
+  const productRoutes = products.map((product) => ({
+    path: getProductPath(product),
+    changeFrequency: "weekly" as const,
+    priority: product.slug === "interactive-snuffle-mat" ? 0.9 : 0.75
+  }));
+
+  return [...routes, ...productRoutes].map((route) => ({
     url: absoluteUrl(route.path),
     lastModified: new Date(),
     changeFrequency: route.changeFrequency,

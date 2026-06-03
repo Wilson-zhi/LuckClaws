@@ -5,6 +5,7 @@ import Link from "next/link";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
 import { type Product } from "@/data/products";
 import { trackSelectItem } from "@/lib/ga4-ecommerce";
+import { getProductPath } from "@/lib/product-links";
 import { cn, formatPrice } from "@/lib/utils";
 
 type CartAddOnCardProps = {
@@ -13,22 +14,8 @@ type CartAddOnCardProps = {
   compact?: boolean;
 };
 
-const collectionRouteByCategory: Record<string, string> = {
-  "Beds & Blankets": "/collections/beds-blankets",
-  "Cat Toys": "/collections/cat-toys",
-  "Dog Toys": "/collections/dog-toys",
-  "Pet Apparel": "/collections/pet-apparel",
-  "Walking Essentials": "/collections/walking-essentials"
-};
-
-function getProductHref(product: Product) {
-  return product.id === "interactive-snuffle-mat"
-    ? "/products/interactive-snuffle-mat"
-    : collectionRouteByCategory[product.category] ?? "/collections";
-}
-
 export function CartAddOnCard({ product, itemListName, compact = false }: CartAddOnCardProps) {
-  const href = getProductHref(product);
+  const href = getProductPath(product);
   const handleSelect = () => trackSelectItem(product, itemListName);
 
   return (

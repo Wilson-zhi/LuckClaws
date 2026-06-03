@@ -6,6 +6,7 @@ import { Heart, Plus, Star } from "lucide-react";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
 import { type Product } from "@/data/products";
 import { trackSelectItem } from "@/lib/ga4-ecommerce";
+import { getProductPath } from "@/lib/product-links";
 import { cn, formatPrice } from "@/lib/utils";
 
 type ProductCardProps = {
@@ -16,22 +17,6 @@ type ProductCardProps = {
   badgeLabel?: string;
 };
 
-const productRouteById: Record<string, string> = {
-  "interactive-snuffle-mat": "/products/interactive-snuffle-mat"
-};
-
-const collectionRouteByCategory: Record<string, string> = {
-  "Beds & Blankets": "/collections/beds-blankets",
-  "Cat Toys": "/collections/cat-toys",
-  "Dog Toys": "/collections/dog-toys",
-  "Pet Apparel": "/collections/pet-apparel",
-  "Walking Essentials": "/collections/walking-essentials"
-};
-
-function getProductHref(product: Product) {
-  return productRouteById[product.id] ?? collectionRouteByCategory[product.category] ?? "/collections";
-}
-
 export function ProductCard({
   product,
   featured = false,
@@ -39,7 +24,7 @@ export function ProductCard({
   itemListName,
   badgeLabel
 }: ProductCardProps) {
-  const href = getProductHref(product);
+  const href = getProductPath(product);
   const displayBadge = badgeLabel ?? product.badge;
 
   if (featured) {

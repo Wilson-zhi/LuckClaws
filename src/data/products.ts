@@ -1,4 +1,4 @@
-export type Product = {
+type ProductBase = {
   id: string;
   slug: string;
   name: string;
@@ -25,7 +25,105 @@ export type Product = {
 
 export const brandName = "LUCK CLAWS";
 
-export const mainProduct: Product = {
+export type Product = ProductBase & {
+  collectionSlug: string;
+  shortDescription: string;
+  productType: string;
+  careGuidance: string;
+  safetyNotice: string;
+};
+
+type ProductInput = ProductBase &
+  Partial<Pick<Product, "collectionSlug" | "shortDescription" | "productType" | "careGuidance" | "safetyNotice">>;
+
+const collectionSlugByCategory: Record<string, string> = {
+  "Beds & Blankets": "beds-blankets",
+  "Cat Toys": "cat-toys",
+  "Dog Toys": "dog-toys",
+  "Dog Treats": "all",
+  Dining: "all",
+  "Pet Apparel": "pet-apparel",
+  Storage: "all",
+  "Walking Essentials": "walking-essentials"
+};
+
+function defaultProductType(product: ProductInput) {
+  if (product.subcategory) {
+    return product.subcategory;
+  }
+
+  switch (product.category) {
+    case "Cat Toys":
+      return "Cat enrichment toy";
+    case "Dog Toys":
+      return "Dog play and enrichment toy";
+    case "Dog Treats":
+      return "Training reward";
+    case "Dining":
+      return "Dining essential";
+    case "Pet Apparel":
+      return "Pet apparel";
+    case "Walking Essentials":
+      return "Walking essential";
+    case "Beds & Blankets":
+      return "Rest and comfort essential";
+    case "Storage":
+      return "Treat storage";
+    default:
+      return "Pet essential";
+  }
+}
+
+function defaultCareGuidance(category: string) {
+  switch (category) {
+    case "Beds & Blankets":
+    case "Pet Apparel":
+      return "Follow the product care label where available; machine wash cold or use gentle care when appropriate.";
+    case "Cat Toys":
+    case "Dog Toys":
+      return "Wipe clean or spot clean as needed, and let the item dry fully before reuse.";
+    case "Dog Treats":
+      return "Keep sealed between training sessions and follow package guidance where available.";
+    case "Dining":
+      return "Wash regularly with mild soap and dry fully before reuse.";
+    case "Storage":
+      return "Wipe clean as needed and keep the lid closed between uses.";
+    case "Walking Essentials":
+      return "Wipe clean after outdoor use and check hardware before each walk.";
+    default:
+      return "Clean regularly and inspect before use.";
+  }
+}
+
+function defaultSafetyNotice(category: string) {
+  switch (category) {
+    case "Cat Toys":
+      return "Supervise pets during play and remove the item if loose parts or damage appear.";
+    case "Dog Toys":
+      return "Supervise pets during play and remove the toy if damaged.";
+    case "Dog Treats":
+      return "Use as a reward, choose appropriate portions, and supervise while feeding.";
+    case "Pet Apparel":
+      return "Check fit before use and remove if your pet shows discomfort.";
+    case "Walking Essentials":
+      return "Check fit and hardware before each walk.";
+    default:
+      return "Inspect regularly and remove from use if damaged.";
+  }
+}
+
+function createProduct(product: ProductInput): Product {
+  return {
+    ...product,
+    collectionSlug: product.collectionSlug ?? collectionSlugByCategory[product.category] ?? "all",
+    shortDescription: product.shortDescription ?? product.description,
+    productType: product.productType ?? defaultProductType(product),
+    careGuidance: product.careGuidance ?? defaultCareGuidance(product.category),
+    safetyNotice: product.safetyNotice ?? defaultSafetyNotice(product.category)
+  };
+}
+
+export const mainProduct: Product = createProduct({
   id: "interactive-snuffle-mat",
   slug: "interactive-snuffle-mat",
   name: "Interactive Snuffle Mat",
@@ -59,9 +157,9 @@ export const mainProduct: Product = {
   ],
   alt: "Golden retriever using the LUCK CLAWS Interactive Snuffle Mat in Forest Green and Cream.",
   materialTags: ["Fabric", "Pet-Conscious Materials"]
-};
+});
 
-export const products: Product[] = [
+const productInputs: ProductInput[] = [
   mainProduct,
   {
     id: "organic-training-treats",
@@ -373,7 +471,13 @@ export const products: Product[] = [
   }
 ];
 
+export const products: Product[] = productInputs.map((product) =>
+  product.id === mainProduct.id ? mainProduct : createProduct(product)
+);
+
 export const getProduct = (id: string) => products.find((product) => product.id === id);
+
+export const getProductBySlug = (slug: string) => products.find((product) => product.slug === slug);
 
 export const frequentlyBoughtTogether = [
   getProduct("organic-training-treats")!,
