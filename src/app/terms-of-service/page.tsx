@@ -36,7 +36,7 @@ const sections = [
   {
     title: "Shipping and Returns",
     text:
-      "Shipping and return details are described in our Shipping & Returns and Refund Policy pages. Please review those pages before placing an order."
+      "Shipping details and damaged, defective, or incorrect item support are described in our Shipping & Returns and Refund Policy pages. Please review those pages before placing an order."
   },
   {
     title: "Limitation of Liability",

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect } from "react";
-import { Lock, RotateCcw, ShieldCheck, ShoppingBag, Truck, X } from "lucide-react";
+import { Lock, Mail, RotateCcw, ShieldCheck, ShoppingBag, Truck, X } from "lucide-react";
 import { CartAddOnCard } from "@/components/cart/CartAddOnCard";
 import { FreeShippingBar } from "@/components/cart/FreeShippingBar";
 import { QuantitySelector } from "@/components/cart/QuantitySelector";
@@ -205,15 +205,18 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
             </p>
           </div>
 
-          <div className="mt-5 grid grid-cols-3 gap-2 text-[11px] uppercase text-on-surface-variant">
+          <div className="mt-5 grid grid-cols-4 gap-2 text-[11px] uppercase text-on-surface-variant">
             <span className="flex items-center justify-center gap-1">
               <Truck aria-hidden className="h-4 w-4" /> Free over $50
             </span>
             <span className="flex items-center justify-center gap-1">
-              <RotateCcw aria-hidden className="h-4 w-4" /> Returns
+              <RotateCcw aria-hidden className="h-4 w-4" /> Defect support
             </span>
             <span className="flex items-center justify-center gap-1">
               <ShieldCheck aria-hidden className="h-4 w-4" /> Secure
+            </span>
+            <span className="flex items-center justify-center gap-1">
+              <Mail aria-hidden className="h-4 w-4" /> Support
             </span>
           </div>
 

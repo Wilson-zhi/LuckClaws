@@ -7,46 +7,70 @@ export const metadata: Metadata = {
   ...createSeoMetadata({
     title: `Refund Policy | ${brandName}`,
     description:
-      "Read the LUCK CLAWS refund policy, including return eligibility, refund processing, exchanges, and damaged item support.",
+      "Read the LUCK CLAWS refund policy for damaged, defective, or incorrect items.",
     path: "/refund-policy"
   })
 };
 
 const sections = [
   {
-    title: "30-Day Return Window",
+    title: "Policy Summary",
     text:
-      "Unused items may be eligible for return within 30 days of delivery. Contact support with your order number to begin a return request."
+      "We only accept refund or return requests for items that arrive damaged, defective, or incorrect."
   },
   {
-    title: "Return Eligibility",
+    title: "7-Day Issue Reporting Window",
     text:
-      "Returned items should be clean, unused, undamaged, and in their original condition when possible. We may request photos or additional details before approving a return."
+      "Damaged, defective, or incorrect items must be reported within 7 days of delivery."
+  },
+  {
+    title: "How to Request Support",
+    text: (
+      <>
+        Contact{" "}
+        <a href="mailto:support@luckclaws.com" className="font-semibold text-primary underline underline-offset-4">
+          support@luckclaws.com
+        </a>{" "}
+        with your order number, photos of the item and packaging, and a short description of the issue.
+      </>
+    )
   },
   {
     title: "Non-Returnable Items",
     text:
-      "Items that have been heavily used, damaged after delivery, altered, or marked as final sale may not be eligible for return unless required by applicable law."
+      "We do not accept returns for buyer's remorse, preference changes, wrong size selection, normal wear and tear, or items damaged through misuse."
+  },
+  {
+    title: "Item Condition",
+    text:
+      "Items must not be used beyond inspection if a return is requested. Do not send items back before contacting support."
   },
   {
     title: "Refund Processing",
     text:
-      "Approved refunds are typically issued to the original payment method after the returned item is received and reviewed. Processing time may vary by payment provider."
+      "If the issue is approved, we may offer a replacement, refund, or return instructions depending on the case. Refund processing time may vary by payment provider."
   },
   {
     title: "Exchanges",
     text:
-      "If you need a different size, color, or item, contact support. Exchanges depend on item availability and return eligibility."
+      "Exchanges are reviewed only for approved damaged, defective, or incorrect item cases and depend on item availability."
   },
   {
-    title: "Damaged or Incorrect Items",
+    title: "Shipping Fees",
     text:
-      "If you receive a damaged or incorrect item, contact us with your order number and clear photos of the item and packaging so we can review the issue."
+      "Shipping fees are non-refundable unless the issue is due to a damaged, defective, or incorrect item."
   },
   {
     title: "Contact Us",
-    text:
-      "For refund or return questions, contact LUCK CLAWS support at support@luckclaws.com."
+    text: (
+      <>
+        For refund or return questions, contact LUCK CLAWS support at{" "}
+        <a href="mailto:support@luckclaws.com" className="font-semibold text-primary underline underline-offset-4">
+          support@luckclaws.com
+        </a>
+        .
+      </>
+    )
   }
 ];
 
@@ -55,7 +79,7 @@ export default function RefundPolicyPage() {
     <SupportPageLayout
       eyebrow="Legal"
       title="Refund Policy"
-      description="Return, refund, and exchange information for LUCK CLAWS orders."
+      description="We only accept refund or return requests for items that arrive damaged, defective, or incorrect."
     >
       <PolicySections sections={sections} />
     </SupportPageLayout>

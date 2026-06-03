@@ -7,7 +7,6 @@ import {
   ListChecks,
   Mail,
   Package,
-  RotateCcw,
   ShieldCheck,
   Truck
 } from "lucide-react";
@@ -48,21 +47,21 @@ const accordions = [
     title: "Safety Notice",
     content: mainProduct.safetyNotice ?? ""
   },
-  {
-    title: "Shipping Information",
-    content:
-      "Free shipping applies to qualifying orders over $50. Shipping rates and delivery options are calculated at checkout."
+    {
+      title: "Shipping Information",
+      content:
+      "Free shipping applies to orders over $50. Standard shipping is $9.99 for orders under $50."
   },
   {
     title: "Returns & Exchanges",
     content:
-      "Eligible unused items can be returned within 30 days. If something arrives damaged or incorrect, contact support for help."
+      "General returns for preference changes or buyer's remorse are not accepted. Damaged, defective, or incorrect items must be reported within 7 days of delivery."
   }
 ];
 
 const trustItems = [
   { label: "Free shipping over $50", Icon: Truck },
-  { label: "30-day easy returns", Icon: RotateCcw },
+  { label: "Damaged or incorrect items covered", Icon: ShieldCheck },
   { label: "Secure checkout", Icon: ShieldCheck },
   { label: "Pet-conscious materials", Icon: Heart }
 ];
@@ -99,8 +98,9 @@ const careInstructions = [
 
 const shippingReturns = [
   "Free shipping on orders over $50",
-  "Shipping calculated at checkout",
-  "30-day easy returns on eligible items"
+  "Standard shipping is $9.99 under $50",
+  "Report damaged, defective, or incorrect items within 7 days of delivery",
+  "General returns for preference changes or buyer's remorse are not accepted"
 ];
 
 const productFaqs = [

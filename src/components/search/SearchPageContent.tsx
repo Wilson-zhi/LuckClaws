@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { ArrowRight, Heart, RotateCcw, Search, ShieldCheck, Star, Truck } from "lucide-react";
+import { ArrowRight, Heart, Search, ShieldCheck, Star, Truck } from "lucide-react";
 import { ViewItemListTracker } from "@/components/analytics/EcommerceEventTrackers";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
 import { SiteShell } from "@/components/layout/SiteShell";
@@ -17,7 +17,7 @@ import { formatPrice } from "@/lib/utils";
 
 const trustItems = [
   { label: "Free shipping over $50", Icon: Truck },
-  { label: "30-day easy returns", Icon: RotateCcw },
+  { label: "Damaged or incorrect items covered", Icon: ShieldCheck },
   { label: "Secure checkout", Icon: ShieldCheck },
   { label: "Pet-conscious materials", Icon: Heart }
 ];

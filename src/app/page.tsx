@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Award, Heart, RotateCcw, ShieldCheck, Sparkles, Truck } from "lucide-react";
+import { ArrowRight, Award, Heart, ShieldCheck, Sparkles, Truck } from "lucide-react";
 import { ViewItemListTracker } from "@/components/analytics/EcommerceEventTrackers";
 import { CategoryCard } from "@/components/product/CategoryCard";
 import { ProductCard } from "@/components/product/ProductCard";
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
 
 const topTrustItems = [
   { label: "Free shipping over $50", Icon: Truck },
-  { label: "30-day easy returns", Icon: RotateCcw },
+  { label: "Damaged or incorrect items covered", Icon: ShieldCheck },
   { label: "Secure checkout", Icon: ShieldCheck },
   { label: "Pet-conscious materials", Icon: Heart }
 ];

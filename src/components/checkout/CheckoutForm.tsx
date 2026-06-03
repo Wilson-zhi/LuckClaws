@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Mail, RotateCcw, ShieldCheck } from "lucide-react";
+import { Mail, RotateCcw, ShieldCheck, Truck } from "lucide-react";
 import { PreviewSubmitButton } from "@/components/forms/PreviewSubmitButton";
 
 const inputClass =
@@ -15,14 +15,18 @@ export function CheckoutForm() {
           connected in the next step.
         </p>
 
-        <div className="mt-6 grid gap-3 rounded-lg bg-surface-container-low p-4 text-sm text-on-surface-variant md:grid-cols-3">
+        <div className="mt-6 grid gap-3 rounded-lg bg-surface-container-low p-4 text-sm text-on-surface-variant md:grid-cols-4">
+          <div className="flex items-center gap-3">
+            <Truck aria-hidden className="h-5 w-5 shrink-0 text-primary" />
+            <span>Free shipping over $50</span>
+          </div>
           <div className="flex items-center gap-3">
             <ShieldCheck aria-hidden className="h-5 w-5 shrink-0 text-primary" />
             <span>Secure checkout</span>
           </div>
           <div className="flex items-center gap-3">
             <RotateCcw aria-hidden className="h-5 w-5 shrink-0 text-primary" />
-            <span>30-day easy returns on eligible items</span>
+            <span>Damaged or incorrect items covered</span>
           </div>
           <div className="flex items-center gap-3">
             <Mail aria-hidden className="h-5 w-5 shrink-0 text-primary" />

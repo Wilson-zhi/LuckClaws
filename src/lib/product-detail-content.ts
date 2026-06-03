@@ -155,8 +155,8 @@ export function getCareInstructions(product: Product) {
 export function getShippingReturnItems() {
   return [
     "Free shipping on orders over $50",
-    "Shipping calculated at checkout",
-    "30-day easy returns on eligible items"
+    "Standard shipping is $9.99 under $50",
+    "Report damaged, defective, or incorrect items within 7 days of delivery"
   ];
 }
 
@@ -199,7 +199,7 @@ export function getProductFaqs(product: Product): ProductFaqItem[] {
     {
       title: "How do shipping and returns work?",
       content:
-        "Shipping rates are calculated at checkout. Eligible unused items can be returned within 30 days."
+        "Free shipping applies over $50, and standard shipping is $9.99 under $50. General returns are not accepted; damaged, defective, or incorrect items must be reported within 7 days of delivery."
     }
   ];
 }

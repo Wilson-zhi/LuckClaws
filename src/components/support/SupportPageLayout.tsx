@@ -14,7 +14,7 @@ type InfoSectionProps = {
 
 type PolicySection = {
   title: string;
-  text: string;
+  text: React.ReactNode;
 };
 
 export function SupportPageLayout({

@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   ...createSeoMetadata({
     title: `Shipping & Returns | ${brandName}`,
     description:
-      "Learn about LUCK CLAWS shipping times, processing, costs, returns, and damaged item support.",
+      "Learn about LUCK CLAWS shipping costs, processing times, delivery estimates, and damaged item support.",
     path: "/shipping-returns"
   })
 };
@@ -16,27 +16,34 @@ const sections = [
   {
     title: "Shipping Times",
     text:
-      "Delivery timing can vary based on destination, carrier volume, and the shipping method selected at checkout. You will receive order updates by email when available."
+      "Standard delivery usually takes 7-15 business days after processing. Delivery timing can vary based on destination, carrier volume, and the shipping method available at checkout."
   },
   {
     title: "Shipping Costs",
     text:
-      "Shipping costs are shown during checkout before payment. Free shipping may be available when your order meets the current threshold shown on the site."
+      "Free shipping applies to orders over $50. Standard shipping is $9.99 for orders under $50."
   },
   {
     title: "Order Processing",
     text:
-      "Orders are prepared as quickly as possible during business days. If you need help with an order, contact support with your order number."
+      "Orders are typically processed within 1-3 business days. If you need help with an order, contact support with your order number."
   },
   {
-    title: "30-Day Returns",
-    text:
-      "Unused items may be eligible for return within 30 days of delivery. Returned items should be clean, undamaged, and in their original condition when possible."
+    title: "Damaged, Defective, or Incorrect Items",
+    text: (
+      <>
+        If your order arrives damaged, defective, or incorrect, contact{" "}
+        <a href="mailto:support@luckclaws.com" className="font-semibold text-primary underline underline-offset-4">
+          support@luckclaws.com
+        </a>{" "}
+        within 7 days of delivery with your order number and photos of the item and packaging.
+      </>
+    )
   },
   {
-    title: "Damaged or Incorrect Items",
+    title: "Returns Not Accepted for Preference Changes",
     text:
-      "If your order arrives damaged or incorrect, contact us with your order number and photos of the item and packaging so our team can review the issue."
+      "We do not accept returns for buyer's remorse, preference changes, wrong size selection, normal wear and tear, or items damaged through misuse."
   }
 ];
 
@@ -45,7 +52,7 @@ export default function ShippingReturnsPage() {
     <SupportPageLayout
       eyebrow="Support"
       title="Shipping & Returns"
-      description="Clear, simple information about order processing, delivery, and returns for LUCK CLAWS purchases."
+      description="Clear information about order processing, delivery, shipping costs, and support for damaged, defective, or incorrect items."
     >
       <PolicySections sections={sections} />
     </SupportPageLayout>

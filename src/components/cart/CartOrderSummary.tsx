@@ -79,8 +79,8 @@ export function CartOrderSummary() {
             <RotateCcw aria-hidden className="h-5 w-5" />
           </span>
           <div>
-            <p className="font-bold">30-day easy returns</p>
-            <p className="text-on-surface-variant">Return eligible items within 30 days</p>
+            <p className="font-bold">Damaged or incorrect items covered</p>
+            <p className="text-on-surface-variant">Contact us within 7 days of delivery</p>
           </div>
         </div>
         <div className="flex items-start gap-4">

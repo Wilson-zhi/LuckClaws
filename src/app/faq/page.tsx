@@ -17,7 +17,7 @@ const questions = [
   {
     title: "How long does shipping take?",
     content:
-      "Shipping time depends on your destination and the shipping method available at checkout. Order updates will be sent by email when available."
+      "Orders are typically processed within 1-3 business days. Standard delivery usually takes 7-15 business days after processing."
   },
   {
     title: "How do I track my order?",
@@ -25,9 +25,19 @@ const questions = [
       "Use the Track Order page with your email address and order number. If you need help, contact support@luckclaws.com."
   },
   {
-    title: "Can I return an item?",
+    title: "Do you accept returns?",
     content:
-      "Unused items may be eligible for return within 30 days of delivery. Please review the Refund Policy for return eligibility details."
+      "We only accept return or refund requests for items that arrive damaged, defective, or incorrect. Please contact support@luckclaws.com within 7 days of delivery with your order number and photos of the issue."
+  },
+  {
+    title: "Can I return an item if I changed my mind?",
+    content:
+      "We do not accept returns for buyer's remorse, preference changes, or wrong size selection. Please review product details carefully before ordering."
+  },
+  {
+    title: "What should I do if my item arrives damaged or incorrect?",
+    content:
+      "Contact support@luckclaws.com within 7 days of delivery with your order number, photos of the item and packaging, and a short description of the issue. We will review the case and provide next steps."
   },
   {
     title: "Are your products safe for pets?",

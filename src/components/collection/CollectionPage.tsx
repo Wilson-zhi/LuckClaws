@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { ArrowRight, Heart, RotateCcw, ShieldCheck, SlidersHorizontal, Truck, X } from "lucide-react";
+import { ArrowRight, Heart, ShieldCheck, SlidersHorizontal, Truck, X } from "lucide-react";
 import { ViewItemListTracker } from "@/components/analytics/EcommerceEventTrackers";
 import { FilterControls, FilterSidebar, type FilterOption } from "@/components/collection/FilterSidebar";
 import { SiteShell } from "@/components/layout/SiteShell";
@@ -25,7 +25,7 @@ const priceRanges = [
 
 const trustItems = [
   { label: "Free shipping over $50", Icon: Truck },
-  { label: "30-day easy returns", Icon: RotateCcw },
+  { label: "Damaged or incorrect items covered", Icon: ShieldCheck },
   { label: "Secure checkout", Icon: ShieldCheck },
   { label: "Pet-conscious materials", Icon: Heart }
 ];

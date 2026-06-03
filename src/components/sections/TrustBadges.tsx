@@ -1,4 +1,4 @@
-import { RotateCcw, ShieldCheck, Truck } from "lucide-react";
+import { ShieldCheck, Truck } from "lucide-react";
 
 const badges = [
   {
@@ -12,9 +12,9 @@ const badges = [
     text: "Enjoy free shipping on qualifying orders."
   },
   {
-    icon: RotateCcw,
-    title: "30-Day Easy Returns",
-    text: "Hassle-free returns within 30 days."
+    icon: ShieldCheck,
+    title: "Damaged Item Support",
+    text: "Contact us within 7 days for damaged, defective, or incorrect items."
   }
 ];
 
