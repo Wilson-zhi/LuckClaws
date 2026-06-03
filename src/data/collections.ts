@@ -13,7 +13,6 @@ export type CollectionConfig = {
   featuredProductId?: string;
   featuredLabel?: string;
   mobileFilters: string[];
-  loadMoreLabel: string;
   products: Product[];
 };
 
@@ -33,7 +32,6 @@ export const collectionConfigs = {
     primaryCtaLabel: "Shop Best Seller",
     primaryCtaHref: "/products/interactive-snuffle-mat",
     mobileFilters: ["All Products", "Dog Toys", "Cat Toys", "Pet Apparel", "Walking", "Beds"],
-    loadMoreLabel: "Load More Products",
     products
   },
   dogToys: {
@@ -51,7 +49,6 @@ export const collectionConfigs = {
     featuredProductId: "interactive-snuffle-mat",
     featuredLabel: "Best Seller",
     mobileFilters: ["All Dog Toys", "Interactive", "Chew Toys", "Plush & Squeaky", "Fetch & Toss"],
-    loadMoreLabel: "Load More Toys",
     products: productList([
       "interactive-snuffle-mat",
       "durable-rubber-bone",
@@ -69,7 +66,6 @@ export const collectionConfigs = {
     seoDescription: "Shop cat toys and enrichment favorites designed for curious cats and playful homes.",
     productCountLabel: "4 products",
     mobileFilters: ["All Cat Toys", "Chase", "Catnip", "Plush", "Enrichment"],
-    loadMoreLabel: "Load More Cat Toys",
     products: productList([
       "organic-catnip-mouse",
       "natural-feather-teaser",
@@ -88,7 +84,6 @@ export const collectionConfigs = {
       "Shop soft and comfortable pet apparel for everyday walks, cozy days, and picture-perfect moments.",
     productCountLabel: "3 products",
     mobileFilters: ["All Apparel", "Sweaters", "Tees", "Cozy Layers", "Everyday"],
-    loadMoreLabel: "Load More Apparel",
     products: productList(["chunky-knit-sweater", "cozy-knit-sweater", "soft-ribbed-pet-tee"])
   },
   walkingEssentials: {
@@ -101,7 +96,6 @@ export const collectionConfigs = {
     seoDescription: "Shop leashes, harnesses, collars, and walking essentials for daily pet adventures.",
     productCountLabel: "4 products",
     mobileFilters: ["All Walking", "Leashes", "Harnesses", "Collars", "Accessories"],
-    loadMoreLabel: "Load More Walking Gear",
     products: productList([
       "heritage-leather-leash",
       "comfort-walk-harness",
@@ -119,7 +113,6 @@ export const collectionConfigs = {
     seoDescription: "Shop cozy pet beds, blankets, and restful essentials made for everyday comfort.",
     productCountLabel: "3 products",
     mobileFilters: ["All Comfort", "Beds", "Blankets", "Rest Mats", "Cozy Favorites"],
-    loadMoreLabel: "Load More Comfort",
     products: productList(["boucle-orthopedic-bed", "cozy-nest-blanket", "quilted-rest-mat"])
   },
   sale: {
@@ -136,7 +129,6 @@ export const collectionConfigs = {
     featuredProductId: "interactive-snuffle-mat",
     featuredLabel: "Save 25%",
     mobileFilters: ["All Sale", "Dog Toys", "Apparel", "Walking", "Comfort"],
-    loadMoreLabel: "Load More Offers",
     products: productList(["interactive-snuffle-mat"])
   }
 } satisfies Record<string, CollectionConfig>;

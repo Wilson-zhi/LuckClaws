@@ -40,11 +40,27 @@ const standards = [
   }
 ];
 
-const team = [
-  { name: "Sarah Jenkins", role: "Founder & Product Team", image: "/images/team-sarah.jpg" },
-  { name: "Barnaby", role: "Chief Toy Tester", image: "/images/team-barnaby.jpg" },
-  { name: "Marcus Chen", role: "Design & Quality Team", image: "/images/team-marcus.jpg" },
-  { name: "Luna", role: "Comfort Inspector", image: "/images/team-luna.jpg" }
+const practiceCards = [
+  {
+    title: "Product Selection",
+    text: "We focus on useful essentials for enrichment, walks, apparel, rest, and everyday care.",
+    image: "/images/team-sarah.jpg"
+  },
+  {
+    title: "Pet-First Review",
+    text: "Product details are checked for comfort, material notes, care guidance, and appropriate use.",
+    image: "/images/team-barnaby.jpg"
+  },
+  {
+    title: "Clear Information",
+    text: "Pages are written to help shoppers compare categories, understand policies, and contact support.",
+    image: "/images/team-marcus.jpg"
+  },
+  {
+    title: "Launch Readiness",
+    text: "We keep routes, forms, cart behavior, and checkout information simple and transparent for the MVP.",
+    image: "/images/team-luna.jpg"
+  }
 ];
 
 export default function AboutPage() {
@@ -125,25 +141,25 @@ export default function AboutPage() {
 
       <section className="section-shell py-12 md:py-20">
         <div className="mb-10 text-center">
-          <h2 className="font-heading text-3xl font-bold">Meet The Pack</h2>
+          <h2 className="font-heading text-3xl font-bold">How We Work</h2>
           <p className="mt-3 text-sm text-on-surface-variant">
-            The humans and very good quality testers behind {brandName}.
+            Practical review points that keep the {brandName} shopping experience clear.
           </p>
         </div>
         <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
-          {team.map((member) => (
-            <article key={member.name} className="text-center">
-              <div className="relative mx-auto aspect-square max-w-44 overflow-hidden rounded-full border-8 border-white bg-surface-container shadow-soft">
+          {practiceCards.map((card) => (
+            <article key={card.title} className="text-center">
+              <div className="relative mx-auto aspect-square max-w-44 overflow-hidden rounded-md border-8 border-white bg-surface-container shadow-soft">
                 <Image
-                  src={member.image}
-                  alt={`${member.name}, ${member.role} at ${brandName}`}
+                  src={card.image}
+                  alt={`${card.title} at ${brandName}`}
                   fill
                   sizes="176px"
                   className="object-cover"
                 />
               </div>
-              <h3 className="mt-4 font-heading font-bold">{member.name}</h3>
-              <p className="text-sm text-on-surface-variant">{member.role}</p>
+              <h3 className="mt-4 font-heading font-bold">{card.title}</h3>
+              <p className="mt-2 text-sm leading-6 text-on-surface-variant">{card.text}</p>
             </article>
           ))}
         </div>

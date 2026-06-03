@@ -57,9 +57,9 @@ export function Header() {
             <Link href="/search" className="transition hover:text-on-surface" aria-label="Search">
               <Search aria-hidden className="h-6 w-6" />
             </Link>
-            <button type="button" className="transition hover:text-on-surface" aria-label="Wishlist">
+            <span className="text-primary/45" aria-hidden title="Wishlist will be connected later">
               <Heart aria-hidden className="h-6 w-6" />
-            </button>
+            </span>
             <button
               type="button"
               className="relative transition hover:text-on-surface"
@@ -76,9 +76,9 @@ export function Header() {
                 </span>
               )}
             </button>
-            <button type="button" className="transition hover:text-on-surface" aria-label="Account">
+            <span className="text-primary/45" aria-hidden title="Account will be connected later">
               <User aria-hidden className="h-6 w-6" />
-            </button>
+            </span>
           </div>
         </div>
 

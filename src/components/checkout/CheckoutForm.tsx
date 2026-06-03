@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Mail, RotateCcw, ShieldCheck } from "lucide-react";
+import { PreviewSubmitButton } from "@/components/forms/PreviewSubmitButton";
 
 const inputClass =
   "min-h-14 w-full rounded-md border-outline bg-surface-container-lowest px-4 text-base focus:border-primary focus:ring-primary";
@@ -185,12 +186,12 @@ export function CheckoutForm() {
         <Link href="/cart" className="font-semibold text-primary">
           Return to cart
         </Link>
-        <button
-          type="button"
-          className="rounded-full bg-primary-container px-10 py-4 font-heading font-bold text-on-primary-container transition hover:bg-[#e08f00]"
+        <PreviewSubmitButton
+          className="px-10 py-4"
+          message="Shipping and payment steps are for preview only and will be connected later."
         >
           Continue to Shipping
-        </button>
+        </PreviewSubmitButton>
       </div>
     </form>
   );

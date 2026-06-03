@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Clock, Mail, PackageCheck } from "lucide-react";
+import { PreviewSubmitButton } from "@/components/forms/PreviewSubmitButton";
 import { SupportPageLayout } from "@/components/support/SupportPageLayout";
 import { brandName } from "@/data/products";
 import { createSeoMetadata } from "@/lib/seo";
@@ -86,12 +87,9 @@ export default function ContactPage() {
                 className="resize-y rounded-md border border-outline-variant bg-white px-4 py-3 font-normal text-on-surface outline-none transition focus:border-primary focus:ring-2 focus:ring-primary-container/30"
               />
             </label>
-            <button
-              type="submit"
-              className="mt-2 inline-flex w-full justify-center rounded-full bg-primary-container px-8 py-3 font-heading font-bold text-on-primary-container transition hover:bg-[#e08f00] md:w-auto"
-            >
+            <PreviewSubmitButton className="mt-2 w-full md:w-auto">
               Submit
-            </button>
+            </PreviewSubmitButton>
           </div>
         </form>
       </div>

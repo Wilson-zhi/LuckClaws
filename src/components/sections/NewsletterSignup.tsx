@@ -1,3 +1,5 @@
+import { PreviewSubmitButton } from "@/components/forms/PreviewSubmitButton";
+
 export function NewsletterSignup() {
   return (
     <section className="section-shell">
@@ -17,16 +19,15 @@ export function NewsletterSignup() {
               placeholder="Enter your email address"
               className="min-h-12 flex-1 rounded-full border border-outline-variant bg-white px-5 text-sm focus:border-primary focus:ring-primary"
             />
-            <button
-              type="submit"
-              className="rounded-full bg-primary-container px-7 py-3 text-sm font-bold text-on-primary-container transition hover:bg-[#e08f00]"
+            <PreviewSubmitButton
+              className="px-7 text-sm"
+              message="Newsletter signup is for preview only and will be connected later."
             >
               Get 10% Off
-            </button>
+            </PreviewSubmitButton>
           </form>
         </div>
       </div>
     </section>
   );
 }
-

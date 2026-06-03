@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { ShoppingCart, Star } from "lucide-react";
 import { useState } from "react";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
@@ -20,9 +21,9 @@ export function ProductPurchasePanel({ product }: { product: Product }) {
           ))}
         </span>
         <span className="font-semibold">{product.rating}</span>
-        <a href="#reviews" className="text-on-surface-variant underline underline-offset-4">
+        <span className="text-on-surface-variant">
           ({product.reviewCount} Reviews)
-        </a>
+        </span>
       </div>
 
       <h1 className="mt-3 font-heading text-4xl font-extrabold leading-tight md:text-5xl">
@@ -78,14 +79,13 @@ export function ProductPurchasePanel({ product }: { product: Product }) {
           <ShoppingCart aria-hidden className="h-4 w-4" />
           Add to Cart
         </AddToCartButton>
-        <button
-          type="button"
-          className="rounded-full border border-primary px-6 py-3 font-semibold text-primary transition hover:bg-primary-container/10"
+        <Link
+          href="/cart"
+          className="inline-flex items-center justify-center rounded-full border border-primary px-6 py-3 font-semibold text-primary transition hover:bg-primary-container/10"
         >
-          Buy Now
-        </button>
+          View Cart
+        </Link>
       </div>
     </div>
   );
 }
-

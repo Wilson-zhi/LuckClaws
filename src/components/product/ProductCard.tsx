@@ -55,13 +55,12 @@ export function ProductCard({
               {displayBadge}
             </span>
           )}
-          <button
-            type="button"
-            className="absolute right-5 top-5 z-10 grid h-12 w-12 place-items-center rounded-full bg-white/90 text-on-surface-variant shadow-soft transition hover:text-primary"
-            aria-label={`Add ${product.name} to wishlist`}
+          <span
+            className="absolute right-5 top-5 z-10 grid h-12 w-12 place-items-center rounded-full bg-white/90 text-on-surface-variant shadow-soft"
+            aria-hidden
           >
             <Heart aria-hidden className="h-6 w-6" />
-          </button>
+          </span>
           <Image
             src={product.image}
             alt={product.alt}
@@ -124,13 +123,12 @@ export function ProductCard({
             {product.badge ?? "New"}
           </span>
         )}
-        <button
-          type="button"
-          className="absolute right-3 top-3 z-10 grid h-9 w-9 place-items-center rounded-full bg-white/90 text-on-surface-variant shadow-soft transition hover:text-primary"
-          aria-label={`Add ${product.name} to wishlist`}
+        <span
+          className="absolute right-3 top-3 z-10 grid h-9 w-9 place-items-center rounded-full bg-white/90 text-on-surface-variant shadow-soft"
+          aria-hidden
         >
           <Heart aria-hidden className="h-5 w-5" />
-        </button>
+        </span>
         <Image
           src={product.image}
           alt={product.alt}

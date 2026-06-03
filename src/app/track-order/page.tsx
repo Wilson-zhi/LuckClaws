@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { PreviewSubmitButton } from "@/components/forms/PreviewSubmitButton";
 import { SupportPageLayout } from "@/components/support/SupportPageLayout";
 import { brandName } from "@/data/products";
 import { createSeoMetadata } from "@/lib/seo";
@@ -40,12 +41,11 @@ export default function TrackOrderPage() {
               className="rounded-md border border-outline-variant bg-white px-4 py-3 font-normal text-on-surface outline-none transition focus:border-primary focus:ring-2 focus:ring-primary-container/30"
             />
           </label>
-          <button
-            type="submit"
-            className="inline-flex justify-center rounded-full bg-primary-container px-8 py-3 font-heading font-bold text-on-primary-container transition hover:bg-[#e08f00]"
+          <PreviewSubmitButton
+            message="Order tracking is for preview only and will be connected later. Contact support@luckclaws.com for order updates."
           >
             Track Order
-          </button>
+          </PreviewSubmitButton>
         </form>
         <p className="mt-6 rounded-md bg-primary-container/10 p-4 text-sm leading-6 text-on-surface-variant">
           Order tracking functionality will be connected later. For now, customers can contact{" "}

@@ -77,18 +77,9 @@ export function CollectionPage({ config }: CollectionPageProps) {
           </div>
           <div className="flex flex-col gap-3 text-sm font-semibold text-on-surface-variant sm:flex-row sm:items-end sm:gap-6">
             <span>{productCountLabel}</span>
-            <label className="grid gap-2 text-xs font-bold uppercase tracking-wide text-on-surface">
-              Sort
-              <select
-                defaultValue="featured"
-                className="min-w-52 rounded-full border border-outline-variant bg-surface-container-lowest px-5 py-3 text-base font-normal normal-case tracking-normal text-on-surface shadow-soft focus:border-primary focus:ring-primary"
-              >
-                <option value="featured">Featured</option>
-                <option value="price-low">Price: Low to High</option>
-                <option value="price-high">Price: High to Low</option>
-                <option value="newest">Newest</option>
-              </select>
-            </label>
+            <span className="rounded-full border border-outline-variant bg-surface-container-lowest px-5 py-3 text-sm font-semibold text-on-surface-variant shadow-soft">
+              Sorted by Featured
+            </span>
           </div>
         </div>
       </section>
@@ -111,12 +102,11 @@ export function CollectionPage({ config }: CollectionPageProps) {
         <FilterSidebar categoryOptions={categoryOptions} />
         <div className="min-w-0 flex-1">
           <div className="mb-6 lg:hidden">
-            <p className="mb-3 text-xs font-bold uppercase tracking-wide text-on-surface">Filters</p>
-            <div className="flex gap-2 overflow-x-auto pb-2 hide-scrollbar" aria-label="Collection filters">
+            <p className="mb-3 text-xs font-bold uppercase tracking-wide text-on-surface">Browse by</p>
+            <div className="flex gap-2 overflow-x-auto pb-2 hide-scrollbar" aria-label="Collection browsing cues">
               {config.mobileFilters.map((filter, index) => (
-                <button
+                <span
                   key={filter}
-                  type="button"
                   className={
                     index === 0
                       ? "shrink-0 rounded-full bg-primary-container px-4 py-2 text-sm font-semibold text-on-primary-container"
@@ -124,7 +114,7 @@ export function CollectionPage({ config }: CollectionPageProps) {
                   }
                 >
                   {filter}
-                </button>
+                </span>
               ))}
             </div>
           </div>

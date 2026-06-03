@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import {
-  ArrowRight,
   CheckCircle2,
   Heart,
   ListChecks,
@@ -352,22 +351,19 @@ export default function ProductPage() {
         </div>
       </section>
 
-      <section id="reviews" className="section-shell pb-14 md:pb-20">
+      <section id="gallery" className="section-shell pb-14 md:pb-20">
         <div className="mb-6 flex items-center justify-between gap-4">
           <div>
-            <h2 className="font-heading text-2xl font-bold">Real Dogs, Real Joy</h2>
-            <p className="mt-1 text-sm text-on-surface-variant">Photos from our happy customers.</p>
+            <h2 className="font-heading text-2xl font-bold">Product Gallery</h2>
+            <p className="mt-1 text-sm text-on-surface-variant">Additional views of the Interactive Snuffle Mat.</p>
           </div>
-          <Link href="#reviews" className="hidden items-center gap-2 text-sm font-semibold text-primary md:flex">
-            View All Reviews <ArrowRight aria-hidden className="h-4 w-4" />
-          </Link>
         </div>
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           {mainProduct.gallery?.map((image, index) => (
             <div key={image} className="relative aspect-square overflow-hidden rounded-md bg-surface-container shadow-soft">
               <Image
                 src={image}
-                alt={`Customer photo ${index + 1} of the LUCK CLAWS Interactive Snuffle Mat`}
+                alt={`LUCK CLAWS Interactive Snuffle Mat gallery image ${index + 1}`}
                 fill
                 sizes="(min-width: 1024px) 300px, 50vw"
                 className="object-cover"

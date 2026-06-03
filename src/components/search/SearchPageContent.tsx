@@ -114,13 +114,12 @@ function FeaturedSearchResult({
                 {product.category}
               </p>
             </div>
-            <button
-              type="button"
-              className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-surface-container-low text-on-surface-variant transition hover:text-primary"
-              aria-label={`Add ${product.name} to wishlist`}
+            <span
+              className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-surface-container-low text-on-surface-variant"
+              aria-hidden
             >
               <Heart aria-hidden className="h-5 w-5" />
-            </button>
+            </span>
           </div>
 
           <Link

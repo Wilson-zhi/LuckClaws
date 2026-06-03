@@ -32,39 +32,39 @@ export function FilterSidebar({ categoryOptions = defaultCategoryOptions }: Filt
     <aside className="hidden w-64 shrink-0 lg:block">
       <div className="sticky top-28 space-y-8">
         {filterGroups.map((group) => (
-          <fieldset key={group.title} className="border-b border-outline-variant/60 pb-8 last:border-b-0">
-            <legend className="mb-4 text-sm font-bold uppercase tracking-wide text-on-surface">
+          <section key={group.title} className="border-b border-outline-variant/60 pb-8 last:border-b-0">
+            <h2 className="mb-4 text-sm font-bold uppercase tracking-wide text-on-surface">
               {group.title}
-            </legend>
+            </h2>
             {group.options && (
               <div className="space-y-4">
                 {group.options.map((option, index) => (
-                  <label key={option} className="flex items-center gap-3 text-sm leading-6 text-on-surface-variant">
-                    <input
-                      type="radio"
-                      name={`filter-${group.title.toLowerCase()}`}
-                      defaultChecked={group.title === "Category" && index === 0}
-                      className="h-5 w-5 border-outline-variant text-primary-container focus:ring-primary-container"
-                    />
-                    <span>{option}</span>
-                  </label>
+                  <span
+                    key={option}
+                    className={
+                      index === 0
+                        ? "block rounded-full bg-primary-container px-4 py-2 text-sm font-semibold leading-6 text-on-primary-container"
+                        : "block rounded-full bg-surface-container-lowest px-4 py-2 text-sm leading-6 text-on-surface-variant shadow-soft"
+                    }
+                  >
+                    {option}
+                  </span>
                 ))}
               </div>
             )}
             {group.chips && (
               <div className="flex flex-wrap gap-2">
                 {group.chips.map((chip) => (
-                  <button
-                    type="button"
+                  <span
                     key={chip}
-                    className="rounded-full border border-outline-variant bg-surface-container-lowest px-4 py-2 text-sm leading-5 text-on-surface-variant transition hover:border-primary hover:text-primary"
+                    className="rounded-full border border-outline-variant bg-surface-container-lowest px-4 py-2 text-sm leading-5 text-on-surface-variant"
                   >
                     {chip}
-                  </button>
+                  </span>
                 ))}
               </div>
             )}
-          </fieldset>
+          </section>
         ))}
       </div>
     </aside>

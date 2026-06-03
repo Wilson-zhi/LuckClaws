@@ -7,7 +7,6 @@ import { CategoryCard } from "@/components/product/CategoryCard";
 import { ProductCard } from "@/components/product/ProductCard";
 import { HomeFeaturedProduct } from "@/components/sections/HomeFeaturedProduct";
 import { NewsletterSignup } from "@/components/sections/NewsletterSignup";
-import { ReviewCard } from "@/components/sections/ReviewCard";
 import { TrustBadges } from "@/components/sections/TrustBadges";
 import { SiteShell } from "@/components/layout/SiteShell";
 import { bestSellers, brandName, categories, mainProduct, newArrivals } from "@/data/products";
@@ -32,6 +31,24 @@ const topTrustItems = [
   { label: "30-day easy returns", Icon: RotateCcw },
   { label: "Secure checkout", Icon: ShieldCheck },
   { label: "Pet-conscious materials", Icon: Heart }
+];
+
+const valueHighlights = [
+  {
+    title: "Designed for everyday routines",
+    text: "Products are selected for daily play, walks, rest, and enrichment.",
+    Icon: Sparkles
+  },
+  {
+    title: "Clear shopping paths",
+    text: "Browse by pet need, product category, or current offers without dead-end links.",
+    Icon: ArrowRight
+  },
+  {
+    title: "Support when you need it",
+    text: "Order and product questions can be sent to support@luckclaws.com.",
+    Icon: Heart
+  }
 ];
 
 export default function HomePage() {
@@ -82,7 +99,7 @@ export default function HomePage() {
         </div>
 
         <div className="relative">
-          <div className="absolute -inset-5 rounded-xl bg-[#F9E7D0]" />
+          <div className="absolute inset-0 rounded-xl bg-[#F9E7D0] md:-inset-5" />
           <div className="relative overflow-hidden rounded-xl bg-surface-container shadow-lift">
             <Image
               src="/images/hero-dog-running.jpg"
@@ -98,8 +115,8 @@ export default function HomePage() {
               <Award aria-hidden className="h-5 w-5" />
             </span>
             <div className="text-sm">
-              <p className="font-bold">Top Rated</p>
-              <p className="text-on-surface-variant">by Pet Parents</p>
+              <p className="font-bold">Featured Pick</p>
+              <p className="text-on-surface-variant">Everyday enrichment</p>
             </div>
           </div>
         </div>
@@ -143,7 +160,7 @@ export default function HomePage() {
           <div className="mb-8 text-center">
             <h2 className="font-heading text-3xl font-bold">Our Best Sellers</h2>
             <p className="mt-2 text-sm text-on-surface-variant">
-              Favorites loved by pets and their humans alike. Crafted for durability and style.
+              A focused selection of toys, apparel, walking gear, and comfort essentials.
             </p>
           </div>
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
@@ -177,30 +194,21 @@ export default function HomePage() {
 
       <section className="section-shell py-14 md:py-20">
         <div className="mb-8 text-center">
-          <h2 className="font-heading text-3xl font-bold">Loved by the Pack</h2>
+          <h2 className="font-heading text-3xl font-bold">Built for Easier Shopping</h2>
           <p className="mt-2 text-sm text-on-surface-variant">
-            Hear what our community of pet parents has to say.
+            Clear product paths, practical details, and support-focused pages for launch.
           </p>
         </div>
         <div className="grid gap-5 md:grid-cols-3">
-          <ReviewCard
-            quote="My dog usually loses interest in toys quickly, but the snuffle mat keeps him busy every morning."
-            name="Sarah Buster"
-            pet="Buster"
-            image="/images/interactive-snuffle-mat-forest-green-cream.jpg"
-          />
-          <ReviewCard
-            quote="The sweater is soft, easy to put on, and actually fits my Frenchie well."
-            name="Michael Luna"
-            pet="Luna"
-            image="/images/chunky-knit-sweater.jpg"
-          />
-          <ReviewCard
-            quote="The leash feels sturdy without being heavy. Great for daily walks."
-            name="Emily Max"
-            pet="Max"
-            image="/images/heritage-leather-leash.jpg"
-          />
+          {valueHighlights.map(({ title, text, Icon }) => (
+            <article key={title} className="rounded-md bg-surface-container-lowest p-6 shadow-soft">
+              <span className="grid h-11 w-11 place-items-center rounded-full bg-primary-container/20 text-primary">
+                <Icon aria-hidden className="h-5 w-5" />
+              </span>
+              <h3 className="mt-5 font-heading text-xl font-bold">{title}</h3>
+              <p className="mt-3 text-sm leading-6 text-on-surface-variant">{text}</p>
+            </article>
+          ))}
         </div>
       </section>
 
