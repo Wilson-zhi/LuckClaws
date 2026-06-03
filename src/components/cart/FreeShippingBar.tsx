@@ -9,8 +9,8 @@ export function FreeShippingBar({ compact = false }: { compact?: boolean }) {
   const totals = getCartTotals(items);
   const message =
     totals.remainingForFreeShipping > 0
-      ? `Only ${formatPrice(totals.remainingForFreeShipping)} away from free shipping!`
-      : "You've unlocked free shipping!";
+      ? `You're ${formatPrice(totals.remainingForFreeShipping)} away from free shipping.`
+      : "You've unlocked free shipping.";
 
   return (
     <div
@@ -25,7 +25,10 @@ export function FreeShippingBar({ compact = false }: { compact?: boolean }) {
           <span>{message}</span>
           <Truck aria-hidden className="h-5 w-5 text-primary-container" />
         </div>
-        <div className="mx-auto mt-3 h-2 max-w-sm overflow-hidden rounded-full bg-white/30">
+        <div
+          className="mx-auto mt-3 h-2 max-w-sm overflow-hidden rounded-full bg-white/30"
+          aria-hidden
+        >
           <div
             className="h-full rounded-full bg-primary-container transition-all"
             style={{ width: `${totals.progress}%` }}
@@ -35,4 +38,3 @@ export function FreeShippingBar({ compact = false }: { compact?: boolean }) {
     </div>
   );
 }
-

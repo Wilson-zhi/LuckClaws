@@ -27,7 +27,11 @@ export default function CheckoutInformationPage() {
             {steps.map((step, index) => (
               <li key={step} className={step === "Information" ? "text-on-surface" : "text-on-surface-variant/50"}>
                 {step}
-                {index < steps.length - 1 && <span className="ml-3">›</span>}
+                {index < steps.length - 1 && (
+                  <span className="ml-3" aria-hidden>
+                    /
+                  </span>
+                )}
               </li>
             ))}
           </ol>

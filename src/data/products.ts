@@ -380,6 +380,12 @@ export const frequentlyBoughtTogether = [
   getProduct("calming-lick-mat")!
 ];
 
+export const cartAddOns = [
+  getProduct("organic-training-treats")!,
+  getProduct("calming-lick-mat")!,
+  getProduct("natural-cotton-rope-tug")!
+];
+
 export const bestSellers = [
   mainProduct,
   getProduct("chunky-knit-sweater")!,

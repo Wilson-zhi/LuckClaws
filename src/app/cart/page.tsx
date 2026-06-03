@@ -21,8 +21,8 @@ export default function CartPage() {
       <FreeShippingBar />
       <section className="section-shell py-12 md:py-20">
         <h1 className="font-heading text-5xl font-extrabold md:text-7xl">Your Cart</h1>
-        <Link href="/collections/dog-toys" className="mt-5 inline-block font-semibold text-primary">
-          ← Continue Shopping
+        <Link href="/collections" className="mt-5 inline-block font-semibold text-primary">
+          Continue Shopping
         </Link>
         <div className="mt-10">
           <CartPageContent />

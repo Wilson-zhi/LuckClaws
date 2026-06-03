@@ -5,7 +5,7 @@ import { Trash2 } from "lucide-react";
 import { QuantitySelector } from "@/components/cart/QuantitySelector";
 import { trackRemoveFromCart } from "@/lib/ga4-ecommerce";
 import { formatPrice } from "@/lib/utils";
-import { type CartItem, useCartStore } from "@/store/cart-store";
+import { type CartItem, productById, useCartStore } from "@/store/cart-store";
 
 type CartItemRowProps = {
   item: CartItem;
@@ -15,6 +15,9 @@ type CartItemRowProps = {
 export function CartItemRow({ item, compact = false }: CartItemRowProps) {
   const updateQuantity = useCartStore((state) => state.updateQuantity);
   const removeItem = useCartStore((state) => state.removeItem);
+  const product = productById(item.id);
+  const image = product?.image ?? item.image;
+  const alt = product?.alt ?? item.alt;
 
   const handleRemoveItem = () => {
     trackRemoveFromCart(item);
@@ -30,7 +33,7 @@ export function CartItemRow({ item, compact = false }: CartItemRowProps) {
             : "relative h-32 w-32 shrink-0 overflow-hidden rounded-md bg-surface-container"
         }
       >
-        <Image src={item.image} alt={item.alt} fill sizes="160px" className="object-cover" />
+        <Image src={image} alt={alt} fill sizes="160px" className="object-cover" />
       </div>
 
       <div className="flex min-w-0 flex-1 flex-col gap-3 md:flex-row md:items-center">
@@ -57,6 +60,7 @@ export function CartItemRow({ item, compact = false }: CartItemRowProps) {
               type="button"
               className="text-sm font-semibold text-on-surface-variant underline underline-offset-4 hover:text-primary"
               onClick={handleRemoveItem}
+              aria-label={`Remove ${item.name}`}
             >
               Remove
             </button>
@@ -77,4 +81,3 @@ export function CartItemRow({ item, compact = false }: CartItemRowProps) {
     </article>
   );
 }
-
