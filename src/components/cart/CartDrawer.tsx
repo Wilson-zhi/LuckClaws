@@ -215,15 +215,21 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
               <Truck aria-hidden className="h-4 w-4" /> {`Free over $${FREE_SHIPPING_THRESHOLD}`}
             </span>
             <span className="flex items-center justify-center gap-1">
-              <RotateCcw aria-hidden className="h-4 w-4" /> Defect support
+              <RotateCcw aria-hidden className="h-4 w-4" /> Damaged or incorrect
             </span>
             <span className="flex items-center justify-center gap-1">
-              <ShieldCheck aria-hidden className="h-4 w-4" /> Secure
+              <ShieldCheck aria-hidden className="h-4 w-4" /> Secure checkout
             </span>
             <span className="flex items-center justify-center gap-1">
               <Mail aria-hidden className="h-4 w-4" /> Support
             </span>
           </div>
+          <p className="mt-4 text-center text-sm text-on-surface-variant">
+            Support:{" "}
+            <a href="mailto:support@luckclaws.com" className="font-semibold text-primary hover:underline">
+              support@luckclaws.com
+            </a>
+          </p>
 
           <Link
             href="/checkout/information"

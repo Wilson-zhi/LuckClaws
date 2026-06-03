@@ -17,7 +17,7 @@ export default function TrackOrderPage() {
     <SupportPageLayout
       eyebrow="Order Support"
       title="Track Order"
-      description="Enter your order details to check your order status."
+      description="Enter your order details when live order processing is enabled."
     >
       <div className="ambient-card max-w-2xl p-6 md:p-8">
         <form className="grid gap-5" aria-label="Track order form">
@@ -42,17 +42,18 @@ export default function TrackOrderPage() {
             />
           </label>
           <PreviewSubmitButton
-            message="Order tracking is for preview only and will be connected later. Contact support@luckclaws.com for order updates."
+            message="Track order functionality will be connected when live order processing is enabled. For order help, contact support@luckclaws.com with your order number."
           >
             Track Order
           </PreviewSubmitButton>
         </form>
         <p className="mt-6 rounded-md bg-primary-container/10 p-4 text-sm leading-6 text-on-surface-variant">
-          Order tracking functionality will be connected later. For now, customers can contact{" "}
+          Track order functionality will be connected when live order processing is enabled. For
+          order help, contact{" "}
           <a href="mailto:support@luckclaws.com" className="font-semibold text-primary hover:underline">
             support@luckclaws.com
           </a>{" "}
-          for order updates.
+          with your order number.
         </p>
       </div>
     </SupportPageLayout>

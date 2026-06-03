@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 const standards = [
   {
     title: "Thoughtfully Selected Materials",
-    text: "We choose materials with everyday comfort, durability, and pet safety in mind.",
+    text: "We choose products with everyday comfort, durability, and clear care guidance in mind.",
     icon: PackageCheck,
     image: "/images/about-selected-materials.jpg"
   },
@@ -76,8 +76,10 @@ export default function AboutPage() {
               For Pets, <span className="text-primary">By Pet Parents.</span>
             </h1>
             <p className="mt-6 max-w-lg text-base leading-8 text-on-surface-variant">
-              We created {brandName} to make everyday pet essentials feel safer, softer, and more thoughtfully designed.
-              From toys to apparel and cozy home goods, every product is selected with real pets and real homes in mind.
+              {brandName} is an online pet essentials shop focused on practical enrichment,
+              comfort, and everyday pet care. Our categories include enrichment toys, cat toys,
+              pet apparel, walking essentials, beds, blankets, and useful pet accessories for
+              modern homes.
             </p>
             <a
               href="#values"
@@ -102,7 +104,8 @@ export default function AboutPage() {
         <div className="mx-auto mb-10 max-w-2xl text-center">
           <h2 className="font-heading text-3xl font-bold md:text-4xl">The {brandName} Standard</h2>
           <p className="mt-4 text-sm leading-6 text-on-surface-variant">
-            We do not compromise on what matters most. Discover how we source, design, and create for a better future.
+            Our approach is practical, warm, and transparent: select useful products, describe them
+            clearly, and keep support easy to reach.
           </p>
         </div>
         <div className="grid auto-rows-[260px] gap-6 md:grid-cols-12">

@@ -1,7 +1,6 @@
 import { products, type Product } from "@/data/products";
 import {
   freeShippingSentence,
-  shortStandardShippingSentence,
   standardShippingSentence,
   variableShippingSentence
 } from "@/lib/shipping";
@@ -161,7 +160,7 @@ export function getCareInstructions(product: Product) {
 export function getShippingReturnItems() {
   return [
     freeShippingSentence,
-    shortStandardShippingSentence,
+    standardShippingSentence,
     variableShippingSentence,
     "Orders are typically processed within 1-3 business days",
     "Standard delivery usually takes 7-15 business days after processing",

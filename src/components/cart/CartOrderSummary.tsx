@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Lock, Mail, RotateCcw, ShieldCheck, Truck } from "lucide-react";
 import { trackBeginCheckout } from "@/lib/ga4-ecommerce";
-import { freeShippingLabel, standardShippingSentence } from "@/lib/shipping";
+import { freeShippingLabel, shortStandardShippingSentence, standardShippingSentence } from "@/lib/shipping";
 import { formatPrice } from "@/lib/utils";
 import { getCartTotals, useCartStore } from "@/store/cart-store";
 
@@ -90,7 +90,7 @@ export function CartOrderSummary() {
           </span>
           <div>
             <p className="font-bold">{freeShippingLabel}</p>
-            <p className="text-on-surface-variant">Standard shipping applies under the threshold</p>
+            <p className="text-on-surface-variant">{shortStandardShippingSentence}</p>
           </div>
         </div>
         <div className="flex items-start gap-4">

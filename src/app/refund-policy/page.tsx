@@ -38,7 +38,7 @@ const sections = [
   {
     title: "Non-Returnable Items",
     text:
-      "We do not accept returns for buyer's remorse, preference changes, wrong size selection, normal wear and tear, or items damaged through misuse."
+      "We do not accept returns for buyer's remorse, preference changes, wrong size selection, normal wear and tear, misuse, or items damaged after delivery through pet use."
   },
   {
     title: "Item Condition",

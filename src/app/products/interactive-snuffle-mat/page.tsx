@@ -29,7 +29,6 @@ import { createProductJsonLd, createProductMetadata } from "@/lib/product-seo";
 import {
   freeShippingLabel,
   freeShippingSentence,
-  shortStandardShippingSentence,
   standardShippingSentence,
   variableShippingSentence
 } from "@/lib/shipping";
@@ -104,7 +103,7 @@ const careInstructions = [
 
 const shippingReturns = [
   freeShippingSentence,
-  shortStandardShippingSentence,
+  standardShippingSentence,
   variableShippingSentence,
   "Orders are typically processed within 1-3 business days",
   "Standard delivery usually takes 7-15 business days after processing",

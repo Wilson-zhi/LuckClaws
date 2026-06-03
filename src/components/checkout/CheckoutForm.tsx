@@ -196,7 +196,7 @@ export function CheckoutForm() {
         </Link>
         <PreviewSubmitButton
           className="px-10 py-4"
-          message="Shipping and payment steps are for preview only and will be connected later."
+          message="The next checkout step is for preview only. Payment will be connected later."
         >
           Continue to Shipping
         </PreviewSubmitButton>

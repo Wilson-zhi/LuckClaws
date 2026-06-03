@@ -38,6 +38,12 @@ export function Footer() {
             <p className="mt-5 max-w-xs text-sm leading-6 text-inverse-on-surface/80">
               Premium supplies for the modern pet parent. Designed with love, crafted with care.
             </p>
+            <p className="mt-4 text-sm leading-6 text-inverse-on-surface/80">
+              Support:{" "}
+              <a href="mailto:support@luckclaws.com" className="font-semibold text-primary-container hover:underline">
+                support@luckclaws.com
+              </a>
+            </p>
           </div>
 
           {footerGroups.map((group) => (
