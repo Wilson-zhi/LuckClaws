@@ -9,6 +9,7 @@ import { SiteShell } from "@/components/layout/SiteShell";
 import { ProductCard } from "@/components/product/ProductCard";
 import { type CollectionConfig } from "@/data/collections";
 import { type Product } from "@/data/products";
+import { freeShippingLabel } from "@/lib/shipping";
 
 type CollectionPageProps = {
   config: CollectionConfig;
@@ -24,7 +25,7 @@ const priceRanges = [
 ] satisfies FilterOption[];
 
 const trustItems = [
-  { label: "Free shipping over $50", Icon: Truck },
+  { label: freeShippingLabel, Icon: Truck },
   { label: "Damaged or incorrect items covered", Icon: ShieldCheck },
   { label: "Secure checkout", Icon: ShieldCheck },
   { label: "Pet-conscious materials", Icon: Heart }

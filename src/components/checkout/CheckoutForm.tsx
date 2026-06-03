@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Mail, RotateCcw, ShieldCheck, Truck } from "lucide-react";
 import { PreviewSubmitButton } from "@/components/forms/PreviewSubmitButton";
+import { freeShippingLabel, standardShippingSentence, variableShippingSentence } from "@/lib/shipping";
 
 const inputClass =
   "min-h-14 w-full rounded-md border-outline bg-surface-container-lowest px-4 text-base focus:border-primary focus:ring-primary";
@@ -11,14 +12,14 @@ export function CheckoutForm() {
       <section>
         <h1 className="font-heading text-4xl font-bold md:text-5xl">Checkout Information</h1>
         <p className="mt-3 text-on-surface-variant">
-          Enter your contact and shipping details to continue. Payment and shipping rates will be
-          connected in the next step.
+          Enter your contact and shipping details to continue. Payment will be connected in the
+          next step.
         </p>
 
         <div className="mt-6 grid gap-3 rounded-lg bg-surface-container-low p-4 text-sm text-on-surface-variant md:grid-cols-4">
           <div className="flex items-center gap-3">
             <Truck aria-hidden className="h-5 w-5 shrink-0 text-primary" />
-            <span>Free shipping over $50</span>
+            <span>{freeShippingLabel}</span>
           </div>
           <div className="flex items-center gap-3">
             <ShieldCheck aria-hidden className="h-5 w-5 shrink-0 text-primary" />
@@ -35,6 +36,9 @@ export function CheckoutForm() {
             </a>
           </div>
         </div>
+        <p className="mt-3 text-sm text-on-surface-variant">
+          {standardShippingSentence} {variableShippingSentence}
+        </p>
       </section>
 
       <section>

@@ -9,6 +9,7 @@ import { FreeShippingBar } from "@/components/cart/FreeShippingBar";
 import { QuantitySelector } from "@/components/cart/QuantitySelector";
 import { cartAddOns } from "@/data/products";
 import { trackBeginCheckout, trackRemoveFromCart } from "@/lib/ga4-ecommerce";
+import { FREE_SHIPPING_THRESHOLD } from "@/lib/shipping";
 import { formatPrice } from "@/lib/utils";
 import { getCartTotals, productById, useCartStore } from "@/store/cart-store";
 
@@ -196,18 +197,22 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
               <span>Subtotal</span>
               <span>{formatPrice(totals.subtotal)}</span>
             </div>
+            <div className="flex justify-between">
+              <span>Estimated shipping</span>
+              <span>{totals.hasFreeShipping ? "Free" : formatPrice(totals.estimatedShipping)}</span>
+            </div>
             <div className="flex justify-between font-heading text-lg font-bold">
               <span>Estimated Total</span>
               <span>{formatPrice(totals.total)}</span>
             </div>
             <p className="text-center text-sm text-on-surface-variant">
-              Shipping & taxes calculated at checkout.
+              Taxes calculated at checkout.
             </p>
           </div>
 
           <div className="mt-5 grid grid-cols-4 gap-2 text-[11px] uppercase text-on-surface-variant">
             <span className="flex items-center justify-center gap-1">
-              <Truck aria-hidden className="h-4 w-4" /> Free over $50
+              <Truck aria-hidden className="h-4 w-4" /> {`Free over $${FREE_SHIPPING_THRESHOLD}`}
             </span>
             <span className="flex items-center justify-center gap-1">
               <RotateCcw aria-hidden className="h-4 w-4" /> Defect support

@@ -11,6 +11,7 @@ import { TrustBadges } from "@/components/sections/TrustBadges";
 import { SiteShell } from "@/components/layout/SiteShell";
 import { bestSellers, brandName, categories, mainProduct, newArrivals } from "@/data/products";
 import { absoluteUrl, createSeoMetadata, iconPath } from "@/lib/seo";
+import { freeShippingLabel } from "@/lib/shipping";
 
 export const metadata: Metadata = {
   ...createSeoMetadata({
@@ -27,7 +28,7 @@ export const metadata: Metadata = {
 };
 
 const topTrustItems = [
-  { label: "Free shipping over $50", Icon: Truck },
+  { label: freeShippingLabel, Icon: Truck },
   { label: "Damaged or incorrect items covered", Icon: ShieldCheck },
   { label: "Secure checkout", Icon: ShieldCheck },
   { label: "Pet-conscious materials", Icon: Heart }
@@ -222,7 +223,7 @@ export default function HomePage() {
           </div>
           <div className="flex items-center gap-4">
             <Truck aria-hidden className="h-8 w-8 text-primary" />
-            <p className="font-heading font-bold">Free shipping over $50</p>
+            <p className="font-heading font-bold">{freeShippingLabel}</p>
           </div>
           <div className="flex items-center gap-4">
             <Award aria-hidden className="h-8 w-8 text-primary" />

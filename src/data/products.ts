@@ -1,3 +1,5 @@
+import { DEFAULT_SHIPPING_RATE, standardShippingSentence } from "@/lib/shipping";
+
 type ProductBase = {
   id: string;
   slug: string;
@@ -20,6 +22,9 @@ type ProductBase = {
   gallery?: string[];
   alt: string;
   materialTags?: string[];
+  shippingRate?: number;
+  shippingClass?: string;
+  shippingDescription?: string;
   isNew?: boolean;
 };
 
@@ -34,6 +39,9 @@ export type Product = ProductBase & {
   imageAlt: string;
   productUrl: string;
   compareAtPrice?: number;
+  shippingRate: number;
+  shippingClass: string;
+  shippingDescription: string;
   collectionSlug: string;
   shortDescription: string;
   productType: string;
@@ -131,6 +139,9 @@ function createProduct(product: ProductInput): Product {
     imageAlt: product.alt,
     productUrl: `/products/${product.slug}`,
     ...(product.regularPrice ? { compareAtPrice: product.regularPrice } : {}),
+    shippingRate: product.shippingRate ?? DEFAULT_SHIPPING_RATE,
+    shippingClass: product.shippingClass ?? "standard",
+    shippingDescription: product.shippingDescription ?? standardShippingSentence,
     collectionSlug: product.collectionSlug ?? collectionSlugByCategory[product.category] ?? "all",
     shortDescription: product.shortDescription ?? product.description,
     productType: product.productType ?? defaultProductType(product),

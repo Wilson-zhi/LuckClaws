@@ -13,10 +13,11 @@ import { SearchFilterChips } from "@/components/search/SearchFilterChips";
 import { mainProduct, products, type Product } from "@/data/products";
 import { trackSearch, trackSelectItem } from "@/lib/ga4-ecommerce";
 import { getProductPath } from "@/lib/product-links";
+import { freeShippingLabel } from "@/lib/shipping";
 import { formatPrice } from "@/lib/utils";
 
 const trustItems = [
-  { label: "Free shipping over $50", Icon: Truck },
+  { label: freeShippingLabel, Icon: Truck },
   { label: "Damaged or incorrect items covered", Icon: ShieldCheck },
   { label: "Secure checkout", Icon: ShieldCheck },
   { label: "Pet-conscious materials", Icon: Heart }

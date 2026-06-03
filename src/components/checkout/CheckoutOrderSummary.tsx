@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { BeginCheckoutTracker } from "@/components/analytics/EcommerceEventTrackers";
 import { readBuyNowCheckoutItem } from "@/lib/buy-now-checkout";
+import { standardShippingSentence, variableShippingSentence } from "@/lib/shipping";
 import { useCartStore, getCartTotals, productById, type CartItem } from "@/store/cart-store";
 import { formatPrice } from "@/lib/utils";
 
@@ -105,8 +106,10 @@ export function CheckoutOrderSummary() {
           <span className="text-on-surface">{formatPrice(totals.subtotal)}</span>
         </div>
         <div className="flex justify-between">
-          <span>Shipping</span>
-          <span className="text-on-surface">Calculated at next step</span>
+          <span>Estimated shipping</span>
+          <span className="text-on-surface">
+            {totals.hasFreeShipping ? "Free" : formatPrice(totals.estimatedShipping)}
+          </span>
         </div>
         <div className="flex justify-between">
           <span>Taxes</span>
@@ -118,7 +121,7 @@ export function CheckoutOrderSummary() {
         <span className="font-heading text-4xl font-bold">{formatPrice(totals.total)}</span>
       </div>
       <p className="mt-4 text-sm text-on-surface-variant">
-        Payment and shipping rates will be connected in the next step.
+        {standardShippingSentence} {variableShippingSentence} Payment will be connected in the next step.
       </p>
     </aside>
   );

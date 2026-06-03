@@ -1,4 +1,5 @@
 import { ShieldCheck, Truck } from "lucide-react";
+import { freeShippingLabel } from "@/lib/shipping";
 
 const badges = [
   {
@@ -8,7 +9,7 @@ const badges = [
   },
   {
     icon: Truck,
-    title: "Free Shipping Over $50",
+    title: freeShippingLabel,
     text: "Enjoy free shipping on qualifying orders."
   },
   {

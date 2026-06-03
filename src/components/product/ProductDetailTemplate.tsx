@@ -31,10 +31,16 @@ import {
 } from "@/lib/product-detail-content";
 import { getCollectionPath } from "@/lib/product-links";
 import { createProductJsonLd } from "@/lib/product-seo";
+import {
+  freeShippingLabel,
+  freeShippingSentence,
+  standardShippingSentence,
+  variableShippingSentence
+} from "@/lib/shipping";
 import { formatPrice } from "@/lib/utils";
 
 const trustItems = [
-  { label: "Free shipping over $50", Icon: Truck },
+  { label: freeShippingLabel, Icon: Truck },
   { label: "Damaged or incorrect items covered", Icon: ShieldCheck },
   { label: "Secure checkout", Icon: ShieldCheck },
   { label: "Pet-conscious materials", Icon: Heart }
@@ -67,8 +73,7 @@ export function ProductDetailTemplate({ product }: { product: Product }) {
     },
     {
       title: "Shipping Information",
-      content:
-        "Free shipping applies to orders over $50. Standard shipping is $9.99 for orders under $50."
+      content: `${freeShippingSentence} ${standardShippingSentence} ${variableShippingSentence} Orders are typically processed within 1-3 business days. Standard delivery usually takes 7-15 business days after processing.`
     },
     {
       title: "Returns & Exchanges",

@@ -3,6 +3,7 @@ import { ProductAccordion } from "@/components/product/ProductAccordion";
 import { SupportPageLayout } from "@/components/support/SupportPageLayout";
 import { brandName } from "@/data/products";
 import { createSeoMetadata } from "@/lib/seo";
+import { FREE_SHIPPING_THRESHOLD, DEFAULT_SHIPPING_RATE } from "@/lib/shipping";
 
 export const metadata: Metadata = {
   ...createSeoMetadata({
@@ -14,6 +15,11 @@ export const metadata: Metadata = {
 };
 
 const questions = [
+  {
+    title: "How much is shipping?",
+    content:
+      `Door-to-door shipping starts at $${DEFAULT_SHIPPING_RATE.toFixed(2)} for orders under $${FREE_SHIPPING_THRESHOLD} and may vary by item size or product type. Orders over $${FREE_SHIPPING_THRESHOLD} qualify for free shipping.`
+  },
   {
     title: "How long does shipping take?",
     content:

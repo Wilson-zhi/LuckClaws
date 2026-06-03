@@ -26,6 +26,13 @@ import {
 } from "@/data/products";
 import { getProductPath } from "@/lib/product-links";
 import { createProductJsonLd, createProductMetadata } from "@/lib/product-seo";
+import {
+  freeShippingLabel,
+  freeShippingSentence,
+  shortStandardShippingSentence,
+  standardShippingSentence,
+  variableShippingSentence
+} from "@/lib/shipping";
 import { formatPrice } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -49,8 +56,7 @@ const accordions = [
   },
     {
       title: "Shipping Information",
-      content:
-      "Free shipping applies to orders over $50. Standard shipping is $9.99 for orders under $50."
+      content: `${freeShippingSentence} ${standardShippingSentence} ${variableShippingSentence} Orders are typically processed within 1-3 business days. Standard delivery usually takes 7-15 business days after processing.`
   },
   {
     title: "Returns & Exchanges",
@@ -60,7 +66,7 @@ const accordions = [
 ];
 
 const trustItems = [
-  { label: "Free shipping over $50", Icon: Truck },
+  { label: freeShippingLabel, Icon: Truck },
   { label: "Damaged or incorrect items covered", Icon: ShieldCheck },
   { label: "Secure checkout", Icon: ShieldCheck },
   { label: "Pet-conscious materials", Icon: Heart }
@@ -97,8 +103,11 @@ const careInstructions = [
 ];
 
 const shippingReturns = [
-  "Free shipping on orders over $50",
-  "Standard shipping is $9.99 under $50",
+  freeShippingSentence,
+  shortStandardShippingSentence,
+  variableShippingSentence,
+  "Orders are typically processed within 1-3 business days",
+  "Standard delivery usually takes 7-15 business days after processing",
   "Report damaged, defective, or incorrect items within 7 days of delivery",
   "General returns for preference changes or buyer's remorse are not accepted"
 ];

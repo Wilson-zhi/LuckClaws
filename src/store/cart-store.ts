@@ -3,6 +3,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { products, type Product } from "@/data/products";
+import { DEFAULT_SHIPPING_RATE, FREE_SHIPPING_THRESHOLD } from "@/lib/shipping";
 import { roundMoney } from "@/lib/utils";
 
 export type CartItem = {
@@ -81,15 +82,29 @@ export const useCartStore = create<CartState>()(
 export const getCartTotals = (items: CartItem[]) => {
   const subtotal = roundMoney(items.reduce((sum, item) => sum + item.price * item.quantity, 0));
   const count = items.reduce((sum, item) => sum + item.quantity, 0);
-  const freeShippingThreshold = 50;
+  const freeShippingThreshold = FREE_SHIPPING_THRESHOLD;
   const remainingForFreeShipping = Math.max(0, roundMoney(freeShippingThreshold - subtotal));
   const progress = Math.min(100, (subtotal / freeShippingThreshold) * 100);
+  const hasFreeShipping = subtotal >= freeShippingThreshold;
+  const estimatedShipping = items.length === 0 || hasFreeShipping
+    ? 0
+    : roundMoney(
+        items.reduce((highestRate, item) => {
+          const product = productById(item.id);
+
+          return Math.max(highestRate, product?.shippingRate ?? DEFAULT_SHIPPING_RATE);
+        }, DEFAULT_SHIPPING_RATE)
+      );
+  const total = roundMoney(subtotal + estimatedShipping);
 
   return {
     subtotal,
-    total: subtotal,
+    total,
     count,
     freeShippingThreshold,
+    defaultShippingRate: DEFAULT_SHIPPING_RATE,
+    estimatedShipping,
+    hasFreeShipping,
     remainingForFreeShipping,
     progress
   };

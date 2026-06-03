@@ -1,4 +1,10 @@
 import { products, type Product } from "@/data/products";
+import {
+  freeShippingSentence,
+  shortStandardShippingSentence,
+  standardShippingSentence,
+  variableShippingSentence
+} from "@/lib/shipping";
 
 export type ProductFaqItem = {
   title: string;
@@ -154,8 +160,11 @@ export function getCareInstructions(product: Product) {
 
 export function getShippingReturnItems() {
   return [
-    "Free shipping on orders over $50",
-    "Standard shipping is $9.99 under $50",
+    freeShippingSentence,
+    shortStandardShippingSentence,
+    variableShippingSentence,
+    "Orders are typically processed within 1-3 business days",
+    "Standard delivery usually takes 7-15 business days after processing",
     "Report damaged, defective, or incorrect items within 7 days of delivery"
   ];
 }
@@ -198,8 +207,7 @@ export function getProductFaqs(product: Product): ProductFaqItem[] {
     },
     {
       title: "How do shipping and returns work?",
-      content:
-        "Free shipping applies over $50, and standard shipping is $9.99 under $50. General returns are not accepted; damaged, defective, or incorrect items must be reported within 7 days of delivery."
+      content: `${freeShippingSentence} ${standardShippingSentence} ${variableShippingSentence} General returns are not accepted; damaged, defective, or incorrect items must be reported within 7 days of delivery.`
     }
   ];
 }

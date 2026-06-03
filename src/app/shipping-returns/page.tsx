@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { PolicySections, SupportPageLayout } from "@/components/support/SupportPageLayout";
 import { brandName } from "@/data/products";
 import { createSeoMetadata } from "@/lib/seo";
+import { freeShippingSentence, standardShippingSentence, variableShippingSentence } from "@/lib/shipping";
 
 export const metadata: Metadata = {
   ...createSeoMetadata({
@@ -16,12 +17,11 @@ const sections = [
   {
     title: "Shipping Times",
     text:
-      "Standard delivery usually takes 7-15 business days after processing. Delivery timing can vary based on destination, carrier volume, and the shipping method available at checkout."
+      "Standard delivery usually takes 7-15 business days after processing. Shipping timelines are estimates and may vary due to carrier delays, customs processing, weather, holidays, or address issues."
   },
   {
     title: "Shipping Costs",
-    text:
-      "Free shipping applies to orders over $50. Standard shipping is $9.99 for orders under $50."
+    text: `${freeShippingSentence} ${standardShippingSentence} ${variableShippingSentence}`
   },
   {
     title: "Order Processing",

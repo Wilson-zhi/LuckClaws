@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Lock, Mail, RotateCcw, ShieldCheck, Truck } from "lucide-react";
 import { trackBeginCheckout } from "@/lib/ga4-ecommerce";
+import { freeShippingLabel, standardShippingSentence } from "@/lib/shipping";
 import { formatPrice } from "@/lib/utils";
 import { getCartTotals, useCartStore } from "@/store/cart-store";
 
@@ -23,15 +24,15 @@ export function CartOrderSummary() {
           <span>{formatPrice(totals.subtotal)}</span>
         </div>
         <div className="flex justify-between">
-          <span>Shipping</span>
-          <span>Calculated at checkout</span>
+          <span>Estimated shipping</span>
+          <span>{totals.hasFreeShipping ? "Free" : formatPrice(totals.estimatedShipping)}</span>
         </div>
         <div className="flex justify-between">
           <span>Taxes</span>
           <span>Calculated at checkout</span>
         </div>
         <p className="text-sm text-on-surface-variant">
-          Shipping and taxes are calculated at checkout.
+          {standardShippingSentence} Shipping may vary by item size or product type.
         </p>
       </div>
       <div className="mt-6 flex items-center justify-between">
@@ -88,8 +89,8 @@ export function CartOrderSummary() {
             <Truck aria-hidden className="h-5 w-5" />
           </span>
           <div>
-            <p className="font-bold">Free shipping over $50</p>
-            <p className="text-on-surface-variant">On orders over $50</p>
+            <p className="font-bold">{freeShippingLabel}</p>
+            <p className="text-on-surface-variant">Standard shipping applies under the threshold</p>
           </div>
         </div>
         <div className="flex items-start gap-4">
