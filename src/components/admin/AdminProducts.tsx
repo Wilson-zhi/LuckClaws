@@ -118,33 +118,35 @@ function ProductsTable() {
   return (
     <div className="overflow-hidden rounded-lg bg-surface-container-lowest shadow-soft">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[1180px] text-left text-sm">
-          <thead className="bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant">
+        <table className="w-full min-w-[1280px] text-left text-sm">
+          <thead className="sticky top-0 z-20 bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant">
             <tr>
-              <th className="px-4 py-3">Title</th>
-              <th className="px-4 py-3">Slug</th>
-              <th className="px-4 py-3">Category</th>
-              <th className="px-4 py-3">Price</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Inventory</th>
-              <th className="px-4 py-3">Sale</th>
-              <th className="px-4 py-3">Created</th>
-              <th className="px-4 py-3">Actions</th>
+              <th className="min-w-[260px] px-4 py-3">Title</th>
+              <th className="min-w-[220px] px-4 py-3">Slug</th>
+              <th className="min-w-[160px] px-4 py-3">Category</th>
+              <th className="min-w-[110px] px-4 py-3">Price</th>
+              <th className="min-w-[120px] px-4 py-3">Status</th>
+              <th className="min-w-[150px] px-4 py-3">Inventory</th>
+              <th className="min-w-[90px] px-4 py-3">Sale</th>
+              <th className="min-w-[140px] px-4 py-3">Created</th>
+              <th className="sticky right-0 z-30 min-w-[170px] border-l border-outline-variant bg-surface-container-low px-4 py-3 shadow-[-8px_0_18px_rgba(67,45,31,0.08)]">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-outline-variant/70">
             {products.map((product) => (
               <tr key={product.id}>
-                <td className="px-4 py-4 font-semibold text-on-surface">{displayValue(product.title)}</td>
-                <td className="px-4 py-4 text-on-surface-variant">{displayValue(product.slug)}</td>
+                <td className="px-4 py-4 font-semibold leading-6 text-on-surface">{displayValue(product.title)}</td>
+                <td className="px-4 py-4 leading-6 text-on-surface-variant">{displayValue(product.slug)}</td>
                 <td className="px-4 py-4 text-on-surface-variant">{displayValue(product.category)}</td>
                 <td className="px-4 py-4 font-semibold">{formatPrice(priceFromRow(product))}</td>
                 <td className="px-4 py-4 text-on-surface-variant">{displayStatus(product.status)}</td>
                 <td className="px-4 py-4 text-on-surface-variant">{displayStatus(product.inventory_status)}</td>
                 <td className="px-4 py-4 text-on-surface-variant">{product.is_sale ? "Yes" : "No"}</td>
                 <td className="px-4 py-4 text-on-surface-variant">{formatDate(product.created_at)}</td>
-                <td className="px-4 py-4">
-                  <div className="flex flex-wrap gap-2">
+                <td className="sticky right-0 z-10 border-l border-outline-variant bg-surface-container-lowest px-4 py-4 shadow-[-8px_0_18px_rgba(67,45,31,0.08)]">
+                  <div className="flex min-w-max gap-2 whitespace-nowrap">
                     <Link
                       href={`/admin/products/${product.id}`}
                       className="inline-flex rounded-full border border-primary px-4 py-2 font-heading text-xs font-bold text-primary transition hover:bg-primary-container/10"
