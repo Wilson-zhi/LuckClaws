@@ -129,7 +129,7 @@ function ProductsTable() {
               <th className="px-4 py-3">Inventory</th>
               <th className="px-4 py-3">Sale</th>
               <th className="px-4 py-3">Created</th>
-              <th className="px-4 py-3">Action</th>
+              <th className="px-4 py-3">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-outline-variant/70">
@@ -144,12 +144,20 @@ function ProductsTable() {
                 <td className="px-4 py-4 text-on-surface-variant">{product.is_sale ? "Yes" : "No"}</td>
                 <td className="px-4 py-4 text-on-surface-variant">{formatDate(product.created_at)}</td>
                 <td className="px-4 py-4">
-                  <Link
-                    href={`/admin/products/${product.id}`}
-                    className="inline-flex rounded-full border border-primary px-4 py-2 font-heading text-xs font-bold text-primary transition hover:bg-primary-container/10"
-                  >
-                    View
-                  </Link>
+                  <div className="flex flex-wrap gap-2">
+                    <Link
+                      href={`/admin/products/${product.id}`}
+                      className="inline-flex rounded-full border border-primary px-4 py-2 font-heading text-xs font-bold text-primary transition hover:bg-primary-container/10"
+                    >
+                      View
+                    </Link>
+                    <Link
+                      href={`/admin/products/${product.id}/edit`}
+                      className="inline-flex rounded-full bg-primary-container px-4 py-2 font-heading text-xs font-bold text-on-primary-container transition hover:bg-[#e08f00]"
+                    >
+                      Edit
+                    </Link>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -166,6 +174,14 @@ export function AdminProducts() {
       {() => (
         <AdminPageFrame title="Products" description="Prepare catalog management for the next phase." backLink>
           <div className="space-y-6">
+            <div className="flex justify-end">
+              <Link
+                href="/admin/products/new"
+                className="inline-flex rounded-full bg-primary px-6 py-3 font-heading font-bold text-white transition hover:bg-primary/90"
+              >
+                Add Product
+              </Link>
+            </div>
             <section className="ambient-card p-6 text-sm leading-7 text-on-surface-variant md:p-8">
               Product management is being prepared. Public product pages still use the existing catalog until the next phase.
             </section>

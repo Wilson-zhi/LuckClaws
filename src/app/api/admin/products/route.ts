@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAdminFromRequest } from "@/lib/admin-auth";
+import { validateAdminProductPayload } from "@/lib/admin-products";
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
 
 export type AdminProductRow = {
@@ -43,4 +44,61 @@ export async function GET(request: Request) {
   return NextResponse.json({
     products: (data ?? []) as AdminProductRow[]
   });
+}
+
+export async function POST(request: Request) {
+  const auth = await requireAdminFromRequest(request);
+
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.message }, { status: auth.status });
+  }
+
+  const supabase = getSupabaseAdminClient();
+
+  if (!supabase) {
+    return NextResponse.json(
+      { error: "Supabase server environment variables are not configured." },
+      { status: 500 }
+    );
+  }
+
+  const validation = validateAdminProductPayload(await request.json().catch(() => null));
+
+  if (!validation.ok) {
+    return NextResponse.json({ error: "Product validation failed.", errors: validation.errors }, { status: 400 });
+  }
+
+  const { data: existingProduct, error: existingError } = await supabase
+    .from("products")
+    .select("id")
+    .eq("slug", validation.payload.slug)
+    .maybeSingle();
+
+  if (existingError) {
+    return NextResponse.json({ error: existingError.message }, { status: 500 });
+  }
+
+  if (existingProduct) {
+    return NextResponse.json(
+      {
+        error: "A product with this slug already exists.",
+        errors: {
+          slug: "A product with this slug already exists."
+        }
+      },
+      { status: 409 }
+    );
+  }
+
+  const { data, error } = await supabase
+    .from("products")
+    .insert(validation.payload)
+    .select("id")
+    .single();
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ product: data }, { status: 201 });
 }

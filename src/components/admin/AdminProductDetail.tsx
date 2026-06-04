@@ -153,6 +153,12 @@ function ProductDetailContent({ productId }: { productId: string }) {
     <div className="space-y-6">
       <div className="flex flex-wrap gap-3">
         <Link
+          href={`/admin/products/${product.id}/edit`}
+          className="inline-flex rounded-full bg-primary px-5 py-2 font-heading text-sm font-bold text-white transition hover:bg-primary/90"
+        >
+          Edit Product
+        </Link>
+        <Link
           href="/admin"
           className="inline-flex rounded-full border border-primary px-5 py-2 font-heading text-sm font-bold text-primary transition hover:bg-primary-container/10"
         >

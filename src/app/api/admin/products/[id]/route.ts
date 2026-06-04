@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAdminFromRequest } from "@/lib/admin-auth";
+import { validateAdminProductPayload } from "@/lib/admin-products";
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
 
 type RouteContext = {
@@ -89,4 +90,73 @@ export async function GET(request: Request, { params }: RouteContext) {
     product: productData as AdminProductDetailRow,
     images: (imageData ?? []) as AdminProductImageRow[]
   });
+}
+
+export async function PATCH(request: Request, { params }: RouteContext) {
+  const auth = await requireAdminFromRequest(request);
+
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.message }, { status: auth.status });
+  }
+
+  const supabase = getSupabaseAdminClient();
+
+  if (!supabase) {
+    return NextResponse.json(
+      { error: "Supabase server environment variables are not configured." },
+      { status: 500 }
+    );
+  }
+
+  const { id } = await params;
+
+  if (!id) {
+    return NextResponse.json({ error: "Product id is required." }, { status: 400 });
+  }
+
+  const validation = validateAdminProductPayload(await request.json().catch(() => null));
+
+  if (!validation.ok) {
+    return NextResponse.json({ error: "Product validation failed.", errors: validation.errors }, { status: 400 });
+  }
+
+  const { data: slugProduct, error: slugError } = await supabase
+    .from("products")
+    .select("id")
+    .eq("slug", validation.payload.slug)
+    .neq("id", id)
+    .maybeSingle();
+
+  if (slugError) {
+    return NextResponse.json({ error: slugError.message }, { status: 500 });
+  }
+
+  if (slugProduct) {
+    return NextResponse.json(
+      {
+        error: "A product with this slug already exists.",
+        errors: {
+          slug: "A product with this slug already exists."
+        }
+      },
+      { status: 409 }
+    );
+  }
+
+  const { data, error } = await supabase
+    .from("products")
+    .update(validation.payload)
+    .eq("id", id)
+    .select("id")
+    .maybeSingle();
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  if (!data) {
+    return NextResponse.json({ error: "Product not found." }, { status: 404 });
+  }
+
+  return NextResponse.json({ product: data });
 }
