@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { type FormEvent, useEffect, useState } from "react";
+import { type FormEvent, useEffect, useRef, useState } from "react";
 import { Mail, RotateCcw, ShieldCheck, Truck } from "lucide-react";
 import {
   type CheckoutInfo,
@@ -61,17 +61,24 @@ const checkoutTrustItems: CompactTrustItem[] = [
   }
 ];
 
-function checkoutInfoFromAddress(address: SavedAddress): CheckoutInfo {
-  return normalizeCheckoutInfo({
+function checkoutInfoFromAddress(address: SavedAddress): Partial<CheckoutInfo> {
+  const addressLine1 = address.address_line1 ?? "";
+  const addressLine2 = address.address_line2 ?? "";
+  const postalCode = address.postal_code ?? "";
+
+  return {
     fullName: address.full_name ?? "",
     phone: address.phone ?? "",
-    address: address.address_line1 ?? "",
-    apartment: address.address_line2 ?? "",
+    address: addressLine1,
+    addressLine1,
+    apartment: addressLine2,
+    addressLine2,
     city: address.city ?? "",
     state: address.state ?? "",
-    zip: address.postal_code ?? "",
+    zip: postalCode,
+    postalCode,
     country: address.country ?? defaultCountry
-  });
+  };
 }
 
 function formatAddress(address: SavedAddress) {
@@ -98,6 +105,7 @@ export function CheckoutForm() {
   const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState("manual");
   const [manualCountry, setManualCountry] = useState(defaultCountry);
+  const emailTouchedRef = useRef(false);
 
   useEffect(() => {
     const savedInfo = readCheckoutInfo();
@@ -124,7 +132,7 @@ export function CheckoutForm() {
       if (data.user.email) {
         setCheckoutInfo((currentInfo) => ({
           ...currentInfo,
-          email: data.user.email ?? currentInfo.email
+          email: emailTouchedRef.current ? currentInfo.email : data.user.email ?? currentInfo.email
         }));
       }
 
@@ -160,6 +168,10 @@ export function CheckoutForm() {
   }, [supabase]);
 
   const updateField = (field: keyof CheckoutInfo, value: string) => {
+    if (field === "email") {
+      emailTouchedRef.current = true;
+    }
+
     if (field === "country") {
       setManualCountry(value || defaultCountry);
     }
