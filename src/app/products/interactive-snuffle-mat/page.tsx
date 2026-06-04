@@ -18,6 +18,7 @@ import { ProductBenefits } from "@/components/product/ProductBenefits";
 import { ProductCard } from "@/components/product/ProductCard";
 import { ProductGallery } from "@/components/product/ProductGallery";
 import { ProductPurchasePanel } from "@/components/product/ProductPurchasePanel";
+import { CompactTrustBar, type CompactTrustItem } from "@/components/sections/CompactTrustBar";
 import { SiteShell } from "@/components/layout/SiteShell";
 import {
   frequentlyBoughtTogether,
@@ -64,11 +65,11 @@ const accordions = [
   }
 ];
 
-const trustItems = [
-  { label: freeShippingLabel, Icon: Truck },
-  { label: "Damaged or incorrect items covered", Icon: ShieldCheck },
-  { label: "Secure checkout", Icon: ShieldCheck },
-  { label: "Pet-conscious materials", Icon: Heart }
+const trustItems: CompactTrustItem[] = [
+  { key: "shipping", label: freeShippingLabel, Icon: Truck },
+  { key: "support-policy", label: "Damaged or incorrect items covered", Icon: ShieldCheck },
+  { key: "secure", label: "Secure checkout", Icon: ShieldCheck },
+  { key: "materials", label: "Pet-conscious materials", Icon: Heart }
 ];
 
 const productSpecs = [
@@ -185,17 +186,7 @@ export default function ProductPage() {
           <div>
             <ProductPurchasePanel product={mainProduct} />
 
-            <div className="mt-7 grid grid-cols-2 gap-3 text-sm">
-              {trustItems.map(({ label, Icon }) => (
-                <div
-                  key={label}
-                  className="flex min-h-14 items-center gap-2 rounded-md bg-surface-container-lowest px-3 py-3 text-on-surface-variant shadow-soft"
-                >
-                  <Icon aria-hidden className="h-5 w-5 shrink-0 text-primary" />
-                  <span className="font-semibold">{label}</span>
-                </div>
-              ))}
-            </div>
+            <CompactTrustBar items={trustItems} className="mt-7" />
 
             <div className="mt-7">
               <ProductAccordion items={accordions} />

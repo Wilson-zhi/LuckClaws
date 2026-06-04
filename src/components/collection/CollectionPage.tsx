@@ -7,6 +7,7 @@ import { ViewItemListTracker } from "@/components/analytics/EcommerceEventTracke
 import { FilterControls, FilterSidebar, type FilterOption } from "@/components/collection/FilterSidebar";
 import { SiteShell } from "@/components/layout/SiteShell";
 import { ProductCard } from "@/components/product/ProductCard";
+import { CompactTrustBar, type CompactTrustItem } from "@/components/sections/CompactTrustBar";
 import { type CollectionConfig } from "@/data/collections";
 import { type Product } from "@/data/products";
 import { freeShippingLabel } from "@/lib/shipping";
@@ -24,11 +25,11 @@ const priceRanges = [
   { label: "Over $50", value: "over-50" }
 ] satisfies FilterOption[];
 
-const trustItems = [
-  { label: freeShippingLabel, Icon: Truck },
-  { label: "Damaged or incorrect items covered", Icon: ShieldCheck },
-  { label: "Secure checkout", Icon: ShieldCheck },
-  { label: "Pet-conscious materials", Icon: Heart }
+const trustItems: CompactTrustItem[] = [
+  { key: "shipping", label: freeShippingLabel, Icon: Truck },
+  { key: "support-policy", label: "Damaged or incorrect items covered", Icon: ShieldCheck },
+  { key: "secure", label: "Secure checkout", Icon: ShieldCheck },
+  { key: "materials", label: "Pet-conscious materials", Icon: Heart }
 ];
 
 const collectionLinks = [
@@ -316,17 +317,7 @@ export function CollectionPage({ config }: CollectionPageProps) {
       </section>
 
       <section className="bg-surface-container-low py-4">
-        <div className="section-shell grid grid-cols-2 gap-3 md:grid-cols-4">
-          {trustItems.map(({ label, Icon }) => (
-            <div
-              key={label}
-              className="flex min-h-14 items-center gap-3 rounded-md bg-surface-container-lowest px-4 py-3 text-sm font-semibold text-on-surface-variant shadow-soft"
-            >
-              <Icon aria-hidden className="h-5 w-5 shrink-0 text-primary" />
-              <span>{label}</span>
-            </div>
-          ))}
-        </div>
+        <CompactTrustBar items={trustItems} columns="wide" className="section-shell" />
       </section>
 
       <section id="products" className="section-shell flex gap-10 py-12 md:py-16">

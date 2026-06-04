@@ -10,17 +10,18 @@ import { AddToCartButton } from "@/components/cart/AddToCartButton";
 import { SiteShell } from "@/components/layout/SiteShell";
 import { ProductCard } from "@/components/product/ProductCard";
 import { SearchFilterChips } from "@/components/search/SearchFilterChips";
+import { CompactTrustBar, type CompactTrustItem } from "@/components/sections/CompactTrustBar";
 import { mainProduct, products, type Product } from "@/data/products";
 import { trackSearch, trackSelectItem } from "@/lib/ga4-ecommerce";
 import { getProductPath } from "@/lib/product-links";
 import { freeShippingLabel } from "@/lib/shipping";
 import { formatPrice } from "@/lib/utils";
 
-const trustItems = [
-  { label: freeShippingLabel, Icon: Truck },
-  { label: "Damaged or incorrect items covered", Icon: ShieldCheck },
-  { label: "Secure checkout", Icon: ShieldCheck },
-  { label: "Pet-conscious materials", Icon: Heart }
+const trustItems: CompactTrustItem[] = [
+  { key: "shipping", label: freeShippingLabel, Icon: Truck },
+  { key: "support-policy", label: "Damaged or incorrect items covered", Icon: ShieldCheck },
+  { key: "secure", label: "Secure checkout", Icon: ShieldCheck },
+  { key: "materials", label: "Pet-conscious materials", Icon: Heart }
 ];
 
 const collectionLinks = [
@@ -339,17 +340,7 @@ export function SearchPageContent() {
       </section>
 
       <section className="bg-surface-container-low py-4">
-        <div className="section-shell grid grid-cols-2 gap-3 md:grid-cols-4">
-          {trustItems.map(({ label, Icon }) => (
-            <div
-              key={label}
-              className="flex min-h-14 items-center gap-3 rounded-md bg-surface-container-lowest px-4 py-3 text-sm font-semibold text-on-surface-variant shadow-soft"
-            >
-              <Icon aria-hidden className="h-5 w-5 shrink-0 text-primary" />
-              <span>{label}</span>
-            </div>
-          ))}
-        </div>
+        <CompactTrustBar items={trustItems} columns="wide" className="section-shell" />
       </section>
 
       <section className="section-shell py-12 md:py-16">

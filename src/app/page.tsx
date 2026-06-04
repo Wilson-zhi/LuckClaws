@@ -7,6 +7,7 @@ import { CategoryCard } from "@/components/product/CategoryCard";
 import { ProductCard } from "@/components/product/ProductCard";
 import { HomeFeaturedProduct } from "@/components/sections/HomeFeaturedProduct";
 import { NewsletterSignup } from "@/components/sections/NewsletterSignup";
+import { CompactTrustBar, type CompactTrustItem } from "@/components/sections/CompactTrustBar";
 import { TrustBadges } from "@/components/sections/TrustBadges";
 import { SiteShell } from "@/components/layout/SiteShell";
 import { bestSellers, brandName, categories, mainProduct, newArrivals } from "@/data/products";
@@ -27,11 +28,11 @@ export const metadata: Metadata = {
   })
 };
 
-const topTrustItems = [
-  { label: freeShippingLabel, Icon: Truck },
-  { label: "Damaged or incorrect items covered", Icon: ShieldCheck },
-  { label: "Secure checkout", Icon: ShieldCheck },
-  { label: "Pet-conscious materials", Icon: Heart }
+const topTrustItems: CompactTrustItem[] = [
+  { key: "shipping", label: freeShippingLabel, Icon: Truck },
+  { key: "support-policy", label: "Damaged or incorrect items covered", Icon: ShieldCheck },
+  { key: "secure", label: "Secure checkout", Icon: ShieldCheck },
+  { key: "materials", label: "Pet-conscious materials", Icon: Heart }
 ];
 
 const valueHighlights = [
@@ -124,17 +125,7 @@ export default function HomePage() {
       </section>
 
       <section className="bg-surface-container-low py-4">
-        <div className="section-shell grid grid-cols-2 gap-3 md:grid-cols-4">
-          {topTrustItems.map(({ label, Icon }) => (
-            <div
-              key={label}
-              className="flex min-h-14 items-center gap-3 rounded-md bg-surface-container-lowest px-4 py-3 text-sm font-semibold text-on-surface-variant shadow-soft"
-            >
-              <Icon aria-hidden className="h-5 w-5 shrink-0 text-primary" />
-              <span>{label}</span>
-            </div>
-          ))}
-        </div>
+        <CompactTrustBar items={topTrustItems} columns="wide" className="section-shell" />
       </section>
 
       <section className="section-shell py-10 md:py-14">

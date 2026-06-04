@@ -12,6 +12,7 @@ import {
   saveCheckoutInfo,
   validateCheckoutInfo
 } from "@/lib/checkout-info";
+import { CompactTrustBar, type CompactTrustItem } from "@/components/sections/CompactTrustBar";
 import { freeShippingLabel, standardShippingSentence, variableShippingSentence } from "@/lib/shipping";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
@@ -31,10 +32,12 @@ type SavedAddress = {
 const inputClass =
   "min-h-14 w-full rounded-md border-outline bg-surface-container-lowest px-4 text-base focus:border-primary focus:ring-primary";
 
+const defaultCountry = "United States";
+
 const initialCheckoutInfo: CheckoutInfo = {
   email: "",
   fullName: "",
-  country: "United States",
+  country: defaultCountry,
   address: "",
   apartment: "",
   city: "",
@@ -42,6 +45,21 @@ const initialCheckoutInfo: CheckoutInfo = {
   zip: "",
   phone: ""
 };
+
+const checkoutTrustItems: CompactTrustItem[] = [
+  { key: "shipping", label: freeShippingLabel, Icon: Truck },
+  { key: "secure", label: "Secure checkout", Icon: ShieldCheck },
+  { key: "support-policy", label: "Damaged or incorrect items covered", Icon: RotateCcw },
+  {
+    key: "support-email",
+    label: (
+      <a href="mailto:support@luckclaws.com" className="hover:text-primary">
+        support@luckclaws.com
+      </a>
+    ),
+    Icon: Mail
+  }
+];
 
 function checkoutInfoFromAddress(address: SavedAddress): CheckoutInfo {
   return normalizeCheckoutInfo({
@@ -52,7 +70,7 @@ function checkoutInfoFromAddress(address: SavedAddress): CheckoutInfo {
     city: address.city ?? "",
     state: address.state ?? "",
     zip: address.postal_code ?? "",
-    country: address.country ?? "United States"
+    country: address.country ?? defaultCountry
   });
 }
 
@@ -79,6 +97,7 @@ export function CheckoutForm() {
   const [formError, setFormError] = useState("");
   const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState("manual");
+  const [manualCountry, setManualCountry] = useState(defaultCountry);
 
   useEffect(() => {
     const savedInfo = readCheckoutInfo();
@@ -100,6 +119,13 @@ export function CheckoutForm() {
     supabase.auth.getUser().then(async ({ data }) => {
       if (!active || !data.user) {
         return;
+      }
+
+      if (data.user.email) {
+        setCheckoutInfo((currentInfo) => ({
+          ...currentInfo,
+          email: data.user.email ?? currentInfo.email
+        }));
       }
 
       const { data: addressData } = await supabase
@@ -134,6 +160,10 @@ export function CheckoutForm() {
   }, [supabase]);
 
   const updateField = (field: keyof CheckoutInfo, value: string) => {
+    if (field === "country") {
+      setManualCountry(value || defaultCountry);
+    }
+
     setFormError("");
     setCheckoutInfo((currentInfo) => ({
       ...currentInfo,
@@ -152,6 +182,35 @@ export function CheckoutForm() {
   };
 
   const getFieldError = (field: CheckoutInfoField) => fieldErrors[field];
+
+  const clearManualEntry = () => {
+    setSelectedAddressId("manual");
+    setFormError("");
+    setFieldErrors((currentErrors) => {
+      const nextErrors = { ...currentErrors };
+      delete nextErrors.fullName;
+      delete nextErrors.address;
+      delete nextErrors.city;
+      delete nextErrors.state;
+      delete nextErrors.zip;
+
+      return nextErrors;
+    });
+    setCheckoutInfo((currentInfo) => ({
+      ...currentInfo,
+      fullName: "",
+      phone: "",
+      address: "",
+      addressLine1: "",
+      apartment: "",
+      addressLine2: "",
+      city: "",
+      state: "",
+      zip: "",
+      postalCode: "",
+      country: manualCountry || defaultCountry
+    }));
+  };
 
   const applySavedAddress = (address: SavedAddress) => {
     setSelectedAddressId(address.id);
@@ -197,26 +256,7 @@ export function CheckoutForm() {
           next step.
         </p>
 
-        <div className="mt-6 grid gap-3 rounded-lg bg-surface-container-low p-4 text-sm text-on-surface-variant md:grid-cols-4">
-          <div className="flex items-center gap-3">
-            <Truck aria-hidden className="h-5 w-5 shrink-0 text-primary" />
-            <span>{freeShippingLabel}</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <ShieldCheck aria-hidden className="h-5 w-5 shrink-0 text-primary" />
-            <span>Secure checkout</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <RotateCcw aria-hidden className="h-5 w-5 shrink-0 text-primary" />
-            <span>Damaged or incorrect items covered</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <Mail aria-hidden className="h-5 w-5 shrink-0 text-primary" />
-            <a href="mailto:support@luckclaws.com" className="hover:text-primary">
-              support@luckclaws.com
-            </a>
-          </div>
-        </div>
+        <CompactTrustBar items={checkoutTrustItems} className="mt-6 rounded-lg bg-surface-container-low p-4" />
         <p className="mt-3 text-sm text-on-surface-variant">
           {standardShippingSentence} {variableShippingSentence}
         </p>
@@ -270,13 +310,13 @@ export function CheckoutForm() {
                 type="button"
                 className={`rounded-md border p-4 text-left text-sm transition ${
                   selectedAddressId === "manual"
-                    ? "border-primary bg-primary-container/10"
+                    ? "border-primary bg-primary-container/10 ring-2 ring-primary/20"
                     : "border-outline-variant bg-surface-container-lowest hover:border-primary"
                 }`}
-                onClick={() => setSelectedAddressId("manual")}
+                onClick={clearManualEntry}
               >
                 <span className="font-heading text-base font-bold text-on-surface">Manual entry</span>
-                <span className="mt-1 block text-on-surface-variant">Type or edit the address fields below.</span>
+                <span className="mt-1 block text-on-surface-variant">Enter a new address below.</span>
               </button>
               {savedAddresses.map((address) => (
                 <button
@@ -284,7 +324,7 @@ export function CheckoutForm() {
                   type="button"
                   className={`rounded-md border p-4 text-left text-sm transition ${
                     selectedAddressId === address.id
-                      ? "border-primary bg-primary-container/10"
+                      ? "border-primary bg-primary-container/10 ring-2 ring-primary/20"
                       : "border-outline-variant bg-surface-container-lowest hover:border-primary"
                   }`}
                   onClick={() => applySavedAddress(address)}
@@ -294,7 +334,7 @@ export function CheckoutForm() {
                   </span>
                   {address.is_default && (
                     <span className="ml-2 rounded-full bg-primary-container/20 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-primary">
-                      Default
+                      DEFAULT
                     </span>
                   )}
                   <span className="mt-2 block leading-6 text-on-surface-variant">

@@ -6,11 +6,27 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { Lock, Mail, ShieldCheck, Truck } from "lucide-react";
 import { PayPalSandboxButtons } from "@/components/checkout/PayPalSandboxButtons";
+import { CompactTrustBar, type CompactTrustItem } from "@/components/sections/CompactTrustBar";
 import { readBuyNowCheckoutItem } from "@/lib/buy-now-checkout";
 import { type CheckoutInfo, isCheckoutInfoValid, normalizeCheckoutInfo, readCheckoutInfo } from "@/lib/checkout-info";
 import { freeShippingLabel, shortStandardShippingSentence, variableShippingSentence } from "@/lib/shipping";
 import { formatPrice } from "@/lib/utils";
 import { getCartTotals, productById, type CartItem, useCartStore } from "@/store/cart-store";
+
+const checkoutTrustItems: CompactTrustItem[] = [
+  { key: "shipping", label: freeShippingLabel, Icon: Truck },
+  { key: "secure", label: "Secure checkout", Icon: ShieldCheck },
+  { key: "paypal", label: "PayPal Sandbox", Icon: Lock },
+  {
+    key: "support-email",
+    label: (
+      <a href="mailto:support@luckclaws.com" className="hover:text-primary">
+        support@luckclaws.com
+      </a>
+    ),
+    Icon: Mail
+  }
+];
 
 export function CheckoutPaymentContent() {
   const searchParams = useSearchParams();
@@ -67,26 +83,7 @@ export function CheckoutPaymentContent() {
           </p>
         </div>
 
-        <div className="grid gap-3 rounded-lg bg-surface-container-low p-4 text-sm text-on-surface-variant md:grid-cols-4">
-          <div className="flex items-center gap-3">
-            <Truck aria-hidden className="h-5 w-5 shrink-0 text-primary" />
-            <span>{freeShippingLabel}</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <ShieldCheck aria-hidden className="h-5 w-5 shrink-0 text-primary" />
-            <span>Secure checkout</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <Lock aria-hidden className="h-5 w-5 shrink-0 text-primary" />
-            <span>PayPal Sandbox</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <Mail aria-hidden className="h-5 w-5 shrink-0 text-primary" />
-            <a href="mailto:support@luckclaws.com" className="hover:text-primary">
-              support@luckclaws.com
-            </a>
-          </div>
-        </div>
+        <CompactTrustBar items={checkoutTrustItems} className="rounded-lg bg-surface-container-low p-4" />
 
         <section className="ambient-card p-6 md:p-8">
           <h2 className="font-heading text-2xl font-bold">Customer Information</h2>
