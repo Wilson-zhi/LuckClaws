@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
+import { type CheckoutInfo } from "@/lib/checkout-info";
+import { validateCheckoutItems } from "@/lib/checkout-items";
 import { capturePayPalOrder } from "@/lib/paypal";
+import { savePayPalOrderToSupabase } from "@/lib/supabase/orders";
+import { getUserFromRequest } from "@/lib/supabase/server";
+import { roundMoney } from "@/lib/utils";
 
 function getCompletedCapture(payload: Awaited<ReturnType<typeof capturePayPalOrder>>) {
   return payload.purchase_units
@@ -7,18 +12,49 @@ function getCompletedCapture(payload: Awaited<ReturnType<typeof capturePayPalOrd
     .find((capture) => capture.status === "COMPLETED");
 }
 
+function sanitizeText(value: unknown) {
+  return typeof value === "string" ? value.slice(0, 300) : undefined;
+}
+
+function sanitizeCheckoutInfo(value: unknown): CheckoutInfo | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return null;
+  }
+
+  const raw = value as Record<string, unknown>;
+
+  return {
+    email: sanitizeText(raw.email),
+    firstName: sanitizeText(raw.firstName),
+    lastName: sanitizeText(raw.lastName),
+    country: sanitizeText(raw.country),
+    address: sanitizeText(raw.address),
+    apartment: sanitizeText(raw.apartment),
+    city: sanitizeText(raw.city),
+    state: sanitizeText(raw.state),
+    zip: sanitizeText(raw.zip),
+    phone: sanitizeText(raw.phone)
+  };
+}
+
 export async function POST(request: Request) {
   try {
-    const payload = (await request.json()) as { orderId?: unknown };
+    const payload = (await request.json()) as {
+      orderId?: unknown;
+      items?: unknown;
+      checkoutInfo?: unknown;
+    };
 
     if (typeof payload.orderId !== "string" || !payload.orderId.trim()) {
       return NextResponse.json({ error: "PayPal order ID is required." }, { status: 400 });
     }
 
-    const capture = await capturePayPalOrder(payload.orderId.trim());
+    const checkout = validateCheckoutItems(payload.items);
+    const paypalOrderId = payload.orderId.trim();
+    const capture = await capturePayPalOrder(paypalOrderId);
     const completedCapture = getCompletedCapture(capture);
 
-    if (capture.status !== "COMPLETED" || !completedCapture) {
+    if (capture.status !== "COMPLETED" || !completedCapture || !completedCapture.id) {
       return NextResponse.json(
         {
           error: "PayPal Sandbox capture was not completed.",
@@ -28,11 +64,51 @@ export async function POST(request: Request) {
       );
     }
 
+    const capturedValue = Number(completedCapture.amount?.value);
+
+    if (
+      completedCapture.amount?.currency_code !== "USD" ||
+      !Number.isFinite(capturedValue) ||
+      roundMoney(capturedValue) !== checkout.totals.total
+    ) {
+      return NextResponse.json(
+        {
+          error: "Captured PayPal amount does not match the recalculated checkout total."
+        },
+        { status: 400 }
+      );
+    }
+
+    const checkoutInfo = sanitizeCheckoutInfo(payload.checkoutInfo);
+    const user = await getUserFromRequest(request);
+    let internalOrderId: string | undefined;
+    let internalOrderNumber: string | undefined;
+    let orderSaveError: string | undefined;
+
+    try {
+      const savedOrder = await savePayPalOrderToSupabase({
+        paypalOrderId: capture.id ?? paypalOrderId,
+        paypalCaptureId: completedCapture.id,
+        checkoutInfo,
+        user,
+        items: checkout.items,
+        totals: checkout.totals
+      });
+
+      internalOrderId = savedOrder.id;
+      internalOrderNumber = savedOrder.orderNumber;
+    } catch {
+      orderSaveError = "Payment captured, but internal order storage could not be confirmed. Contact support with your PayPal order ID.";
+    }
+
     return NextResponse.json({
-      orderId: capture.id,
+      orderId: capture.id ?? paypalOrderId,
       captureId: completedCapture.id,
       status: capture.status,
-      amount: completedCapture.amount
+      amount: completedCapture.amount,
+      internalOrderId,
+      internalOrderNumber,
+      orderSaveError
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unable to capture PayPal Sandbox order.";

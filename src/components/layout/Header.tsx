@@ -8,6 +8,7 @@ import { CartDrawer } from "@/components/cart/CartDrawer";
 import { topLevelNavigation } from "@/data/navigation";
 import { brandName } from "@/data/products";
 import { cn } from "@/lib/utils";
+import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { getCartTotals, useCartStore } from "@/store/cart-store";
 import { trackViewCart } from "@/lib/ga4-ecommerce";
 
@@ -15,6 +16,7 @@ export function Header() {
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [accountHref, setAccountHref] = useState("/account/login");
   const items = useCartStore((state) => state.items);
   const totals = getCartTotals(items);
 
@@ -26,6 +28,34 @@ export function Header() {
 
     window.addEventListener("luck-claws:open-cart", openCartDrawer);
     return () => window.removeEventListener("luck-claws:open-cart", openCartDrawer);
+  }, []);
+
+  useEffect(() => {
+    const supabase = getSupabaseBrowserClient();
+
+    if (!supabase) {
+      setAccountHref("/account/login");
+      return;
+    }
+
+    let active = true;
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (active) {
+        setAccountHref(data.session ? "/account" : "/account/login");
+      }
+    });
+
+    const {
+      data: { subscription }
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setAccountHref(session ? "/account" : "/account/login");
+    });
+
+    return () => {
+      active = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   return (
@@ -76,9 +106,9 @@ export function Header() {
                 </span>
               )}
             </button>
-            <span className="text-primary/45" aria-hidden title="Account will be connected later">
+            <Link href={accountHref} className="transition hover:text-on-surface" aria-label="Account">
               <User aria-hidden className="h-6 w-6" />
-            </span>
+            </Link>
           </div>
         </div>
 
@@ -137,6 +167,15 @@ export function Header() {
                   onClick={() => setMenuOpen(false)}
                 >
                   Search
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href={accountHref}
+                  className="block rounded-full px-4 py-3 text-sm font-semibold text-on-surface-variant"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Account
                 </Link>
               </li>
             </ul>

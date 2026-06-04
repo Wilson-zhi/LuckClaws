@@ -3,8 +3,10 @@
 import Script from "next/script";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { readCheckoutInfo } from "@/lib/checkout-info";
 import { trackPurchase } from "@/lib/ga4-ecommerce";
 import { savePayPalPaymentResult } from "@/lib/paypal-payment-result";
+import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { formatPrice } from "@/lib/utils";
 import { type CartItem } from "@/store/cart-store";
 
@@ -28,6 +30,9 @@ type PayPalCaptureOrderResponse = {
     currency_code: "USD";
     value: string;
   };
+  internalOrderId?: string;
+  internalOrderNumber?: string;
+  orderSaveError?: string;
   error?: string;
 };
 
@@ -138,13 +143,21 @@ export function PayPalSandboxButtons({
 
         setError("");
         setMessage("Capturing PayPal Sandbox payment...");
+        const supabase = getSupabaseBrowserClient();
+        const { data: sessionData } = supabase
+          ? await supabase.auth.getSession()
+          : { data: { session: null } };
+        const accessToken = sessionData.session?.access_token;
         const response = await fetch("/api/paypal/capture-order", {
           method: "POST",
           headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
           },
           body: JSON.stringify({
-            orderId: data.orderID
+            orderId: data.orderID,
+            items: checkoutItemsPayload(items),
+            checkoutInfo: readCheckoutInfo()
           })
         });
         const payload = (await response.json()) as PayPalCaptureOrderResponse;
@@ -164,6 +177,9 @@ export function PayPalSandboxButtons({
           captureId: payload.captureId,
           status: "COMPLETED",
           amount: payload.amount,
+          internalOrderId: payload.internalOrderId,
+          internalOrderNumber: payload.internalOrderNumber,
+          orderSaveError: payload.orderSaveError,
           items,
           createdAt: Date.now()
         });

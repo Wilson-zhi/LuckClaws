@@ -28,7 +28,8 @@ export function CheckoutSuccessContent() {
         <h1 className="mt-6 font-heading text-4xl font-extrabold">Payment Status Not Verified</h1>
         <p className="mt-4 text-sm leading-6 text-on-surface-variant md:text-base">
           This page only shows payment success after a completed PayPal Sandbox capture in this
-          browser session. No order history or fulfillment backend has been created yet.
+          browser session. If you completed checkout in another browser, contact support with your
+          PayPal order ID.
         </p>
         <Link
           href="/checkout/payment"
@@ -47,10 +48,16 @@ export function CheckoutSuccessContent() {
       </div>
       <h1 className="mt-6 font-heading text-4xl font-extrabold">PayPal Sandbox Payment Captured</h1>
       <p className="mt-4 text-sm leading-6 text-on-surface-variant md:text-base">
-        Thank you. Your PayPal Sandbox payment was completed for testing. Live order processing and
-        fulfillment are not enabled yet.
+        Thank you. Your PayPal Sandbox payment was completed for testing. Fulfillment has not been
+        started automatically.
       </p>
       <div className="mt-7 rounded-md bg-surface-container-low p-5 text-left text-sm leading-7 text-on-surface-variant">
+        {result.internalOrderNumber && (
+          <p>
+            <span className="font-semibold text-on-surface">LUCK CLAWS order number:</span>{" "}
+            {result.internalOrderNumber}
+          </p>
+        )}
         <p>
           <span className="font-semibold text-on-surface">PayPal order ID:</span> {result.orderId}
         </p>
@@ -65,6 +72,11 @@ export function CheckoutSuccessContent() {
             {result.amount.value} {result.amount.currency_code}
           </p>
         )}
+        {result.orderSaveError && (
+          <p className="mt-3 rounded-md bg-error/10 p-3 text-error">
+            Order storage notice: {result.orderSaveError}
+          </p>
+        )}
       </div>
       <p className="mt-6 flex justify-center gap-2 text-sm leading-6 text-on-surface-variant">
         <Mail aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
@@ -73,7 +85,7 @@ export function CheckoutSuccessContent() {
           <a href="mailto:support@luckclaws.com" className="font-semibold text-primary underline underline-offset-4">
             support@luckclaws.com
           </a>{" "}
-          with your PayPal order ID.
+          with your {result.internalOrderNumber ? "LUCK CLAWS order number" : "PayPal order ID"}.
         </span>
       </p>
       <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">

@@ -20,6 +20,9 @@ export type PayPalPaymentResult = {
     currency_code: "USD";
     value: string;
   };
+  internalOrderId?: string;
+  internalOrderNumber?: string;
+  orderSaveError?: string;
   items: PaymentResultItem[];
   createdAt: number;
 };
