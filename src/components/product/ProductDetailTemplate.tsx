@@ -49,8 +49,14 @@ const trustItems: CompactTrustItem[] = [
 
 const highlightIcons = [Sparkles, Search, ShieldCheck, RotateCcw];
 
-export function ProductDetailTemplate({ product }: { product: Product }) {
-  const relatedProducts = getRelatedProducts(product);
+export function ProductDetailTemplate({
+  product,
+  relatedProducts: providedRelatedProducts
+}: {
+  product: Product;
+  relatedProducts?: Product[];
+}) {
+  const relatedProducts = providedRelatedProducts ?? getRelatedProducts(product);
   const highlights = getProductHighlights(product);
   const details = getProductDetails(product);
   const bestFor = getBestForItems(product);

@@ -16,8 +16,8 @@ export function CartItemRow({ item, compact = false }: CartItemRowProps) {
   const updateQuantity = useCartStore((state) => state.updateQuantity);
   const removeItem = useCartStore((state) => state.removeItem);
   const product = productById(item.id);
-  const image = product?.image ?? item.image;
-  const alt = product?.alt ?? item.alt;
+  const image = item.image || product?.image || "/images/hero-dog-running.jpg";
+  const alt = item.alt || product?.alt || item.name;
 
   const handleRemoveItem = () => {
     trackRemoveFromCart(item);

@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { SiteShell } from "@/components/layout/SiteShell";
 import { SearchPageContent } from "@/components/search/SearchPageContent";
-import { brandName } from "@/data/products";
+import { brandName, mainProduct } from "@/data/products";
+import { getPublicProducts } from "@/lib/public-product-data";
 import { createSeoMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = {
@@ -14,10 +15,14 @@ export const metadata: Metadata = {
   })
 };
 
-export default function SearchPage() {
+export const dynamic = "force-dynamic";
+
+export default async function SearchPage() {
+  const products = await getPublicProducts();
+
   return (
     <Suspense fallback={<SearchPageFallback />}>
-      <SearchPageContent />
+      <SearchPageContent products={products} featuredProductSlug={mainProduct.slug} />
     </Suspense>
   );
 }

@@ -234,7 +234,15 @@ function RelatedCollections() {
   );
 }
 
-export function SearchPageContent() {
+type SearchPageContentProps = {
+  products?: Product[];
+  featuredProductSlug?: string;
+};
+
+export function SearchPageContent({
+  products: catalogProducts = products,
+  featuredProductSlug = mainProduct.slug
+}: SearchPageContentProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const query = searchParams.get("q")?.trim() ?? "";
@@ -248,15 +256,15 @@ export function SearchPageContent() {
     const normalizedQuery = normalizeSearchTerm(query);
 
     if (!normalizedQuery) {
-      return products;
+      return catalogProducts;
     }
 
-    return products.filter((product) => getSearchText(product).includes(normalizedQuery));
-  }, [query]);
+    return catalogProducts.filter((product) => getSearchText(product).includes(normalizedQuery));
+  }, [catalogProducts, query]);
 
   const itemListName = query ? `Search Results - ${query}` : "Search Results";
-  const featuredProduct = filteredProducts.find((product) => product.id === mainProduct.id);
-  const resultProducts = filteredProducts.filter((product) => product.id !== mainProduct.id);
+  const featuredProduct = filteredProducts.find((product) => product.slug === featuredProductSlug);
+  const resultProducts = filteredProducts.filter((product) => product.slug !== featuredProductSlug);
   const resultsSummary = getResultsSummary(filteredProducts.length, query);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {

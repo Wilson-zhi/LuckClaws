@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { getSeoReadyProducts } from "@/lib/product-seo";
+import { getPublicProducts } from "@/lib/public-product-data";
 import { absoluteUrl } from "@/lib/seo";
 
 const routes = [
@@ -26,8 +26,10 @@ const routes = [
   priority: number;
 }>;
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const productRoutes = getSeoReadyProducts().map((product) => ({
+export const dynamic = "force-dynamic";
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const productRoutes = (await getPublicProducts()).map((product) => ({
     path: product.productUrl,
     changeFrequency: "weekly" as const,
     priority: product.slug === "interactive-snuffle-mat" ? 0.9 : 0.75

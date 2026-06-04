@@ -1,4 +1,4 @@
-import { getProduct } from "@/data/products";
+import { getPublicProducts } from "@/lib/public-product-data";
 import { DEFAULT_SHIPPING_RATE, FREE_SHIPPING_THRESHOLD } from "@/lib/shipping";
 import { roundMoney } from "@/lib/utils";
 
@@ -62,17 +62,23 @@ export function calculateCheckoutTotals(items: ValidatedCheckoutItem[]): Checkou
   };
 }
 
-export function validateCheckoutItems(value: unknown): CheckoutValidationResult {
+export async function validateCheckoutItems(value: unknown): Promise<CheckoutValidationResult> {
   if (!Array.isArray(value) || value.length === 0) {
     throw new Error("Checkout must include at least one item.");
   }
+
+  const products = await getPublicProducts();
+  const productByIdOrSlug = new Map(products.flatMap((product) => [
+    [product.id, product],
+    [product.slug, product]
+  ]));
 
   const items = value.map((item) => {
     if (!isCheckoutItemInput(item)) {
       throw new Error("Checkout item quantity or product ID is invalid.");
     }
 
-    const product = getProduct(item.id);
+    const product = productByIdOrSlug.get(item.id);
 
     if (!product) {
       throw new Error(`Unknown product ID: ${item.id}`);

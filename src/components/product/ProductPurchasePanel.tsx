@@ -12,6 +12,12 @@ export function ProductPurchasePanel({ product }: { product: Product }) {
   const [selectedColor, setSelectedColor] = useState(product.selectedColor ?? product.colors?.[0] ?? "");
   const [quantity, setQuantity] = useState(1);
   const productForCart = { ...product, selectedColor };
+  const inventoryLabel =
+    product.availability === "out_of_stock"
+      ? "Currently out of stock."
+      : product.availability === "preorder"
+        ? "Available for preorder."
+        : "In stock, ready to ship.";
   const discountPercent = product.regularPrice
     ? Math.round(((product.regularPrice - product.price) / product.regularPrice) * 100)
     : null;
@@ -82,7 +88,7 @@ export function ProductPurchasePanel({ product }: { product: Product }) {
 
       <div className="mt-6 flex flex-wrap items-center gap-4">
         <QuantitySelector quantity={quantity} onChange={setQuantity} label={product.name} />
-        <span className="text-sm font-semibold text-on-surface-variant">In stock, ready to ship.</span>
+        <span className="text-sm font-semibold text-on-surface-variant">{inventoryLabel}</span>
       </div>
 
       <div className="mt-6 grid gap-3 sm:grid-cols-2">

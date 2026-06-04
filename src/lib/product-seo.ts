@@ -4,7 +4,9 @@ import { DEFAULT_SHIPPING_RATE } from "@/lib/shipping";
 import { formatPrice } from "@/lib/utils";
 
 const schemaAvailabilityByProductAvailability: Record<Product["availability"], string> = {
-  in_stock: "https://schema.org/InStock"
+  in_stock: "https://schema.org/InStock",
+  out_of_stock: "https://schema.org/OutOfStock",
+  preorder: "https://schema.org/PreOrder"
 };
 
 const schemaConditionByProductCondition: Record<Product["condition"], string> = {
@@ -55,8 +57,8 @@ export function createProductSeoDescription(product: Product) {
 }
 
 export function createProductMetadata(product: Product) {
-  const title = `${product.name} | ${brandName}`;
-  const description = createProductSeoDescription(product);
+  const title = product.seoTitle ?? `${product.name} | ${brandName}`;
+  const description = product.seoDescription ?? createProductSeoDescription(product);
 
   return createSeoMetadata({
     title,
@@ -103,8 +105,8 @@ export function getMerchantProductType(product: Product) {
     : `${product.category} > ${product.productType}`;
 }
 
-export function getGoogleProductCategory() {
-  return "Animals & Pet Supplies > Pet Supplies";
+export function getGoogleProductCategory(product?: Product) {
+  return product?.googleProductCategory ?? "Animals & Pet Supplies > Pet Supplies";
 }
 
 export function getSeoReadyProducts() {

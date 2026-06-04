@@ -91,8 +91,8 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
               <div className="mt-6 space-y-6">
                 {items.map((item) => {
                   const product = productById(item.id);
-                  const image = product?.image ?? item.image;
-                  const alt = product?.alt ?? item.alt;
+                  const image = item.image || product?.image || "/images/hero-dog-running.jpg";
+                  const alt = item.alt || product?.alt || item.name;
 
                   return (
                     <article

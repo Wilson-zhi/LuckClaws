@@ -16,7 +16,14 @@ function xmlElement(name: string, value: string | number) {
 }
 
 function availabilityForFeed(product: Product) {
-  return product.availability === "in_stock" ? "in stock" : product.availability;
+  switch (product.availability) {
+    case "out_of_stock":
+      return "out of stock";
+    case "preorder":
+      return "preorder";
+    default:
+      return "in stock";
+  }
 }
 
 function conditionForFeed(product: Product) {
@@ -39,7 +46,7 @@ function productFeedItem(product: Product) {
     xmlElement("g:brand", product.brand),
     xmlElement("g:condition", conditionForFeed(product)),
     xmlElement("g:product_type", getMerchantProductType(product)),
-    xmlElement("g:google_product_category", getGoogleProductCategory())
+    xmlElement("g:google_product_category", getGoogleProductCategory(product))
   ];
 
   return `<item>${fields.join("")}</item>`;

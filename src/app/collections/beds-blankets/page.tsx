@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { CollectionPage } from "@/components/collection/CollectionPage";
 import { collectionConfigs } from "@/data/collections";
+import { getPublicCollectionConfig } from "@/lib/public-product-data";
 import { createSeoMetadata } from "@/lib/seo";
 
 const config = collectionConfigs.bedsBlankets;
@@ -13,6 +14,8 @@ export const metadata: Metadata = {
   })
 };
 
-export default function BedsBlanketsCollectionPage() {
-  return <CollectionPage config={config} />;
+export const dynamic = "force-dynamic";
+
+export default async function BedsBlanketsCollectionPage() {
+  return <CollectionPage config={await getPublicCollectionConfig("bedsBlankets")} />;
 }

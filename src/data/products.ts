@@ -34,7 +34,7 @@ export type Product = ProductBase & {
   title: string;
   brand: typeof brandName;
   currency: "USD";
-  availability: "in_stock";
+  availability: "in_stock" | "out_of_stock" | "preorder";
   condition: "new";
   imageAlt: string;
   productUrl: string;
@@ -47,6 +47,10 @@ export type Product = ProductBase & {
   productType: string;
   careGuidance: string;
   safetyNotice: string;
+  seoTitle?: string;
+  seoDescription?: string;
+  googleProductCategory?: string;
+  stockQuantity?: number | null;
 };
 
 type ProductInput = ProductBase &

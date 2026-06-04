@@ -10,7 +10,8 @@ import { NewsletterSignup } from "@/components/sections/NewsletterSignup";
 import { CompactTrustBar, type CompactTrustItem } from "@/components/sections/CompactTrustBar";
 import { TrustBadges } from "@/components/sections/TrustBadges";
 import { SiteShell } from "@/components/layout/SiteShell";
-import { bestSellers, brandName, categories, mainProduct, newArrivals } from "@/data/products";
+import { brandName, categories } from "@/data/products";
+import { getPublicHomepageProducts } from "@/lib/public-product-data";
 import { absoluteUrl, createSeoMetadata, iconPath } from "@/lib/seo";
 import { freeShippingLabel } from "@/lib/shipping";
 
@@ -27,6 +28,8 @@ export const metadata: Metadata = {
     twitterDescription: "Thoughtfully designed pet essentials for playful pets and modern pet parents."
   })
 };
+
+export const dynamic = "force-dynamic";
 
 const topTrustItems: CompactTrustItem[] = [
   { key: "shipping", label: freeShippingLabel, Icon: Truck },
@@ -53,7 +56,8 @@ const valueHighlights = [
   }
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const { featuredProduct, bestSellers, newArrivals } = await getPublicHomepageProducts();
   const organizationStructuredData = {
     "@context": "https://schema.org",
     "@type": "Organization",
@@ -69,7 +73,7 @@ export default function HomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationStructuredData) }}
       />
-      <ViewItemListTracker products={[mainProduct]} itemListName="Homepage Featured Product" />
+      <ViewItemListTracker products={[featuredProduct]} itemListName="Homepage Featured Product" />
       <ViewItemListTracker products={bestSellers} itemListName="Homepage Best Sellers" />
       <ViewItemListTracker products={newArrivals} itemListName="Homepage New Arrivals" />
       <section className="section-shell grid min-h-[620px] items-center gap-10 py-10 md:grid-cols-2 md:py-16">
@@ -86,7 +90,7 @@ export default function HomePage() {
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
-              href="/products/interactive-snuffle-mat"
+              href={featuredProduct.productUrl}
               className="rounded-full bg-primary-container px-6 py-3 text-sm font-bold text-on-primary-container transition hover:bg-[#e08f00]"
             >
               Shop Best Sellers
@@ -145,7 +149,7 @@ export default function HomePage() {
         </Link>
       </section>
 
-      <HomeFeaturedProduct product={mainProduct} />
+      <HomeFeaturedProduct product={featuredProduct} />
 
       <section className="bg-surface-container-low py-14 md:py-20">
         <div className="section-shell">

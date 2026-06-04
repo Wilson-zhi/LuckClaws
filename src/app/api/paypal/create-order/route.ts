@@ -6,7 +6,7 @@ import { createPayPalOrder } from "@/lib/paypal";
 export async function POST(request: Request) {
   try {
     const payload = (await request.json()) as { items?: unknown; checkoutInfo?: unknown };
-    const checkout = validateCheckoutItems(payload.items);
+    const checkout = await validateCheckoutItems(payload.items);
     const checkoutInfo =
       payload.checkoutInfo && typeof payload.checkoutInfo === "object" && !Array.isArray(payload.checkoutInfo)
         ? (payload.checkoutInfo as CheckoutInfo)
