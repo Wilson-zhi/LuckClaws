@@ -265,7 +265,7 @@ export function RegisterForm() {
     <form className="ambient-card p-6 md:p-8" onSubmit={handleSubmit} noValidate>
       <div className="grid gap-5">
         <label className="grid gap-2 text-sm font-semibold text-on-surface">
-          Full name <span className="font-normal text-on-surface-variant">(optional)</span>
+          Name <span className="font-normal text-on-surface-variant">(optional)</span>
           <input
             className={inputClass}
             autoComplete="name"

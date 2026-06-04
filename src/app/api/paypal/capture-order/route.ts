@@ -25,14 +25,18 @@ function sanitizeCheckoutInfo(value: unknown): CheckoutInfo | null {
 
   return {
     email: sanitizeText(raw.email),
+    fullName: sanitizeText(raw.fullName),
     firstName: sanitizeText(raw.firstName),
     lastName: sanitizeText(raw.lastName),
     country: sanitizeText(raw.country),
     address: sanitizeText(raw.address),
+    addressLine1: sanitizeText(raw.addressLine1),
     apartment: sanitizeText(raw.apartment),
+    addressLine2: sanitizeText(raw.addressLine2),
     city: sanitizeText(raw.city),
     state: sanitizeText(raw.state),
     zip: sanitizeText(raw.zip),
+    postalCode: sanitizeText(raw.postalCode),
     phone: sanitizeText(raw.phone)
   };
 }

@@ -2,20 +2,24 @@ export const checkoutInfoKey = "luckclaws:checkoutInfo";
 
 export type CheckoutInfo = {
   email?: string;
+  fullName?: string;
   firstName?: string;
   lastName?: string;
   country?: string;
   address?: string;
+  addressLine1?: string;
   apartment?: string;
+  addressLine2?: string;
   city?: string;
   state?: string;
   zip?: string;
+  postalCode?: string;
   phone?: string;
 };
 
 export type CheckoutInfoField = keyof Pick<
   CheckoutInfo,
-  "email" | "firstName" | "lastName" | "country" | "address" | "city" | "state" | "zip"
+  "email" | "fullName" | "country" | "address" | "city" | "state" | "zip"
 >;
 
 export type CheckoutInfoValidationError = {
@@ -27,8 +31,7 @@ const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const requiredFieldLabels: Record<CheckoutInfoField, string> = {
   email: "Email",
-  firstName: "First name",
-  lastName: "Last name",
+  fullName: "Name",
   country: "Country / Region",
   address: "Address",
   city: "City",
@@ -41,16 +44,25 @@ function clean(value: unknown) {
 }
 
 export function normalizeCheckoutInfo(info: CheckoutInfo): CheckoutInfo {
+  const fullName = clean(info.fullName) || [clean(info.firstName), clean(info.lastName)].filter(Boolean).join(" ");
+  const address = clean(info.address) || clean(info.addressLine1);
+  const apartment = clean(info.apartment) || clean(info.addressLine2);
+  const zip = clean(info.zip) || clean(info.postalCode);
+
   return {
     email: clean(info.email),
+    fullName,
     firstName: clean(info.firstName),
     lastName: clean(info.lastName),
     country: clean(info.country),
-    address: clean(info.address),
-    apartment: clean(info.apartment),
+    address,
+    addressLine1: address,
+    apartment,
+    addressLine2: apartment,
     city: clean(info.city),
     state: clean(info.state),
-    zip: clean(info.zip),
+    zip,
+    postalCode: zip,
     phone: clean(info.phone)
   };
 }

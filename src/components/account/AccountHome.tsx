@@ -92,7 +92,7 @@ export function AccountHome() {
             <span className="font-semibold text-on-surface">Email:</span> {user.email}
           </p>
           <p>
-            <span className="font-semibold text-on-surface">Full name:</span>{" "}
+            <span className="font-semibold text-on-surface">Name:</span>{" "}
             {profile?.full_name || "Not added yet"}
           </p>
         </div>

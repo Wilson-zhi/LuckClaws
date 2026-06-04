@@ -215,7 +215,7 @@ export function AccountAddresses() {
         </h2>
         <div className="mt-6 grid gap-5">
           <label className="grid gap-2 text-sm font-semibold text-on-surface">
-            Full name
+            Name
             <input
               className={inputClass}
               autoComplete="name"

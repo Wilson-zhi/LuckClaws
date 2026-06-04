@@ -13,14 +13,27 @@ import {
   validateCheckoutInfo
 } from "@/lib/checkout-info";
 import { freeShippingLabel, standardShippingSentence, variableShippingSentence } from "@/lib/shipping";
+import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
+
+type SavedAddress = {
+  id: string;
+  full_name: string | null;
+  phone: string | null;
+  address_line1: string | null;
+  address_line2: string | null;
+  city: string | null;
+  state: string | null;
+  postal_code: string | null;
+  country: string | null;
+  is_default: boolean | null;
+};
 
 const inputClass =
   "min-h-14 w-full rounded-md border-outline bg-surface-container-lowest px-4 text-base focus:border-primary focus:ring-primary";
 
 const initialCheckoutInfo: CheckoutInfo = {
   email: "",
-  firstName: "",
-  lastName: "",
+  fullName: "",
   country: "United States",
   address: "",
   apartment: "",
@@ -30,24 +43,95 @@ const initialCheckoutInfo: CheckoutInfo = {
   phone: ""
 };
 
+function checkoutInfoFromAddress(address: SavedAddress): CheckoutInfo {
+  return normalizeCheckoutInfo({
+    fullName: address.full_name ?? "",
+    phone: address.phone ?? "",
+    address: address.address_line1 ?? "",
+    apartment: address.address_line2 ?? "",
+    city: address.city ?? "",
+    state: address.state ?? "",
+    zip: address.postal_code ?? "",
+    country: address.country ?? "United States"
+  });
+}
+
+function formatAddress(address: SavedAddress) {
+  return [
+    address.address_line1,
+    address.address_line2,
+    address.city,
+    address.state,
+    address.postal_code,
+    address.country
+  ]
+    .filter(Boolean)
+    .join(", ");
+}
+
 export function CheckoutForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const supabase = getSupabaseBrowserClient();
   const isBuyNowMode = searchParams.get("mode") === "buy-now";
   const [checkoutInfo, setCheckoutInfo] = useState<CheckoutInfo>(initialCheckoutInfo);
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<CheckoutInfoField, string>>>({});
   const [formError, setFormError] = useState("");
+  const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState("manual");
 
   useEffect(() => {
     const savedInfo = readCheckoutInfo();
+    const normalizedSavedInfo = savedInfo ? normalizeCheckoutInfo(savedInfo) : null;
 
-    if (savedInfo) {
+    if (normalizedSavedInfo) {
       setCheckoutInfo({
         ...initialCheckoutInfo,
-        ...normalizeCheckoutInfo(savedInfo)
+        ...normalizedSavedInfo
       });
     }
-  }, []);
+
+    if (!supabase) {
+      return;
+    }
+
+    let active = true;
+
+    supabase.auth.getUser().then(async ({ data }) => {
+      if (!active || !data.user) {
+        return;
+      }
+
+      const { data: addressData } = await supabase
+        .from("addresses")
+        .select("id, full_name, phone, address_line1, address_line2, city, state, postal_code, country, is_default")
+        .eq("user_id", data.user.id)
+        .order("is_default", { ascending: false });
+
+      if (!active || !addressData) {
+        return;
+      }
+
+      const addresses = addressData as SavedAddress[];
+      setSavedAddresses(addresses);
+
+      if (!normalizedSavedInfo) {
+        const defaultAddress = addresses.find((address) => address.is_default) ?? addresses[0];
+
+        if (defaultAddress) {
+          setSelectedAddressId(defaultAddress.id);
+          setCheckoutInfo((currentInfo) => ({
+            ...currentInfo,
+            ...checkoutInfoFromAddress(defaultAddress)
+          }));
+        }
+      }
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [supabase]);
 
   const updateField = (field: keyof CheckoutInfo, value: string) => {
     setFormError("");
@@ -68,6 +152,16 @@ export function CheckoutForm() {
   };
 
   const getFieldError = (field: CheckoutInfoField) => fieldErrors[field];
+
+  const applySavedAddress = (address: SavedAddress) => {
+    setSelectedAddressId(address.id);
+    setFormError("");
+    setFieldErrors({});
+    setCheckoutInfo((currentInfo) => ({
+      ...currentInfo,
+      ...checkoutInfoFromAddress(address)
+    }));
+  };
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -165,6 +259,52 @@ export function CheckoutForm() {
 
       <section>
         <h2 className="font-heading text-2xl font-bold">Shipping address</h2>
+        {savedAddresses.length > 0 && (
+          <div className="mt-5 rounded-lg bg-surface-container-low p-5">
+            <h3 className="font-heading text-xl font-bold">Use a saved address</h3>
+            <p className="mt-2 text-sm leading-6 text-on-surface-variant">
+              Choose an address from your account, or keep editing the fields below manually.
+            </p>
+            <div className="mt-4 grid gap-3 md:grid-cols-2">
+              <button
+                type="button"
+                className={`rounded-md border p-4 text-left text-sm transition ${
+                  selectedAddressId === "manual"
+                    ? "border-primary bg-primary-container/10"
+                    : "border-outline-variant bg-surface-container-lowest hover:border-primary"
+                }`}
+                onClick={() => setSelectedAddressId("manual")}
+              >
+                <span className="font-heading text-base font-bold text-on-surface">Manual entry</span>
+                <span className="mt-1 block text-on-surface-variant">Type or edit the address fields below.</span>
+              </button>
+              {savedAddresses.map((address) => (
+                <button
+                  key={address.id}
+                  type="button"
+                  className={`rounded-md border p-4 text-left text-sm transition ${
+                    selectedAddressId === address.id
+                      ? "border-primary bg-primary-container/10"
+                      : "border-outline-variant bg-surface-container-lowest hover:border-primary"
+                  }`}
+                  onClick={() => applySavedAddress(address)}
+                >
+                  <span className="font-heading text-base font-bold text-on-surface">
+                    {address.full_name || "Saved address"}
+                  </span>
+                  {address.is_default && (
+                    <span className="ml-2 rounded-full bg-primary-container/20 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-primary">
+                      Default
+                    </span>
+                  )}
+                  <span className="mt-2 block leading-6 text-on-surface-variant">
+                    {formatAddress(address)}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         <div className="mt-5 grid gap-5 md:grid-cols-2">
           <div className="md:col-span-2">
             <label htmlFor="country" className="mb-2 block font-semibold text-on-surface-variant">
@@ -191,47 +331,25 @@ export function CheckoutForm() {
               </p>
             )}
           </div>
-          <div>
-            <label htmlFor="firstName" className="mb-2 block font-semibold text-on-surface-variant">
-              First name
+          <div className="md:col-span-2">
+            <label htmlFor="fullName" className="mb-2 block font-semibold text-on-surface-variant">
+              Name
             </label>
             <input
-              id="firstName"
-              name="firstName"
-              autoComplete="given-name"
-              placeholder="First name"
+              id="fullName"
+              name="fullName"
+              autoComplete="name"
+              placeholder="Name"
               className={inputClass}
-              value={checkoutInfo.firstName ?? ""}
-              onChange={(event) => updateField("firstName", event.target.value)}
-              aria-invalid={Boolean(getFieldError("firstName"))}
-              aria-describedby={getFieldError("firstName") ? "firstName-error" : undefined}
+              value={checkoutInfo.fullName ?? ""}
+              onChange={(event) => updateField("fullName", event.target.value)}
+              aria-invalid={Boolean(getFieldError("fullName"))}
+              aria-describedby={getFieldError("fullName") ? "fullName-error" : undefined}
               required
             />
-            {getFieldError("firstName") && (
-              <p id="firstName-error" className="mt-2 text-sm text-error">
-                {getFieldError("firstName")}
-              </p>
-            )}
-          </div>
-          <div>
-            <label htmlFor="lastName" className="mb-2 block font-semibold text-on-surface-variant">
-              Last name
-            </label>
-            <input
-              id="lastName"
-              name="lastName"
-              autoComplete="family-name"
-              placeholder="Last name"
-              className={inputClass}
-              value={checkoutInfo.lastName ?? ""}
-              onChange={(event) => updateField("lastName", event.target.value)}
-              aria-invalid={Boolean(getFieldError("lastName"))}
-              aria-describedby={getFieldError("lastName") ? "lastName-error" : undefined}
-              required
-            />
-            {getFieldError("lastName") && (
-              <p id="lastName-error" className="mt-2 text-sm text-error">
-                {getFieldError("lastName")}
+            {getFieldError("fullName") && (
+              <p id="fullName-error" className="mt-2 text-sm text-error">
+                {getFieldError("fullName")}
               </p>
             )}
           </div>

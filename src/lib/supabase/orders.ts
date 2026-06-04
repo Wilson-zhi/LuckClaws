@@ -1,7 +1,7 @@
 import "server-only";
 
 import { type User } from "@supabase/supabase-js";
-import { type CheckoutInfo } from "@/lib/checkout-info";
+import { normalizeCheckoutInfo, type CheckoutInfo } from "@/lib/checkout-info";
 import { type CheckoutTotals, type ValidatedCheckoutItem } from "@/lib/checkout-items";
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
 import { roundMoney } from "@/lib/utils";
@@ -39,21 +39,23 @@ function createOrderNumber() {
 }
 
 function customerNameFromInfo(checkoutInfo: CheckoutInfo | null) {
-  const name = [clean(checkoutInfo?.firstName), clean(checkoutInfo?.lastName)].filter(Boolean).join(" ");
+  const name = clean(normalizeCheckoutInfo(checkoutInfo ?? {}).fullName);
 
   return name || null;
 }
 
 function shippingAddressFromInfo(checkoutInfo: CheckoutInfo | null, customerName: string | null) {
+  const normalizedInfo = normalizeCheckoutInfo(checkoutInfo ?? {});
+
   return {
     full_name: customerName,
-    phone: clean(checkoutInfo?.phone),
-    address_line1: clean(checkoutInfo?.address),
-    address_line2: clean(checkoutInfo?.apartment),
-    city: clean(checkoutInfo?.city),
-    state: clean(checkoutInfo?.state),
-    postal_code: clean(checkoutInfo?.zip),
-    country: clean(checkoutInfo?.country)
+    phone: clean(normalizedInfo.phone),
+    address_line1: clean(normalizedInfo.address),
+    address_line2: clean(normalizedInfo.apartment),
+    city: clean(normalizedInfo.city),
+    state: clean(normalizedInfo.state),
+    postal_code: clean(normalizedInfo.zip),
+    country: clean(normalizedInfo.country)
   };
 }
 

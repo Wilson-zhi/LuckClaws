@@ -102,7 +102,7 @@ export function CheckoutPaymentContent() {
               </p>
               <p>
                 <span className="font-semibold text-on-surface">Name:</span>{" "}
-                {[checkoutInfo.firstName, checkoutInfo.lastName].filter(Boolean).join(" ")}
+                {checkoutInfo.fullName}
               </p>
               <p className="md:col-span-2">
                 <span className="font-semibold text-on-surface">Ship to:</span>{" "}
