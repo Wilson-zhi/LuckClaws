@@ -66,6 +66,19 @@ export function CheckoutPaymentContent() {
   const hasItems = checkoutItems.length > 0;
   const hasValidCheckoutInfo = checkoutInfoLoaded && isCheckoutInfoValid(checkoutInfo);
   const informationHref = `/checkout/information${isBuyNowMode ? "?mode=buy-now" : ""}`;
+  const checkoutItemsSignature = checkoutItems
+    .map((item) => [item.id, item.quantity, item.color ?? "", item.size ?? ""].join(":"))
+    .join("|");
+  const paypalButtonsKey = checkoutInfo
+    ? [
+        "paypal",
+        checkoutInfo.email ?? "",
+        checkoutInfo.zip ?? "",
+        totals.total,
+        totals.estimatedShipping,
+        checkoutItemsSignature
+      ].join("-")
+    : "paypal-pending";
 
   return (
     <div className="grid gap-12 lg:grid-cols-[1fr_520px] lg:items-start">
@@ -136,7 +149,7 @@ export function CheckoutPaymentContent() {
           </p>
           {!checkoutInfoLoaded ? (
             <div className="mt-6 rounded-md bg-surface-container-low p-5 text-sm text-on-surface-variant">
-              Loading checkout information...
+              Preparing secure payment...
             </div>
           ) : !hasValidCheckoutInfo ? (
             <div className="mt-6 rounded-md bg-primary-container/10 p-5 text-sm leading-6 text-on-surface-variant">
@@ -152,11 +165,12 @@ export function CheckoutPaymentContent() {
             </div>
           ) : showLoadingState ? (
             <div className="mt-6 rounded-md bg-surface-container-low p-5 text-sm text-on-surface-variant">
-              Loading Buy Now checkout item...
+              Preparing secure payment...
             </div>
           ) : hasItems && checkoutInfo ? (
             <div className="mt-6">
               <PayPalSandboxButtons
+                key={paypalButtonsKey}
                 items={checkoutItems}
                 total={totals.total}
                 shipping={totals.estimatedShipping}

@@ -97,6 +97,12 @@ export function PayPalSandboxButtons({
   const checkoutInfoSignature = useMemo(() => JSON.stringify(normalizedCheckoutInfo), [normalizedCheckoutInfo]);
 
   useEffect(() => {
+    if (window.paypal) {
+      setScriptReady(true);
+    }
+  }, []);
+
+  useEffect(() => {
     if (
       !scriptReady ||
       !containerRef.current ||
@@ -224,6 +230,7 @@ export function PayPalSandboxButtons({
 
     return () => {
       buttons.close?.();
+      buttonsRef.current = null;
     };
   }, [checkoutInfoSignature, checkoutMode, itemSignature, items, normalizedCheckoutInfo, router, scriptReady, shipping, total]);
 
@@ -244,13 +251,19 @@ export function PayPalSandboxButtons({
         src={paypalScriptSrc}
         strategy="afterInteractive"
         onLoad={() => setScriptReady(true)}
+        onReady={() => setScriptReady(true)}
         onError={() => setError("Unable to load the PayPal Sandbox SDK.")}
       />
       <div className="rounded-md bg-surface-container-low p-4 text-sm leading-6 text-on-surface-variant">
         Sandbox payment mode is active for testing. The PayPal amount should match the checkout
         total of <span className="font-semibold text-on-surface">{formatPrice(total)}</span>.
       </div>
-      <div ref={containerRef} className="mt-5 min-h-36" />
+      {!scriptReady && !error && (
+        <div className="mt-5 rounded-md bg-surface-container-low p-5 text-sm text-on-surface-variant">
+          Preparing secure payment...
+        </div>
+      )}
+      <div ref={containerRef} className={scriptReady ? "mt-5 min-h-36" : "hidden"} />
       {message && (
         <p className="mt-3 text-sm leading-6 text-on-surface-variant" role="status" aria-live="polite">
           {message}
