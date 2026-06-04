@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AdminGuard, useAdminAuth } from "@/components/admin/AdminGuard";
 import { AdminPageFrame } from "@/components/admin/AdminPageFrame";
@@ -9,9 +10,11 @@ type AdminOrderRow = {
   id: string;
   order_number: string | null;
   customer_email: string | null;
+  customer_name: string | null;
   total_amount: number | string | null;
   payment_status: string | null;
   fulfillment_status: string | null;
+  paypal_order_id: string | null;
   created_at: string | null;
 };
 
@@ -29,6 +32,10 @@ function formatDate(value: string | null) {
 
 function displayStatus(value: string | null) {
   return value ? value.replaceAll("_", " ") : "pending";
+}
+
+function displayValue(value: string | null) {
+  return value?.trim() || "Not provided";
 }
 
 function totalFromRow(order: AdminOrderRow) {
@@ -88,8 +95,8 @@ function OrdersTable() {
 
   if (error) {
     return (
-      <div className="ambient-card p-6 text-sm leading-6 text-on-surface-variant">
-        Orders management will be connected here.
+      <div className="ambient-card p-6 text-sm leading-6 text-error" role="alert">
+        {error}
       </div>
     );
   }
@@ -97,7 +104,7 @@ function OrdersTable() {
   if (orders.length === 0) {
     return (
       <div className="ambient-card p-6 text-sm leading-6 text-on-surface-variant">
-        No orders found yet.
+        No orders yet.
       </div>
     );
   }
@@ -105,26 +112,39 @@ function OrdersTable() {
   return (
     <div className="overflow-hidden rounded-lg bg-surface-container-lowest shadow-soft">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[760px] text-left text-sm">
+        <table className="w-full min-w-[1280px] text-left text-sm">
           <thead className="bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant">
             <tr>
               <th className="px-4 py-3">Order</th>
-              <th className="px-4 py-3">Customer</th>
+              <th className="px-4 py-3">Email</th>
+              <th className="px-4 py-3">Name</th>
               <th className="px-4 py-3">Total</th>
               <th className="px-4 py-3">Payment</th>
               <th className="px-4 py-3">Fulfillment</th>
+              <th className="px-4 py-3">PayPal Order</th>
               <th className="px-4 py-3">Created</th>
+              <th className="px-4 py-3">Action</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-outline-variant/70">
             {orders.map((order) => (
               <tr key={order.id}>
                 <td className="px-4 py-4 font-semibold text-on-surface">{order.order_number ?? "Unavailable"}</td>
-                <td className="px-4 py-4 text-on-surface-variant">{order.customer_email ?? "Not provided"}</td>
+                <td className="px-4 py-4 text-on-surface-variant">{displayValue(order.customer_email)}</td>
+                <td className="px-4 py-4 text-on-surface-variant">{displayValue(order.customer_name)}</td>
                 <td className="px-4 py-4 font-semibold">{formatPrice(totalFromRow(order))}</td>
                 <td className="px-4 py-4 text-on-surface-variant">{displayStatus(order.payment_status)}</td>
                 <td className="px-4 py-4 text-on-surface-variant">{displayStatus(order.fulfillment_status)}</td>
+                <td className="px-4 py-4 text-on-surface-variant">{displayValue(order.paypal_order_id)}</td>
                 <td className="px-4 py-4 text-on-surface-variant">{formatDate(order.created_at)}</td>
+                <td className="px-4 py-4">
+                  <Link
+                    href={`/admin/orders/${order.id}`}
+                    className="inline-flex rounded-full border border-primary px-4 py-2 font-heading text-xs font-bold text-primary transition hover:bg-primary-container/10"
+                  >
+                    View
+                  </Link>
+                </td>
               </tr>
             ))}
           </tbody>
