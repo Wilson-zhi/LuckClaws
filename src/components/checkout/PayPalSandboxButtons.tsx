@@ -3,7 +3,7 @@
 import Script from "next/script";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { readCheckoutInfo } from "@/lib/checkout-info";
+import { type CheckoutInfo, isCheckoutInfoValid, normalizeCheckoutInfo } from "@/lib/checkout-info";
 import { trackPurchase } from "@/lib/ga4-ecommerce";
 import { savePayPalPaymentResult } from "@/lib/paypal-payment-result";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
@@ -15,6 +15,7 @@ type PayPalSandboxButtonsProps = {
   total: number;
   shipping: number;
   checkoutMode: "cart" | "buy-now";
+  checkoutInfo: CheckoutInfo;
 };
 
 type PayPalCreateOrderResponse = {
@@ -82,7 +83,8 @@ export function PayPalSandboxButtons({
   items,
   total,
   shipping,
-  checkoutMode
+  checkoutMode,
+  checkoutInfo
 }: PayPalSandboxButtonsProps) {
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -91,9 +93,17 @@ export function PayPalSandboxButtons({
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const itemSignature = useMemo(() => JSON.stringify(checkoutItemsPayload(items)), [items]);
+  const normalizedCheckoutInfo = useMemo(() => normalizeCheckoutInfo(checkoutInfo), [checkoutInfo]);
+  const checkoutInfoSignature = useMemo(() => JSON.stringify(normalizedCheckoutInfo), [normalizedCheckoutInfo]);
 
   useEffect(() => {
-    if (!scriptReady || !containerRef.current || !window.paypal || items.length === 0) {
+    if (
+      !scriptReady ||
+      !containerRef.current ||
+      !window.paypal ||
+      items.length === 0 ||
+      !isCheckoutInfoValid(normalizedCheckoutInfo)
+    ) {
       return;
     }
 
@@ -114,6 +124,14 @@ export function PayPalSandboxButtons({
         }
       },
       createOrder: async () => {
+        if (items.length === 0) {
+          throw new Error("Checkout must include at least one item.");
+        }
+
+        if (!isCheckoutInfoValid(normalizedCheckoutInfo)) {
+          throw new Error("Please complete your checkout information before payment.");
+        }
+
         setError("");
         setMessage("Creating PayPal Sandbox order...");
         const response = await fetch("/api/paypal/create-order", {
@@ -123,7 +141,8 @@ export function PayPalSandboxButtons({
           },
           body: JSON.stringify({
             checkoutMode,
-            items: checkoutItemsPayload(items)
+            items: checkoutItemsPayload(items),
+            checkoutInfo: normalizedCheckoutInfo
           })
         });
         const payload = (await response.json()) as PayPalCreateOrderResponse;
@@ -139,6 +158,10 @@ export function PayPalSandboxButtons({
       onApprove: async (data) => {
         if (!data.orderID) {
           throw new Error("PayPal did not return an order ID.");
+        }
+
+        if (!isCheckoutInfoValid(normalizedCheckoutInfo)) {
+          throw new Error("Please complete your checkout information before payment.");
         }
 
         setError("");
@@ -157,7 +180,7 @@ export function PayPalSandboxButtons({
           body: JSON.stringify({
             orderId: data.orderID,
             items: checkoutItemsPayload(items),
-            checkoutInfo: readCheckoutInfo()
+            checkoutInfo: normalizedCheckoutInfo
           })
         });
         const payload = (await response.json()) as PayPalCaptureOrderResponse;
@@ -202,7 +225,7 @@ export function PayPalSandboxButtons({
     return () => {
       buttons.close?.();
     };
-  }, [checkoutMode, itemSignature, items, router, scriptReady, shipping, total]);
+  }, [checkoutInfoSignature, checkoutMode, itemSignature, items, normalizedCheckoutInfo, router, scriptReady, shipping, total]);
 
   if (!clientId) {
     return (

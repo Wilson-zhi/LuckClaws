@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { type CheckoutInfo } from "@/lib/checkout-info";
+import { type CheckoutInfo, validateCheckoutInfo } from "@/lib/checkout-info";
 import { validateCheckoutItems } from "@/lib/checkout-items";
 import { capturePayPalOrder } from "@/lib/paypal";
 import { savePayPalOrderToSupabase } from "@/lib/supabase/orders";
@@ -50,6 +50,15 @@ export async function POST(request: Request) {
     }
 
     const checkout = validateCheckoutItems(payload.items);
+    const checkoutInfo = sanitizeCheckoutInfo(payload.checkoutInfo);
+
+    if (validateCheckoutInfo(checkoutInfo).length > 0) {
+      return NextResponse.json(
+        { error: "Please complete your checkout information before payment." },
+        { status: 400 }
+      );
+    }
+
     const paypalOrderId = payload.orderId.trim();
     const capture = await capturePayPalOrder(paypalOrderId);
     const completedCapture = getCompletedCapture(capture);
@@ -79,7 +88,6 @@ export async function POST(request: Request) {
       );
     }
 
-    const checkoutInfo = sanitizeCheckoutInfo(payload.checkoutInfo);
     const user = await getUserFromRequest(request);
     let internalOrderId: string | undefined;
     let internalOrderNumber: string | undefined;

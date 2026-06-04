@@ -34,13 +34,15 @@ export function SupportPageLayout({
       <section className="section-shell py-10 md:py-16">
         <div className="max-w-3xl">
           {backLink && (
-            <Link
-              href={backLink.href}
-              className="mb-5 inline-flex text-sm font-semibold text-primary transition hover:text-on-surface"
-            >
-              <span aria-hidden>&larr;</span>
-              <span className="ml-2">{backLink.label}</span>
-            </Link>
+            <div className="mb-8">
+              <Link
+                href={backLink.href}
+                className="inline-flex text-sm font-semibold text-primary transition hover:text-on-surface"
+              >
+                <span aria-hidden>&larr;</span>
+                <span className="ml-2">{backLink.label}</span>
+              </Link>
+            </div>
           )}
           <span className="inline-flex rounded-full bg-primary-container/20 px-4 py-2 text-xs font-bold uppercase tracking-wide text-primary">
             {eyebrow}

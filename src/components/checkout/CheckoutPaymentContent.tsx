@@ -7,7 +7,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Lock, Mail, ShieldCheck, Truck } from "lucide-react";
 import { PayPalSandboxButtons } from "@/components/checkout/PayPalSandboxButtons";
 import { readBuyNowCheckoutItem } from "@/lib/buy-now-checkout";
-import { type CheckoutInfo, readCheckoutInfo } from "@/lib/checkout-info";
+import { type CheckoutInfo, isCheckoutInfoValid, normalizeCheckoutInfo, readCheckoutInfo } from "@/lib/checkout-info";
 import { freeShippingLabel, shortStandardShippingSentence, variableShippingSentence } from "@/lib/shipping";
 import { formatPrice } from "@/lib/utils";
 import { getCartTotals, productById, type CartItem, useCartStore } from "@/store/cart-store";
@@ -19,9 +19,13 @@ export function CheckoutPaymentContent() {
   const [buyNowItem, setBuyNowItem] = useState<CartItem | null>(null);
   const [buyNowLoaded, setBuyNowLoaded] = useState(!isBuyNowMode);
   const [checkoutInfo, setCheckoutInfo] = useState<CheckoutInfo | null>(null);
+  const [checkoutInfoLoaded, setCheckoutInfoLoaded] = useState(false);
 
   useEffect(() => {
-    setCheckoutInfo(readCheckoutInfo());
+    const savedCheckoutInfo = readCheckoutInfo();
+
+    setCheckoutInfo(savedCheckoutInfo ? normalizeCheckoutInfo(savedCheckoutInfo) : null);
+    setCheckoutInfoLoaded(true);
 
     if (!isBuyNowMode) {
       setBuyNowItem(null);
@@ -44,13 +48,15 @@ export function CheckoutPaymentContent() {
   const totals = getCartTotals(checkoutItems);
   const showLoadingState = isBuyNowMode && !buyNowLoaded;
   const hasItems = checkoutItems.length > 0;
+  const hasValidCheckoutInfo = checkoutInfoLoaded && isCheckoutInfoValid(checkoutInfo);
+  const informationHref = `/checkout/information${isBuyNowMode ? "?mode=buy-now" : ""}`;
 
   return (
     <div className="grid gap-12 lg:grid-cols-[1fr_520px] lg:items-start">
       <section className="space-y-6">
         <div>
           <Link
-            href={`/checkout/information${isBuyNowMode ? "?mode=buy-now" : ""}`}
+            href={informationHref}
             className="mb-4 inline-flex text-sm font-semibold text-primary transition hover:text-on-surface"
           >
             &larr; Back to Information
@@ -84,15 +90,19 @@ export function CheckoutPaymentContent() {
 
         <section className="ambient-card p-6 md:p-8">
           <h2 className="font-heading text-2xl font-bold">Customer Information</h2>
-          {checkoutInfo ? (
+          {!checkoutInfoLoaded ? (
+            <p className="mt-4 text-sm leading-6 text-on-surface-variant">
+              Loading checkout information...
+            </p>
+          ) : hasValidCheckoutInfo && checkoutInfo ? (
             <div className="mt-5 grid gap-3 text-sm leading-6 text-on-surface-variant md:grid-cols-2">
               <p>
                 <span className="font-semibold text-on-surface">Email:</span>{" "}
-                {checkoutInfo.email || "Not provided"}
+                {checkoutInfo.email}
               </p>
               <p>
                 <span className="font-semibold text-on-surface">Name:</span>{" "}
-                {[checkoutInfo.firstName, checkoutInfo.lastName].filter(Boolean).join(" ") || "Not provided"}
+                {[checkoutInfo.firstName, checkoutInfo.lastName].filter(Boolean).join(" ")}
               </p>
               <p className="md:col-span-2">
                 <span className="font-semibold text-on-surface">Ship to:</span>{" "}
@@ -105,20 +115,19 @@ export function CheckoutPaymentContent() {
                   checkoutInfo.country
                 ]
                   .filter(Boolean)
-                  .join(", ") || "Not provided"}
+                  .join(", ")}
               </p>
             </div>
           ) : (
             <p className="mt-4 text-sm leading-6 text-on-surface-variant">
-              Customer information has not been saved in this browser session. You can return to
-              the information step before paying.
+              Please complete your checkout information before payment.
             </p>
           )}
           <Link
-            href={`/checkout/information${isBuyNowMode ? "?mode=buy-now" : ""}`}
+            href={informationHref}
             className="mt-5 inline-flex font-semibold text-primary hover:underline"
           >
-            Edit information
+            {hasValidCheckoutInfo ? "Edit information" : "Go to Checkout Information"}
           </Link>
         </section>
 
@@ -128,17 +137,34 @@ export function CheckoutPaymentContent() {
             {shortStandardShippingSentence}. {variableShippingSentence} Taxes are not calculated in
             this sandbox MVP checkout.
           </p>
-          {showLoadingState ? (
+          {!checkoutInfoLoaded ? (
+            <div className="mt-6 rounded-md bg-surface-container-low p-5 text-sm text-on-surface-variant">
+              Loading checkout information...
+            </div>
+          ) : !hasValidCheckoutInfo ? (
+            <div className="mt-6 rounded-md bg-primary-container/10 p-5 text-sm leading-6 text-on-surface-variant">
+              <p className="font-semibold text-on-surface">
+                Please complete your checkout information before payment.
+              </p>
+              <Link
+                href={informationHref}
+                className="mt-4 inline-flex rounded-full bg-primary-container px-6 py-3 font-heading font-bold text-on-primary-container transition hover:bg-[#e08f00]"
+              >
+                Go to Checkout Information
+              </Link>
+            </div>
+          ) : showLoadingState ? (
             <div className="mt-6 rounded-md bg-surface-container-low p-5 text-sm text-on-surface-variant">
               Loading Buy Now checkout item...
             </div>
-          ) : hasItems ? (
+          ) : hasItems && checkoutInfo ? (
             <div className="mt-6">
               <PayPalSandboxButtons
                 items={checkoutItems}
                 total={totals.total}
                 shipping={totals.estimatedShipping}
                 checkoutMode={isBuyNowMode ? "buy-now" : "cart"}
+                checkoutInfo={checkoutInfo}
               />
             </div>
           ) : (
