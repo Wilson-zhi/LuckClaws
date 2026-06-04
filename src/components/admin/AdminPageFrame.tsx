@@ -6,7 +6,12 @@ import { Box, LayoutDashboard, Package, Users } from "lucide-react";
 type AdminPageFrameProps = {
   title: string;
   description?: string;
-  backLink?: boolean;
+  backLink?:
+    | boolean
+    | {
+        href: string;
+        label: string;
+      };
   children: React.ReactNode;
 };
 
@@ -18,17 +23,24 @@ const adminNavItems = [
 ];
 
 export function AdminPageFrame({ title, description, backLink = false, children }: AdminPageFrameProps) {
+  const normalizedBackLink =
+    typeof backLink === "object"
+      ? backLink
+      : backLink
+        ? { href: "/admin", label: "Back to Admin" }
+        : null;
+
   return (
     <>
       <section className="section-shell py-10 md:py-14">
         <div className="max-w-4xl">
-          {backLink && (
+          {normalizedBackLink && (
             <Link
-              href="/admin"
+              href={normalizedBackLink.href}
               className="mb-8 inline-flex text-sm font-semibold text-primary transition hover:text-on-surface"
             >
               <span aria-hidden>&larr;</span>
-              <span className="ml-2">Back to Admin</span>
+              <span className="ml-2">{normalizedBackLink.label}</span>
             </Link>
           )}
           <span className="inline-flex rounded-full bg-primary-container/20 px-4 py-2 text-xs font-bold uppercase tracking-wide text-primary">

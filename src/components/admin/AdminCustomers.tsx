@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AdminGuard, useAdminAuth } from "@/components/admin/AdminGuard";
 import { AdminPageFrame } from "@/components/admin/AdminPageFrame";
@@ -10,6 +11,8 @@ type AdminCustomerRow = {
   full_name: string | null;
   role: string | null;
   created_at: string | null;
+  address_count: number;
+  order_count: number;
 };
 
 function formatDate(value: string | null) {
@@ -92,13 +95,16 @@ function CustomersTable() {
   return (
     <div className="overflow-hidden rounded-lg bg-surface-container-lowest shadow-soft">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[720px] text-left text-sm">
+        <table className="w-full min-w-[960px] text-left text-sm">
           <thead className="bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant">
             <tr>
               <th className="px-4 py-3">Email</th>
               <th className="px-4 py-3">Name</th>
               <th className="px-4 py-3">Role</th>
-              <th className="px-4 py-3">Created</th>
+              <th className="px-4 py-3">Registered</th>
+              <th className="px-4 py-3">Addresses</th>
+              <th className="px-4 py-3">Orders</th>
+              <th className="px-4 py-3">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-outline-variant/70">
@@ -108,6 +114,16 @@ function CustomersTable() {
                 <td className="px-4 py-4 text-on-surface-variant">{customer.full_name ?? "Not added"}</td>
                 <td className="px-4 py-4 text-on-surface-variant">{customer.role ?? "customer"}</td>
                 <td className="px-4 py-4 text-on-surface-variant">{formatDate(customer.created_at)}</td>
+                <td className="px-4 py-4 text-on-surface-variant">{customer.address_count}</td>
+                <td className="px-4 py-4 text-on-surface-variant">{customer.order_count}</td>
+                <td className="px-4 py-4">
+                  <Link
+                    href={`/admin/customers/${customer.id}`}
+                    className="inline-flex rounded-full border border-primary px-4 py-2 font-heading text-xs font-bold text-primary transition hover:bg-primary-container/10"
+                  >
+                    View
+                  </Link>
+                </td>
               </tr>
             ))}
           </tbody>
