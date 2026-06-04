@@ -1,10 +1,11 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { type FormEvent, useEffect, useState } from "react";
+import { type ChangeEvent, type FormEvent, useEffect, useState } from "react";
 import { AdminGuard, useAdminAuth } from "@/components/admin/AdminGuard";
 import { AdminPageFrame } from "@/components/admin/AdminPageFrame";
 import { inventoryStatuses, productStatuses } from "@/lib/admin-products";
+import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 type ProductFormMode = "create" | "edit";
 
@@ -78,8 +79,26 @@ const inputClass =
 const textareaClass =
   "min-h-32 w-full rounded-md border border-outline-variant bg-white px-4 py-3 text-base outline-none transition focus:border-primary focus:ring-2 focus:ring-primary-container/30";
 
+const PRODUCT_IMAGE_BUCKET = "product-images";
+const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
+const acceptedImageTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
+
 function stringValue(value: string | number | null) {
   return value === null ? "" : String(value);
+}
+
+function sanitizePathSegment(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9._-]/g, "")
+    .replace(/-+/g, "-")
+    .replace(/^[._-]+|[._-]+$/g, "");
+}
+
+function safeFileName(fileName: string) {
+  return sanitizePathSegment(fileName) || "product-image";
 }
 
 function formFromProduct(product: AdminProductDetailRow): ProductFormState {
@@ -187,9 +206,13 @@ function FieldError({ message }: { message?: string }) {
 function ProductFormContent({ mode, productId }: { mode: ProductFormMode; productId?: string }) {
   const router = useRouter();
   const { accessToken } = useAdminAuth();
+  const supabase = getSupabaseBrowserClient();
   const [form, setForm] = useState<ProductFormState>(emptyForm);
   const [loading, setLoading] = useState(mode === "edit");
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadMessage, setUploadMessage] = useState("");
+  const [uploadError, setUploadError] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState("");
 
@@ -237,6 +260,56 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
       ...currentForm,
       [field]: value
     }));
+  };
+
+  const handleImageUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    setUploadMessage("");
+    setUploadError("");
+
+    if (!file) {
+      return;
+    }
+
+    if (!acceptedImageTypes.has(file.type)) {
+      setUploadError("Please choose a JPEG, PNG, or WebP image.");
+      return;
+    }
+
+    if (file.size > MAX_IMAGE_SIZE_BYTES) {
+      setUploadError("Image must be 5MB or smaller.");
+      return;
+    }
+
+    if (!supabase) {
+      setUploadError("Supabase is not configured for uploads in this build.");
+      return;
+    }
+
+    setUploading(true);
+
+    const folderSlug = sanitizePathSegment(form.slug) || "uploads";
+    const storagePath = `products/${folderSlug}/${Date.now()}-${safeFileName(file.name)}`;
+    const { error: uploadErrorResult } = await supabase.storage
+      .from(PRODUCT_IMAGE_BUCKET)
+      .upload(storagePath, file, {
+        cacheControl: "3600",
+        contentType: file.type,
+        upsert: false
+      });
+
+    if (uploadErrorResult) {
+      setUploadError(uploadErrorResult.message);
+      setUploading(false);
+      return;
+    }
+
+    const { data } = supabase.storage.from(PRODUCT_IMAGE_BUCKET).getPublicUrl(storagePath);
+
+    updateField("image_url", data.publicUrl);
+    setUploadMessage("Image uploaded. Image URL has been updated.");
+    setUploading(false);
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -351,6 +424,35 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
           Image URL
           <input className={inputClass} value={form.image_url} onChange={(event) => updateField("image_url", event.target.value)} />
         </label>
+
+        <div className="grid gap-4 rounded-md bg-surface-container-low p-4 md:col-span-2">
+          <label className="grid gap-2 text-sm font-semibold text-on-surface">
+            Upload product image
+            <input
+              accept="image/jpeg,image/png,image/webp"
+              className="block w-full rounded-md border border-outline-variant bg-white px-4 py-3 text-sm text-on-surface file:mr-4 file:rounded-full file:border-0 file:bg-primary-container file:px-4 file:py-2 file:font-heading file:font-bold file:text-on-primary-container"
+              disabled={uploading}
+              type="file"
+              onChange={handleImageUpload}
+            />
+          </label>
+          {uploading && <p className="text-sm font-semibold text-on-surface-variant">Uploading image...</p>}
+          {uploadMessage && <p className="text-sm font-semibold text-primary">{uploadMessage}</p>}
+          {uploadError && (
+            <p className="text-sm font-semibold text-error" role="alert">
+              {uploadError}
+            </p>
+          )}
+          {form.image_url ? (
+            <div className="grid gap-3 sm:grid-cols-[120px_1fr] sm:items-center">
+              <div className="aspect-square overflow-hidden rounded-md bg-surface-container-lowest">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={form.image_url} alt="Product image preview" className="h-full w-full object-cover" />
+              </div>
+              <p className="break-all text-sm leading-6 text-on-surface-variant">{form.image_url}</p>
+            </div>
+          ) : null}
+        </div>
 
         <label className="grid gap-2 text-sm font-semibold text-on-surface">
           Status

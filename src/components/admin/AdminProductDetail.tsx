@@ -203,6 +203,28 @@ function ProductDetailContent({ productId }: { productId: string }) {
       </section>
 
       <section className="ambient-card p-6 md:p-8">
+        <h2 className="font-heading text-2xl font-bold">Product Image</h2>
+        {product.image_url ? (
+          <div className="mt-6 grid gap-5 md:grid-cols-[180px_1fr] md:items-start">
+            <div className="aspect-square overflow-hidden rounded-md bg-surface-container-low">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={product.image_url}
+                alt={`${product.title ?? "LUCK CLAWS product"} image`}
+                className="h-full w-full object-cover"
+              />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-on-surface">Image URL</p>
+              <p className="mt-2 break-all text-sm leading-6 text-on-surface-variant">{product.image_url}</p>
+            </div>
+          </div>
+        ) : (
+          <p className="mt-5 text-sm leading-6 text-on-surface-variant">No product image yet.</p>
+        )}
+      </section>
+
+      <section className="ambient-card p-6 md:p-8">
         <h2 className="font-heading text-2xl font-bold">Product Images</h2>
         {images.length === 0 ? (
           <p className="mt-5 text-sm leading-6 text-on-surface-variant">No product images yet.</p>
