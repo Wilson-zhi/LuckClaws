@@ -1,5 +1,6 @@
 import { brandName, products, type Product } from "@/data/products";
 import { absoluteUrl, createSeoMetadata } from "@/lib/seo";
+import { DEFAULT_SHIPPING_RATE } from "@/lib/shipping";
 import { formatPrice } from "@/lib/utils";
 
 const schemaAvailabilityByProductAvailability: Record<Product["availability"], string> = {
@@ -9,6 +10,45 @@ const schemaAvailabilityByProductAvailability: Record<Product["availability"], s
 const schemaConditionByProductCondition: Record<Product["condition"], string> = {
   new: "https://schema.org/NewCondition"
 };
+
+function createOfferShippingDetails(product: Product) {
+  return {
+    "@type": "OfferShippingDetails",
+    shippingRate: {
+      "@type": "MonetaryAmount",
+      value: (product.shippingRate ?? DEFAULT_SHIPPING_RATE).toFixed(2),
+      currency: product.currency
+    },
+    shippingDestination: {
+      "@type": "DefinedRegion",
+      addressCountry: "US"
+    },
+    deliveryTime: {
+      "@type": "ShippingDeliveryTime",
+      handlingTime: {
+        "@type": "QuantitativeValue",
+        minValue: 1,
+        maxValue: 3,
+        unitCode: "DAY"
+      },
+      transitTime: {
+        "@type": "QuantitativeValue",
+        minValue: 7,
+        maxValue: 15,
+        unitCode: "DAY"
+      }
+    }
+  };
+}
+
+function createMerchantReturnPolicy() {
+  return {
+    "@type": "MerchantReturnPolicy",
+    applicableCountry: "US",
+    returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
+    merchantReturnLink: absoluteUrl("/refund-policy")
+  };
+}
 
 export function createProductSeoDescription(product: Product) {
   return `${product.shortDescription} ${product.category} from ${brandName}, priced at ${formatPrice(product.price)}.`;
@@ -50,17 +90,10 @@ export function createProductJsonLd(product: Product) {
       priceCurrency: product.currency,
       price: product.price.toFixed(2),
       availability: schemaAvailabilityByProductAvailability[product.availability],
-      itemCondition: schemaConditionByProductCondition[product.condition]
-    },
-    ...(typeof product.rating === "number" && typeof product.reviewCount === "number"
-      ? {
-          aggregateRating: {
-            "@type": "AggregateRating",
-            ratingValue: product.rating,
-            reviewCount: product.reviewCount
-          }
-        }
-      : {})
+      itemCondition: schemaConditionByProductCondition[product.condition],
+      shippingDetails: createOfferShippingDetails(product),
+      hasMerchantReturnPolicy: createMerchantReturnPolicy()
+    }
   };
 }
 
