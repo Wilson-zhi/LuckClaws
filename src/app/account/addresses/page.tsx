@@ -19,6 +19,7 @@ export default function AccountAddressesPage() {
       eyebrow="Account"
       title="Saved Addresses"
       description="Add, update, or remove shipping addresses linked to your customer account."
+      backLink={{ href: "/account", label: "Back to My Account" }}
     >
       <AccountAddresses />
     </SupportPageLayout>

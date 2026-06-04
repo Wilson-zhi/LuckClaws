@@ -41,6 +41,12 @@ export default function CheckoutCancelPage() {
             >
               Back to Cart
             </Link>
+            <Link
+              href="/collections"
+              className="inline-flex justify-center rounded-full border border-outline-variant px-7 py-3 font-heading font-bold text-on-surface-variant transition hover:border-primary hover:text-primary"
+            >
+              Continue Shopping
+            </Link>
           </div>
           <p className="mt-6 text-sm leading-6 text-on-surface-variant">
             Support:{" "}

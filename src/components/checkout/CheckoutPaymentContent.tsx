@@ -49,6 +49,12 @@ export function CheckoutPaymentContent() {
     <div className="grid gap-12 lg:grid-cols-[1fr_520px] lg:items-start">
       <section className="space-y-6">
         <div>
+          <Link
+            href={`/checkout/information${isBuyNowMode ? "?mode=buy-now" : ""}`}
+            className="mb-4 inline-flex text-sm font-semibold text-primary transition hover:text-on-surface"
+          >
+            &larr; Back to Information
+          </Link>
           <h1 className="font-heading text-4xl font-bold md:text-5xl">Payment</h1>
           <p className="mt-3 text-on-surface-variant">
             Pay securely with PayPal. Sandbox payment mode is active for testing.

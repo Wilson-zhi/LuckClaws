@@ -107,6 +107,9 @@ export function ProductDetailTemplate({ product }: { product: Product }) {
           </span>
           <span className="text-primary">{product.name}</span>
         </nav>
+        <Link href="/collections" className="mb-6 inline-flex text-sm font-semibold text-primary transition hover:text-on-surface">
+          &larr; Back to Shop
+        </Link>
 
         <div className="grid gap-10 lg:grid-cols-[1.18fr_0.82fr]">
           <ProductGallery product={product} />

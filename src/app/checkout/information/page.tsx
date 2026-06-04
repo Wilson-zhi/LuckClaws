@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Suspense } from "react";
 import { CheckoutForm } from "@/components/checkout/CheckoutForm";
 import { CheckoutOrderSummary } from "@/components/checkout/CheckoutOrderSummary";
@@ -23,6 +24,9 @@ export default function CheckoutInformationPage() {
     <>
       <CheckoutHeader />
       <main className="section-shell py-10 md:py-16">
+        <Link href="/cart" className="mb-4 inline-flex text-sm font-semibold text-primary transition hover:text-on-surface">
+          &larr; Back to Cart
+        </Link>
         <nav aria-label="Checkout steps" className="mb-10 text-sm font-semibold text-on-surface-variant">
           <ol className="flex flex-wrap gap-3">
             {steps.map((step, index) => (

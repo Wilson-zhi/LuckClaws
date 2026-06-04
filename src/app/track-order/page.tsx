@@ -18,6 +18,7 @@ export default function TrackOrderPage() {
       eyebrow="Order Support"
       title="Track Order"
       description="Enter your order details when live order processing is enabled."
+      backLink={{ href: "/contact", label: "Back to Support" }}
     >
       <div className="ambient-card max-w-2xl p-6 md:p-8">
         <form className="grid gap-5" aria-label="Track order form">

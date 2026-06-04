@@ -56,6 +56,7 @@ export default function TermsOfServicePage() {
       eyebrow="Legal"
       title="Terms of Service"
       description="Simple terms placeholder for the LUCK CLAWS ecommerce MVP."
+      backLink={{ href: "/", label: "Back Home" }}
     >
       <div className="mb-6 rounded-lg border border-primary-container/50 bg-primary-container/10 p-5 text-sm leading-6 text-on-surface-variant">
         This is placeholder content and should be reviewed before final launch.

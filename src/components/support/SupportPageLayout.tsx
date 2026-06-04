@@ -1,9 +1,14 @@
+import Link from "next/link";
 import { SiteShell } from "@/components/layout/SiteShell";
 
 type SupportPageLayoutProps = {
   eyebrow: string;
   title: string;
   description?: string;
+  backLink?: {
+    href: string;
+    label: string;
+  };
   children: React.ReactNode;
 };
 
@@ -21,12 +26,22 @@ export function SupportPageLayout({
   eyebrow,
   title,
   description,
+  backLink,
   children
 }: SupportPageLayoutProps) {
   return (
     <SiteShell>
       <section className="section-shell py-10 md:py-16">
         <div className="max-w-3xl">
+          {backLink && (
+            <Link
+              href={backLink.href}
+              className="mb-5 inline-flex text-sm font-semibold text-primary transition hover:text-on-surface"
+            >
+              <span aria-hidden>&larr;</span>
+              <span className="ml-2">{backLink.label}</span>
+            </Link>
+          )}
           <span className="inline-flex rounded-full bg-primary-container/20 px-4 py-2 text-xs font-bold uppercase tracking-wide text-primary">
             {eyebrow}
           </span>

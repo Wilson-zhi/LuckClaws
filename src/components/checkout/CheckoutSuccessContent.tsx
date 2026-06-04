@@ -5,11 +5,13 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { CheckCircle2, Mail, ShieldCheck } from "lucide-react";
 import { readPayPalPaymentResult, type PayPalPaymentResult } from "@/lib/paypal-payment-result";
+import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 export function CheckoutSuccessContent() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get("orderId");
   const [result, setResult] = useState<PayPalPaymentResult | null>(null);
+  const [ordersHref, setOrdersHref] = useState("/account/login");
 
   useEffect(() => {
     const storedResult = readPayPalPaymentResult();
@@ -18,6 +20,18 @@ export function CheckoutSuccessContent() {
       setResult(storedResult);
     }
   }, [orderId]);
+
+  useEffect(() => {
+    const supabase = getSupabaseBrowserClient();
+
+    if (!supabase) {
+      return;
+    }
+
+    supabase.auth.getSession().then(({ data }) => {
+      setOrdersHref(data.session ? "/account/orders" : "/account/login");
+    });
+  }, []);
 
   if (!result) {
     return (
@@ -37,6 +51,20 @@ export function CheckoutSuccessContent() {
         >
           Return to Payment
         </Link>
+        <div className="mt-4 flex flex-col justify-center gap-3 sm:flex-row">
+          <Link
+            href="/collections"
+            className="inline-flex justify-center rounded-full border border-primary px-7 py-3 font-heading font-bold text-primary transition hover:bg-primary-container/10"
+          >
+            Continue Shopping
+          </Link>
+          <Link
+            href={ordersHref}
+            className="inline-flex justify-center rounded-full border border-outline-variant px-7 py-3 font-heading font-bold text-on-surface-variant transition hover:border-primary hover:text-primary"
+          >
+            View My Orders
+          </Link>
+        </div>
       </section>
     );
   }
@@ -100,6 +128,12 @@ export function CheckoutSuccessContent() {
           className="inline-flex justify-center rounded-full border border-primary px-7 py-3 font-heading font-bold text-primary transition hover:bg-primary-container/10"
         >
           Contact Support
+        </Link>
+        <Link
+          href={ordersHref}
+          className="inline-flex justify-center rounded-full border border-outline-variant px-7 py-3 font-heading font-bold text-on-surface-variant transition hover:border-primary hover:text-primary"
+        >
+          View My Orders
         </Link>
       </div>
     </section>

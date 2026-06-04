@@ -80,6 +80,7 @@ export default function RefundPolicyPage() {
       eyebrow="Legal"
       title="Refund Policy"
       description="We only accept refund or return requests for items that arrive damaged, defective, or incorrect."
+      backLink={{ href: "/", label: "Back Home" }}
     >
       <PolicySections sections={sections} />
     </SupportPageLayout>

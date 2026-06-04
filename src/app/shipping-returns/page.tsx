@@ -53,6 +53,7 @@ export default function ShippingReturnsPage() {
       eyebrow="Support"
       title="Shipping & Returns"
       description="Clear information about order processing, delivery, shipping costs, and support for damaged, defective, or incorrect items."
+      backLink={{ href: "/", label: "Back Home" }}
     >
       <PolicySections sections={sections} />
     </SupportPageLayout>

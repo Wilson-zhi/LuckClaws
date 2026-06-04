@@ -176,6 +176,9 @@ export default function ProductPage() {
           </span>
           <span className="text-primary">{mainProduct.name}</span>
         </nav>
+        <Link href="/collections" className="mb-6 inline-flex text-sm font-semibold text-primary transition hover:text-on-surface">
+          &larr; Back to Shop
+        </Link>
 
         <div className="grid gap-10 lg:grid-cols-[1.18fr_0.82fr]">
           <ProductGallery product={mainProduct} />

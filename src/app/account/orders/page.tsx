@@ -19,6 +19,7 @@ export default function AccountOrdersPage() {
       eyebrow="Account"
       title="My Orders"
       description="Review orders that were placed while signed in to your LUCK CLAWS account."
+      backLink={{ href: "/account", label: "Back to My Account" }}
     >
       <AccountOrders />
     </SupportPageLayout>
