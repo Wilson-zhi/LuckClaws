@@ -57,7 +57,7 @@ const valueHighlights = [
 ];
 
 export default async function HomePage() {
-  const { featuredProduct, bestSellers, newArrivals } = await getPublicHomepageProducts();
+  const { featuredProduct, featuredProducts, bestSellers, newArrivals } = await getPublicHomepageProducts();
   const organizationStructuredData = {
     "@context": "https://schema.org",
     "@type": "Organization",
@@ -74,6 +74,7 @@ export default async function HomePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationStructuredData) }}
       />
       <ViewItemListTracker products={[featuredProduct]} itemListName="Homepage Featured Product" />
+      <ViewItemListTracker products={featuredProducts} itemListName="Homepage Featured Products" />
       <ViewItemListTracker products={bestSellers} itemListName="Homepage Best Sellers" />
       <ViewItemListTracker products={newArrivals} itemListName="Homepage New Arrivals" />
       <section className="section-shell grid min-h-[620px] items-center gap-10 py-10 md:grid-cols-2 md:py-16">
@@ -150,6 +151,25 @@ export default async function HomePage() {
       </section>
 
       <HomeFeaturedProduct product={featuredProduct} />
+
+      <section className="section-shell py-14 md:py-20">
+        <div className="mb-8 flex items-center justify-between gap-4">
+          <div>
+            <h2 className="font-heading text-3xl font-bold">Featured Products</h2>
+            <p className="mt-2 text-sm text-on-surface-variant">
+              Handpicked pet essentials for play, comfort, walks, and everyday care.
+            </p>
+          </div>
+          <Link href="/collections" className="hidden items-center gap-2 text-sm font-semibold text-primary md:flex">
+            Shop All <ArrowRight aria-hidden className="h-4 w-4" />
+          </Link>
+        </div>
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
+          {featuredProducts.map((product) => (
+            <ProductCard key={product.id} product={product} itemListName="Homepage Featured Products" />
+          ))}
+        </div>
+      </section>
 
       <section className="bg-surface-container-low py-14 md:py-20">
         <div className="section-shell">

@@ -637,6 +637,10 @@ function fillSelection(selectedProducts: Product[], catalogProducts: Product[], 
   return [...selectedProducts, ...fillProducts].slice(0, limit);
 }
 
+function homepageSectionProducts(sectionProducts: Product[], fallbackProducts: Product[], limit: number) {
+  return (sectionProducts.length > 0 ? sectionProducts : fallbackProducts).slice(0, limit);
+}
+
 export async function getPublicProducts() {
   const supabaseProducts = await fetchSupabaseActiveProducts();
 
@@ -696,8 +700,9 @@ export async function getPublicHomepageProducts() {
   );
   const bestSellerProducts = catalogProducts.filter((product) => product.homepageSection === "best_seller");
   const newArrivalProducts = catalogProducts.filter((product) => product.homepageSection === "new_arrivals");
+  const featuredSectionProducts = homepageSectionProducts(featuredProducts, catalogProducts, staticBestSellers.length);
   const featuredProduct =
-    featuredProducts[0] ??
+    featuredSectionProducts[0] ??
     catalogProducts.find((product) => product.slug === staticMainProduct.slug) ??
     (await getPublicProductBySlug(staticMainProduct.slug)) ??
     catalogProducts[0] ??
@@ -705,14 +710,9 @@ export async function getPublicHomepageProducts() {
 
   return {
     featuredProduct,
-    bestSellers:
-      bestSellerProducts.length > 0
-        ? fillSelection(bestSellerProducts, catalogProducts, staticBestSellers.length)
-        : pickPublicProductsByStaticProducts(staticBestSellers, catalogProducts, staticBestSellers.length),
-    newArrivals:
-      newArrivalProducts.length > 0
-        ? fillSelection(newArrivalProducts, catalogProducts, staticNewArrivals.length)
-        : pickPublicProductsByStaticProducts(staticNewArrivals, catalogProducts, staticNewArrivals.length)
+    featuredProducts: featuredSectionProducts,
+    bestSellers: homepageSectionProducts(bestSellerProducts, catalogProducts, staticBestSellers.length),
+    newArrivals: homepageSectionProducts(newArrivalProducts, catalogProducts, staticNewArrivals.length)
   };
 }
 
