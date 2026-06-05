@@ -202,7 +202,7 @@ function ProductsTable() {
   return (
     <div className="space-y-5">
       <section className="rounded-lg bg-surface-container-lowest p-5 shadow-soft">
-        <div className="grid gap-4 lg:grid-cols-[1.2fr_0.9fr_0.7fr_0.85fr_0.75fr]">
+        <div className="grid gap-4 xl:grid-cols-[minmax(280px,1.5fr)_minmax(180px,0.9fr)_minmax(130px,0.65fr)_minmax(170px,0.8fr)_minmax(150px,0.65fr)]">
           <label className="grid gap-2 text-sm font-semibold text-on-surface">
             Search by title or slug
             <input
@@ -281,18 +281,18 @@ function ProductsTable() {
       ) : (
         <div className="overflow-hidden rounded-lg bg-surface-container-lowest shadow-soft">
           <div className="max-h-[72vh] overflow-auto">
-            <table className="w-full min-w-[1420px] text-left text-sm">
+            <table className="w-full min-w-[1720px] text-left text-sm">
               <thead className="sticky top-0 z-20 bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant">
                 <tr>
-                  <th className="min-w-[260px] px-4 py-3">Title</th>
-                  <th className="min-w-[220px] px-4 py-3">Slug</th>
-                  <th className="min-w-[160px] px-4 py-3">Category</th>
+                  <th className="min-w-[340px] px-5 py-3">Title</th>
+                  <th className="min-w-[280px] px-5 py-3">Slug</th>
+                  <th className="min-w-[170px] px-4 py-3">Category</th>
                   <th className="min-w-[110px] px-4 py-3">Price</th>
-                  <th className="min-w-[120px] px-4 py-3">Status</th>
-                  <th className="min-w-[150px] px-4 py-3">Inventory</th>
-                  <th className="min-w-[90px] px-4 py-3">Sale</th>
-                  <th className="min-w-[140px] px-4 py-3">Created</th>
-                  <th className="sticky right-0 z-30 min-w-[320px] border-l border-outline-variant bg-surface-container-low px-4 py-3 shadow-[-8px_0_18px_rgba(67,45,31,0.08)]">
+                  <th className="min-w-[115px] px-4 py-3">Status</th>
+                  <th className="min-w-[135px] px-4 py-3">Inventory</th>
+                  <th className="min-w-[80px] px-4 py-3">Sale</th>
+                  <th className="min-w-[130px] px-4 py-3">Created</th>
+                  <th className="sticky right-0 z-30 min-w-[360px] border-l border-outline-variant bg-surface-container-low px-4 py-3 shadow-[-10px_0_22px_rgba(67,45,31,0.10)]">
                     Actions
                   </th>
                 </tr>
@@ -300,25 +300,25 @@ function ProductsTable() {
               <tbody className="divide-y divide-outline-variant/70">
                 {filteredProducts.map((product) => (
                   <tr key={product.id}>
-                    <td className="px-4 py-4 font-semibold leading-6 text-on-surface">{displayValue(product.title)}</td>
-                    <td className="px-4 py-4 leading-6 text-on-surface-variant">{displayValue(product.slug)}</td>
+                    <td className="px-5 py-4 font-semibold leading-6 text-on-surface">{displayValue(product.title)}</td>
+                    <td className="px-5 py-4 leading-6 text-on-surface-variant">{displayValue(product.slug)}</td>
                     <td className="px-4 py-4 text-on-surface-variant">{displayValue(product.category)}</td>
                     <td className="px-4 py-4 font-semibold">{formatPrice(priceFromRow(product))}</td>
                     <td className="px-4 py-4 text-on-surface-variant">{displayStatus(product.status)}</td>
                     <td className="px-4 py-4 text-on-surface-variant">{displayStatus(product.inventory_status)}</td>
                     <td className="px-4 py-4 text-on-surface-variant">{product.is_sale ? "Yes" : "No"}</td>
                     <td className="px-4 py-4 text-on-surface-variant">{formatDate(product.created_at)}</td>
-                    <td className="sticky right-0 z-10 border-l border-outline-variant bg-surface-container-lowest px-4 py-4 shadow-[-8px_0_18px_rgba(67,45,31,0.08)]">
-                      <div className="flex min-w-max gap-2 whitespace-nowrap">
+                    <td className="sticky right-0 z-10 border-l border-outline-variant bg-surface-container-lowest px-4 py-4 shadow-[-10px_0_22px_rgba(67,45,31,0.10)]">
+                      <div className="flex min-w-[328px] flex-wrap gap-2 whitespace-nowrap">
                         <Link
                           href={`/admin/products/${product.id}`}
-                          className="inline-flex rounded-full border border-primary px-4 py-2 font-heading text-xs font-bold text-primary transition hover:bg-primary-container/10"
+                          className="inline-flex rounded-full border border-primary px-3 py-2 font-heading text-xs font-bold text-primary transition hover:bg-primary-container/10"
                         >
                           View
                         </Link>
                         <Link
                           href={`/admin/products/${product.id}/edit`}
-                          className="inline-flex rounded-full bg-primary-container px-4 py-2 font-heading text-xs font-bold text-on-primary-container transition hover:bg-[#e08f00]"
+                          className="inline-flex rounded-full bg-primary-container px-3 py-2 font-heading text-xs font-bold text-on-primary-container transition hover:bg-[#e08f00]"
                         >
                           Edit
                         </Link>
@@ -327,13 +327,13 @@ function ProductsTable() {
                             href={`/products/${product.slug}`}
                             target="_blank"
                             rel="noreferrer"
-                            className="inline-flex rounded-full border border-outline-variant px-4 py-2 font-heading text-xs font-bold text-on-surface-variant transition hover:border-primary hover:text-primary"
+                            className="inline-flex rounded-full border border-outline-variant px-3 py-2 font-heading text-xs font-bold text-on-surface-variant transition hover:border-primary hover:text-primary"
                           >
                             Preview
                           </Link>
                         ) : (
                           <span
-                            className="inline-flex rounded-full border border-outline-variant px-4 py-2 font-heading text-xs font-bold text-on-surface-variant/70"
+                            className="inline-flex rounded-full border border-outline-variant px-3 py-2 font-heading text-xs font-bold text-on-surface-variant/70"
                             title="Product is not public."
                           >
                             Not public
@@ -342,7 +342,7 @@ function ProductsTable() {
                         {product.status !== "archived" && (
                           <button
                             type="button"
-                            className="inline-flex rounded-full border border-error/40 px-4 py-2 font-heading text-xs font-bold text-error transition hover:bg-error/10 disabled:cursor-not-allowed disabled:opacity-60"
+                            className="inline-flex rounded-full border border-error/40 px-3 py-2 font-heading text-xs font-bold text-error transition hover:bg-error/10 disabled:cursor-not-allowed disabled:opacity-60"
                             disabled={archivingId === product.id}
                             onClick={() => handleArchive(product)}
                           >
@@ -366,19 +366,19 @@ export function AdminProducts() {
   return (
     <AdminGuard>
       {() => (
-        <AdminPageFrame title="Products" description="Manage Supabase product records." backLink>
+        <AdminPageFrame title="Products" description="Manage Supabase product records." layout="wide" backLink>
           <div className="space-y-6">
-            <div className="flex justify-end">
+            <section className="ambient-card flex flex-col gap-4 p-5 text-sm leading-7 text-on-surface-variant md:flex-row md:items-center md:justify-between md:p-6">
+              <p className="max-w-4xl">
+                Active products are visible on the public storefront. Draft and archived products stay hidden from public product pages,
+                collections, search, product feed, and sitemap.
+              </p>
               <Link
                 href="/admin/products/new"
-                className="inline-flex rounded-full bg-primary px-6 py-3 font-heading font-bold text-white transition hover:bg-primary/90"
+                className="inline-flex shrink-0 justify-center rounded-full bg-primary px-6 py-3 font-heading font-bold text-white transition hover:bg-primary/90"
               >
                 Add Product
               </Link>
-            </div>
-            <section className="ambient-card p-6 text-sm leading-7 text-on-surface-variant md:p-8">
-              Active products are visible on the public storefront. Draft and archived products stay hidden from public product pages,
-              collections, search, product feed, and sitemap.
             </section>
             <ProductsTable />
           </div>

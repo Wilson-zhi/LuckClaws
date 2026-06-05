@@ -6,6 +6,7 @@ import { Box, LayoutDashboard, Package, Users } from "lucide-react";
 type AdminPageFrameProps = {
   title: string;
   description?: string;
+  layout?: "default" | "wide";
   backLink?:
     | boolean
     | {
@@ -22,17 +23,31 @@ const adminNavItems = [
   { label: "Products", href: "/admin/products", Icon: Box }
 ];
 
-export function AdminPageFrame({ title, description, backLink = false, children }: AdminPageFrameProps) {
+export function AdminPageFrame({
+  title,
+  description,
+  layout = "default",
+  backLink = false,
+  children
+}: AdminPageFrameProps) {
   const normalizedBackLink =
     typeof backLink === "object"
       ? backLink
       : backLink
         ? { href: "/admin", label: "Back to Admin" }
         : null;
+  const shellClass =
+    layout === "wide"
+      ? "mx-auto w-full max-w-[1840px] px-4 md:px-6 2xl:px-8"
+      : "section-shell";
+  const bodyGridClass =
+    layout === "wide"
+      ? "grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)] xl:grid-cols-[240px_minmax(0,1fr)] xl:gap-8 lg:items-start"
+      : "grid gap-8 lg:grid-cols-[260px_1fr] lg:items-start";
 
   return (
     <>
-      <section className="section-shell py-10 md:py-14">
+      <section className={`${shellClass} py-10 md:py-14`}>
         <div className="max-w-4xl">
           {normalizedBackLink && (
             <Link
@@ -55,8 +70,8 @@ export function AdminPageFrame({ title, description, backLink = false, children 
         </div>
       </section>
 
-      <section className="section-shell pb-16 md:pb-24">
-        <div className="grid gap-8 lg:grid-cols-[260px_1fr] lg:items-start">
+      <section className={`${shellClass} pb-16 md:pb-24`}>
+        <div className={bodyGridClass}>
           <nav className="rounded-lg bg-surface-container-lowest p-4 shadow-soft" aria-label="Admin navigation">
             <div className="grid gap-2">
               {adminNavItems.map(({ label, href, Icon }) => (
