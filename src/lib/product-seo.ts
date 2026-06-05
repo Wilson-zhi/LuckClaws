@@ -1,6 +1,11 @@
 import { brandName, products, type Product } from "@/data/products";
 import { absoluteUrl, createSeoMetadata } from "@/lib/seo";
-import { DEFAULT_SHIPPING_RATE } from "@/lib/shipping";
+import {
+  DEFAULT_SHIPPING_RATE,
+  freeShippingSentence,
+  standardShippingSentence,
+  variableShippingSentence
+} from "@/lib/shipping";
 import { formatPrice } from "@/lib/utils";
 
 const schemaAvailabilityByProductAvailability: Record<Product["availability"], string> = {
@@ -14,11 +19,16 @@ const schemaConditionByProductCondition: Record<Product["condition"], string> = 
 };
 
 function createOfferShippingDetails(product: Product) {
+  const shippingRate = product.shippingRate ?? DEFAULT_SHIPPING_RATE;
+
   return {
     "@type": "OfferShippingDetails",
+    name: "Standard door-to-door shipping",
+    description: `${standardShippingSentence} ${freeShippingSentence} ${variableShippingSentence}`,
+    url: absoluteUrl("/shipping-returns"),
     shippingRate: {
       "@type": "MonetaryAmount",
-      value: (product.shippingRate ?? DEFAULT_SHIPPING_RATE).toFixed(2),
+      value: Number(shippingRate.toFixed(2)),
       currency: product.currency
     },
     shippingDestination: {
@@ -48,8 +58,17 @@ function createMerchantReturnPolicy() {
     "@type": "MerchantReturnPolicy",
     applicableCountry: "US",
     returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
+    description:
+      "General returns for preference changes or buyer's remorse are not accepted. Damaged, defective, or incorrect items must be reported within 7 days of delivery.",
+    url: absoluteUrl("/refund-policy"),
     merchantReturnLink: absoluteUrl("/refund-policy")
   };
+}
+
+function productImageUrls(product: Product) {
+  return Array.from(new Set([product.image, ...(product.gallery ?? [])].filter(Boolean))).map((image) =>
+    absoluteUrl(image)
+  );
 }
 
 export function createProductSeoDescription(product: Product) {
@@ -78,9 +97,9 @@ export function createProductJsonLd(product: Product) {
     "@context": "https://schema.org",
     "@type": "Product",
     name: product.name,
-    sku: product.id,
+    sku: product.slug,
     url: absoluteUrl(product.productUrl),
-    image: absoluteUrl(product.image),
+    image: productImageUrls(product),
     description: product.shortDescription,
     brand: {
       "@type": "Brand",
@@ -93,6 +112,11 @@ export function createProductJsonLd(product: Product) {
       price: product.price.toFixed(2),
       availability: schemaAvailabilityByProductAvailability[product.availability],
       itemCondition: schemaConditionByProductCondition[product.condition],
+      seller: {
+        "@type": "Organization",
+        name: brandName,
+        url: absoluteUrl("/")
+      },
       shippingDetails: createOfferShippingDetails(product),
       hasMerchantReturnPolicy: createMerchantReturnPolicy()
     }
