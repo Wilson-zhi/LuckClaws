@@ -122,7 +122,7 @@ const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
 const acceptedImageTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
 
 const jsonFieldHelp =
-  "Use valid JSON array format. Leave blank to use the product page fallback content.";
+  "Use valid JSON array format. Blank or [] saves an empty array and keeps fallback content on the product page.";
 
 const productHighlightsExample = `[
   {
@@ -199,7 +199,7 @@ function dateTimeLocalValue(value: string | null) {
 }
 
 function jsonTextValue(value: unknown) {
-  return Array.isArray(value) && value.length > 0 ? JSON.stringify(value, null, 2) : "";
+  return Array.isArray(value) ? JSON.stringify(value, null, 2) : "[]";
 }
 
 function sanitizePathSegment(value: string) {
@@ -255,7 +255,7 @@ function formFromProduct(product: AdminProductDetailRow): ProductFormState {
 }
 
 function buildPayload(form: ProductFormState) {
-  const jsonArrayPayload = (value: string) => (value.trim() ? (JSON.parse(value) as unknown[]) : null);
+  const jsonArrayPayload = (value: string) => (value.trim() ? (JSON.parse(value) as unknown[]) : []);
   const relatedProductSlugs = form.related_product_slugs
     .split(",")
     .map((slug) => slug.trim())
@@ -286,7 +286,7 @@ function buildPayload(form: ProductFormState) {
     care_instructions: jsonArrayPayload(form.care_instructions),
     product_faqs: jsonArrayPayload(form.product_faqs),
     accordion_sections: jsonArrayPayload(form.accordion_sections),
-    related_product_slugs: relatedProductSlugs.length > 0 ? relatedProductSlugs : null,
+    related_product_slugs: relatedProductSlugs,
     seo_title: form.seo_title,
     seo_description: form.seo_description,
     google_product_category: form.google_product_category
@@ -414,16 +414,30 @@ function JsonArrayField({
   onChange: (value: string) => void;
 }) {
   return (
-    <label className="grid gap-2 text-sm font-semibold text-on-surface">
-      {label}
-      <textarea className={jsonTextareaClass} value={value} onChange={(event) => onChange(event.target.value)} />
+    <div className="grid gap-2 text-sm font-semibold text-on-surface">
+      <div className="flex items-center justify-between gap-3">
+        <span>{label}</span>
+        <button
+          type="button"
+          className="rounded-full border border-outline-variant px-3 py-1 text-xs font-bold text-primary transition hover:border-primary hover:bg-primary-container/10"
+          onClick={() => onChange("[]")}
+        >
+          Reset to []
+        </button>
+      </div>
+      <textarea
+        aria-label={label}
+        className={jsonTextareaClass}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+      />
       <p className="text-xs font-semibold leading-5 text-on-surface-variant">{jsonFieldHelp}</p>
       <details className="rounded-md bg-surface-container-lowest p-3 text-xs text-on-surface-variant">
         <summary className="cursor-pointer font-bold text-on-surface">Example format</summary>
         <pre className="mt-3 overflow-x-auto whitespace-pre-wrap font-mono leading-5">{example}</pre>
       </details>
       <FieldError message={error} />
-    </label>
+    </div>
   );
 }
 

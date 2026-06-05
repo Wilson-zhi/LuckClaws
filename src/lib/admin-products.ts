@@ -27,13 +27,13 @@ export type AdminProductMutationPayload = {
   badge: string | null;
   published_at: string | null;
   short_description: string | null;
-  product_highlights: JsonObject[] | null;
-  detail_rows: JsonObject[] | null;
-  best_for: JsonObject[] | null;
-  care_instructions: JsonObject[] | null;
-  product_faqs: JsonObject[] | null;
-  accordion_sections: JsonObject[] | null;
-  related_product_slugs: string[] | null;
+  product_highlights: JsonObject[];
+  detail_rows: JsonObject[];
+  best_for: JsonObject[];
+  care_instructions: JsonObject[];
+  product_faqs: JsonObject[];
+  accordion_sections: JsonObject[];
+  related_product_slugs: string[];
   seo_title: string | null;
   seo_description: string | null;
   google_product_category: string | null;
@@ -91,7 +91,7 @@ function jsonArrayValue(record: Record<string, unknown>, key: string, label: str
   const value = record[key];
 
   if (value === "" || value === null || value === undefined) {
-    return null;
+    return [];
   }
 
   if (typeof value === "string") {
@@ -103,16 +103,16 @@ function jsonArrayValue(record: Record<string, unknown>, key: string, label: str
       }
     } catch {
       errors[key] = `${label} must be valid JSON.`;
-      return null;
+      return [];
     }
 
     errors[key] = `${label} must be a JSON array.`;
-    return null;
+    return [];
   }
 
   if (!Array.isArray(value)) {
     errors[key] = `${label} must be a JSON array.`;
-    return null;
+    return [];
   }
 
   return value;
@@ -121,8 +121,8 @@ function jsonArrayValue(record: Record<string, unknown>, key: string, label: str
 function productHighlightsValue(record: Record<string, unknown>, errors: Record<string, string>) {
   const value = jsonArrayValue(record, "product_highlights", "Product highlights", errors);
 
-  if (!value) {
-    return null;
+  if (value.length === 0) {
+    return [];
   }
 
   const items = value.map((item) => {
@@ -142,17 +142,17 @@ function productHighlightsValue(record: Record<string, unknown>, errors: Record<
 
   if (items.some((item) => item === null)) {
     errors.product_highlights = "Each product highlight must include title and text.";
-    return null;
+    return [];
   }
 
-  return items.length > 0 ? (items as JsonObject[]) : null;
+  return items as JsonObject[];
 }
 
 function detailRowsValue(record: Record<string, unknown>, errors: Record<string, string>) {
   const value = jsonArrayValue(record, "detail_rows", "Details at a Glance", errors);
 
-  if (!value) {
-    return null;
+  if (value.length === 0) {
+    return [];
   }
 
   const items = value.map((item) => {
@@ -165,17 +165,17 @@ function detailRowsValue(record: Record<string, unknown>, errors: Record<string,
 
   if (items.some((item) => item === null)) {
     errors.detail_rows = "Each detail row must include label and value.";
-    return null;
+    return [];
   }
 
-  return items.length > 0 ? (items as JsonObject[]) : null;
+  return items as JsonObject[];
 }
 
 function textItemsValue(record: Record<string, unknown>, key: string, label: string, errors: Record<string, string>) {
   const value = jsonArrayValue(record, key, label, errors);
 
-  if (!value) {
-    return null;
+  if (value.length === 0) {
+    return [];
   }
 
   const items = value.map((item) => {
@@ -193,17 +193,17 @@ function textItemsValue(record: Record<string, unknown>, key: string, label: str
 
   if (items.some((item) => item === null)) {
     errors[key] = `Each ${label.toLowerCase()} item must include text.`;
-    return null;
+    return [];
   }
 
-  return items.length > 0 ? (items as JsonObject[]) : null;
+  return items as JsonObject[];
 }
 
 function productFaqsValue(record: Record<string, unknown>, errors: Record<string, string>) {
   const value = jsonArrayValue(record, "product_faqs", "Product FAQs", errors);
 
-  if (!value) {
-    return null;
+  if (value.length === 0) {
+    return [];
   }
 
   const items = value.map((item) => {
@@ -216,17 +216,17 @@ function productFaqsValue(record: Record<string, unknown>, errors: Record<string
 
   if (items.some((item) => item === null)) {
     errors.product_faqs = "Each product FAQ must include question and answer.";
-    return null;
+    return [];
   }
 
-  return items.length > 0 ? (items as JsonObject[]) : null;
+  return items as JsonObject[];
 }
 
 function accordionSectionsValue(record: Record<string, unknown>, errors: Record<string, string>) {
   const value = jsonArrayValue(record, "accordion_sections", "Accordion sections", errors);
 
-  if (!value) {
-    return null;
+  if (value.length === 0) {
+    return [];
   }
 
   const items = value.map((item) => {
@@ -239,17 +239,17 @@ function accordionSectionsValue(record: Record<string, unknown>, errors: Record<
 
   if (items.some((item) => item === null)) {
     errors.accordion_sections = "Each accordion section must include title and content.";
-    return null;
+    return [];
   }
 
-  return items.length > 0 ? (items as JsonObject[]) : null;
+  return items as JsonObject[];
 }
 
 function relatedProductSlugsValue(record: Record<string, unknown>, errors: Record<string, string>) {
   const value = jsonArrayValue(record, "related_product_slugs", "Related product slugs", errors);
 
-  if (!value) {
-    return null;
+  if (value.length === 0) {
+    return [];
   }
 
   const slugs = value
@@ -258,10 +258,10 @@ function relatedProductSlugsValue(record: Record<string, unknown>, errors: Recor
 
   if (slugs.length !== value.length) {
     errors.related_product_slugs = "Related product slugs must be an array of strings.";
-    return null;
+    return [];
   }
 
-  return slugs.length > 0 ? Array.from(new Set(slugs)) : null;
+  return Array.from(new Set(slugs));
 }
 
 export function validateAdminProductPayload(input: unknown): ValidationResult {
