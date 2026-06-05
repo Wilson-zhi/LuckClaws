@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AdminGuard, useAdminAuth } from "@/components/admin/AdminGuard";
 import { AdminPageFrame } from "@/components/admin/AdminPageFrame";
 import { formatPrice } from "@/lib/utils";
@@ -50,11 +50,28 @@ function priceFromRow(product: AdminProductRow) {
   return Number.isFinite(value) ? value : 0;
 }
 
+function normalizedValue(value: string | null) {
+  return value?.trim().toLowerCase() ?? "";
+}
+
+const inputClass =
+  "min-h-12 rounded-md border border-outline-variant bg-white px-4 text-sm text-on-surface outline-none transition focus:border-primary focus:ring-2 focus:ring-primary-container/30";
+
+const selectClass =
+  "min-h-12 rounded-md border border-outline-variant bg-white px-4 text-sm font-semibold text-on-surface outline-none transition focus:border-primary focus:ring-2 focus:ring-primary-container/30";
+
 function ProductsTable() {
   const { accessToken } = useAdminAuth();
   const [products, setProducts] = useState<AdminProductRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [actionError, setActionError] = useState("");
+  const [archivingId, setArchivingId] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [inventoryFilter, setInventoryFilter] = useState("all");
+  const [saleFilter, setSaleFilter] = useState("all");
 
   useEffect(() => {
     let active = true;
@@ -91,6 +108,81 @@ function ProductsTable() {
     };
   }, [accessToken]);
 
+  const categories = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          products
+            .map((product) => product.category?.trim())
+            .filter((category): category is string => Boolean(category))
+        )
+      ).sort((first, second) => first.localeCompare(second)),
+    [products]
+  );
+
+  const filteredProducts = useMemo(() => {
+    const search = searchTerm.trim().toLowerCase();
+
+    return products.filter((product) => {
+      const title = normalizedValue(product.title);
+      const slug = normalizedValue(product.slug);
+      const category = product.category?.trim() ?? "";
+      const status = product.status?.trim() ?? "";
+      const inventoryStatus = product.inventory_status?.trim() ?? "";
+      const matchesSearch = !search || title.includes(search) || slug.includes(search);
+      const matchesCategory = categoryFilter === "all" || category === categoryFilter;
+      const matchesStatus = statusFilter === "all" || status === statusFilter;
+      const matchesInventory = inventoryFilter === "all" || inventoryStatus === inventoryFilter;
+      const matchesSale =
+        saleFilter === "all" ||
+        (saleFilter === "sale" && Boolean(product.is_sale)) ||
+        (saleFilter === "non-sale" && !product.is_sale);
+
+      return matchesSearch && matchesCategory && matchesStatus && matchesInventory && matchesSale;
+    });
+  }, [categoryFilter, inventoryFilter, products, saleFilter, searchTerm, statusFilter]);
+
+  const handleArchive = async (product: AdminProductRow) => {
+    if (product.status === "archived") {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Archive ${displayValue(product.title)}? Archived products are hidden publicly but remain available in admin.`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setActionError("");
+    setArchivingId(product.id);
+
+    const response = await fetch(`/api/admin/products/${encodeURIComponent(product.id)}`, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ action: "archive" })
+    });
+
+    const payload = (await response.json().catch(() => ({}))) as { error?: string };
+
+    if (!response.ok) {
+      setActionError(payload.error ?? "Unable to archive product.");
+      setArchivingId("");
+      return;
+    }
+
+    setProducts((currentProducts) =>
+      currentProducts.map((currentProduct) =>
+        currentProduct.id === product.id ? { ...currentProduct, status: "archived" } : currentProduct
+      )
+    );
+    setArchivingId("");
+  };
+
   if (loading) {
     return (
       <div className="ambient-card p-6 text-sm leading-6 text-on-surface-variant">
@@ -107,65 +199,165 @@ function ProductsTable() {
     );
   }
 
-  if (products.length === 0) {
-    return (
-      <div className="ambient-card p-6 text-sm leading-6 text-on-surface-variant">
-        No products yet.
-      </div>
-    );
-  }
-
   return (
-    <div className="overflow-hidden rounded-lg bg-surface-container-lowest shadow-soft">
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[1280px] text-left text-sm">
-          <thead className="sticky top-0 z-20 bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant">
-            <tr>
-              <th className="min-w-[260px] px-4 py-3">Title</th>
-              <th className="min-w-[220px] px-4 py-3">Slug</th>
-              <th className="min-w-[160px] px-4 py-3">Category</th>
-              <th className="min-w-[110px] px-4 py-3">Price</th>
-              <th className="min-w-[120px] px-4 py-3">Status</th>
-              <th className="min-w-[150px] px-4 py-3">Inventory</th>
-              <th className="min-w-[90px] px-4 py-3">Sale</th>
-              <th className="min-w-[140px] px-4 py-3">Created</th>
-              <th className="sticky right-0 z-30 min-w-[170px] border-l border-outline-variant bg-surface-container-low px-4 py-3 shadow-[-8px_0_18px_rgba(67,45,31,0.08)]">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-outline-variant/70">
-            {products.map((product) => (
-              <tr key={product.id}>
-                <td className="px-4 py-4 font-semibold leading-6 text-on-surface">{displayValue(product.title)}</td>
-                <td className="px-4 py-4 leading-6 text-on-surface-variant">{displayValue(product.slug)}</td>
-                <td className="px-4 py-4 text-on-surface-variant">{displayValue(product.category)}</td>
-                <td className="px-4 py-4 font-semibold">{formatPrice(priceFromRow(product))}</td>
-                <td className="px-4 py-4 text-on-surface-variant">{displayStatus(product.status)}</td>
-                <td className="px-4 py-4 text-on-surface-variant">{displayStatus(product.inventory_status)}</td>
-                <td className="px-4 py-4 text-on-surface-variant">{product.is_sale ? "Yes" : "No"}</td>
-                <td className="px-4 py-4 text-on-surface-variant">{formatDate(product.created_at)}</td>
-                <td className="sticky right-0 z-10 border-l border-outline-variant bg-surface-container-lowest px-4 py-4 shadow-[-8px_0_18px_rgba(67,45,31,0.08)]">
-                  <div className="flex min-w-max gap-2 whitespace-nowrap">
-                    <Link
-                      href={`/admin/products/${product.id}`}
-                      className="inline-flex rounded-full border border-primary px-4 py-2 font-heading text-xs font-bold text-primary transition hover:bg-primary-container/10"
-                    >
-                      View
-                    </Link>
-                    <Link
-                      href={`/admin/products/${product.id}/edit`}
-                      className="inline-flex rounded-full bg-primary-container px-4 py-2 font-heading text-xs font-bold text-on-primary-container transition hover:bg-[#e08f00]"
-                    >
-                      Edit
-                    </Link>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+    <div className="space-y-5">
+      <section className="rounded-lg bg-surface-container-lowest p-5 shadow-soft">
+        <div className="grid gap-4 lg:grid-cols-[1.2fr_0.9fr_0.7fr_0.85fr_0.75fr]">
+          <label className="grid gap-2 text-sm font-semibold text-on-surface">
+            Search by title or slug
+            <input
+              className={inputClass}
+              placeholder="Search by title or slug"
+              type="search"
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+            />
+          </label>
+
+          <label className="grid gap-2 text-sm font-semibold text-on-surface">
+            Category
+            <select className={selectClass} value={categoryFilter} onChange={(event) => setCategoryFilter(event.target.value)}>
+              <option value="all">All categories</option>
+              {categories.map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="grid gap-2 text-sm font-semibold text-on-surface">
+            Status
+            <select className={selectClass} value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
+              <option value="all">All</option>
+              <option value="active">active</option>
+              <option value="draft">draft</option>
+              <option value="archived">archived</option>
+            </select>
+          </label>
+
+          <label className="grid gap-2 text-sm font-semibold text-on-surface">
+            Inventory
+            <select
+              className={selectClass}
+              value={inventoryFilter}
+              onChange={(event) => setInventoryFilter(event.target.value)}
+            >
+              <option value="all">All</option>
+              <option value="in_stock">in_stock</option>
+              <option value="out_of_stock">out_of_stock</option>
+              <option value="preorder">preorder</option>
+            </select>
+          </label>
+
+          <label className="grid gap-2 text-sm font-semibold text-on-surface">
+            Sale
+            <select className={selectClass} value={saleFilter} onChange={(event) => setSaleFilter(event.target.value)}>
+              <option value="all">All</option>
+              <option value="sale">Sale only</option>
+              <option value="non-sale">Non-sale only</option>
+            </select>
+          </label>
+        </div>
+        <p className="mt-4 text-sm font-semibold text-on-surface-variant" aria-live="polite">
+          Showing {filteredProducts.length} of {products.length} products.
+        </p>
+      </section>
+
+      {actionError && (
+        <div className="rounded-md bg-error/10 p-4 text-sm font-semibold text-error" role="alert">
+          {actionError}
+        </div>
+      )}
+
+      {products.length === 0 ? (
+        <div className="ambient-card p-6 text-sm leading-6 text-on-surface-variant">
+          No products yet.
+        </div>
+      ) : filteredProducts.length === 0 ? (
+        <div className="ambient-card p-6 text-sm leading-6 text-on-surface-variant">
+          No products match your filters.
+        </div>
+      ) : (
+        <div className="overflow-hidden rounded-lg bg-surface-container-lowest shadow-soft">
+          <div className="max-h-[72vh] overflow-auto">
+            <table className="w-full min-w-[1420px] text-left text-sm">
+              <thead className="sticky top-0 z-20 bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant">
+                <tr>
+                  <th className="min-w-[260px] px-4 py-3">Title</th>
+                  <th className="min-w-[220px] px-4 py-3">Slug</th>
+                  <th className="min-w-[160px] px-4 py-3">Category</th>
+                  <th className="min-w-[110px] px-4 py-3">Price</th>
+                  <th className="min-w-[120px] px-4 py-3">Status</th>
+                  <th className="min-w-[150px] px-4 py-3">Inventory</th>
+                  <th className="min-w-[90px] px-4 py-3">Sale</th>
+                  <th className="min-w-[140px] px-4 py-3">Created</th>
+                  <th className="sticky right-0 z-30 min-w-[320px] border-l border-outline-variant bg-surface-container-low px-4 py-3 shadow-[-8px_0_18px_rgba(67,45,31,0.08)]">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-outline-variant/70">
+                {filteredProducts.map((product) => (
+                  <tr key={product.id}>
+                    <td className="px-4 py-4 font-semibold leading-6 text-on-surface">{displayValue(product.title)}</td>
+                    <td className="px-4 py-4 leading-6 text-on-surface-variant">{displayValue(product.slug)}</td>
+                    <td className="px-4 py-4 text-on-surface-variant">{displayValue(product.category)}</td>
+                    <td className="px-4 py-4 font-semibold">{formatPrice(priceFromRow(product))}</td>
+                    <td className="px-4 py-4 text-on-surface-variant">{displayStatus(product.status)}</td>
+                    <td className="px-4 py-4 text-on-surface-variant">{displayStatus(product.inventory_status)}</td>
+                    <td className="px-4 py-4 text-on-surface-variant">{product.is_sale ? "Yes" : "No"}</td>
+                    <td className="px-4 py-4 text-on-surface-variant">{formatDate(product.created_at)}</td>
+                    <td className="sticky right-0 z-10 border-l border-outline-variant bg-surface-container-lowest px-4 py-4 shadow-[-8px_0_18px_rgba(67,45,31,0.08)]">
+                      <div className="flex min-w-max gap-2 whitespace-nowrap">
+                        <Link
+                          href={`/admin/products/${product.id}`}
+                          className="inline-flex rounded-full border border-primary px-4 py-2 font-heading text-xs font-bold text-primary transition hover:bg-primary-container/10"
+                        >
+                          View
+                        </Link>
+                        <Link
+                          href={`/admin/products/${product.id}/edit`}
+                          className="inline-flex rounded-full bg-primary-container px-4 py-2 font-heading text-xs font-bold text-on-primary-container transition hover:bg-[#e08f00]"
+                        >
+                          Edit
+                        </Link>
+                        {product.status === "active" && product.slug ? (
+                          <Link
+                            href={`/products/${product.slug}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex rounded-full border border-outline-variant px-4 py-2 font-heading text-xs font-bold text-on-surface-variant transition hover:border-primary hover:text-primary"
+                          >
+                            Preview
+                          </Link>
+                        ) : (
+                          <span
+                            className="inline-flex rounded-full border border-outline-variant px-4 py-2 font-heading text-xs font-bold text-on-surface-variant/70"
+                            title="Product is not public."
+                          >
+                            Not public
+                          </span>
+                        )}
+                        {product.status !== "archived" && (
+                          <button
+                            type="button"
+                            className="inline-flex rounded-full border border-error/40 px-4 py-2 font-heading text-xs font-bold text-error transition hover:bg-error/10 disabled:cursor-not-allowed disabled:opacity-60"
+                            disabled={archivingId === product.id}
+                            onClick={() => handleArchive(product)}
+                          >
+                            {archivingId === product.id ? "Archiving..." : "Archive"}
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -174,7 +366,7 @@ export function AdminProducts() {
   return (
     <AdminGuard>
       {() => (
-        <AdminPageFrame title="Products" description="Prepare catalog management for the next phase." backLink>
+        <AdminPageFrame title="Products" description="Manage Supabase product records." backLink>
           <div className="space-y-6">
             <div className="flex justify-end">
               <Link
@@ -185,7 +377,8 @@ export function AdminProducts() {
               </Link>
             </div>
             <section className="ambient-card p-6 text-sm leading-7 text-on-surface-variant md:p-8">
-              Product management is being prepared. Public product pages still use the existing catalog until the next phase.
+              Active products are visible on the public storefront. Draft and archived products stay hidden from public product pages,
+              collections, search, product feed, and sitemap.
             </section>
             <ProductsTable />
           </div>

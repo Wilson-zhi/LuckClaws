@@ -381,6 +381,11 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
         <label className="grid gap-2 text-sm font-semibold text-on-surface">
           Slug
           <input className={inputClass} value={form.slug} onChange={(event) => updateField("slug", event.target.value)} />
+          {mode === "edit" && (
+            <p className="text-xs font-semibold leading-5 text-on-surface-variant">
+              Changing slug may change the public product URL.
+            </p>
+          )}
           <FieldError message={errors.slug} />
         </label>
 
@@ -461,6 +466,9 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
             <option value="draft">Draft</option>
             <option value="archived">Archived</option>
           </select>
+          <p className="text-xs font-semibold leading-5 text-on-surface-variant">
+            active = visible publicly; draft = hidden from public storefront; archived = hidden and kept for record.
+          </p>
           <FieldError message={errors.status} />
         </label>
 

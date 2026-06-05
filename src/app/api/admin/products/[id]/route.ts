@@ -114,7 +114,28 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     return NextResponse.json({ error: "Product id is required." }, { status: 400 });
   }
 
-  const validation = validateAdminProductPayload(await request.json().catch(() => null));
+  const body = await request.json().catch(() => null);
+
+  if (body && typeof body === "object" && !Array.isArray(body) && (body as Record<string, unknown>).action === "archive") {
+    const { data, error } = await supabase
+      .from("products")
+      .update({ status: "archived" })
+      .eq("id", id)
+      .select("id, status")
+      .maybeSingle();
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    if (!data) {
+      return NextResponse.json({ error: "Product not found." }, { status: 404 });
+    }
+
+    return NextResponse.json({ product: data });
+  }
+
+  const validation = validateAdminProductPayload(body);
 
   if (!validation.ok) {
     return NextResponse.json({ error: "Product validation failed.", errors: validation.errors }, { status: 400 });
