@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AdminGuard, useAdminAuth } from "@/components/admin/AdminGuard";
 import { AdminPageFrame } from "@/components/admin/AdminPageFrame";
+import { defaultProductSortOrder } from "@/lib/admin-products";
 import { formatPrice } from "@/lib/utils";
 
 type AdminProductDetailRow = {
@@ -49,6 +50,20 @@ function numberFromValue(value: number | string | null) {
   const numberValue = typeof value === "number" ? value : Number(value ?? 0);
 
   return Number.isFinite(numberValue) ? numberValue : 0;
+}
+
+function sortOrderDisplayValue(value: number | string | null) {
+  if (value === null || value === "") {
+    return "Default";
+  }
+
+  const numberValue = typeof value === "number" ? value : Number(value);
+
+  if (!Number.isFinite(numberValue) || numberValue <= 0 || numberValue === defaultProductSortOrder) {
+    return "Default";
+  }
+
+  return String(numberValue);
 }
 
 function formatDate(value: string | null) {
@@ -198,7 +213,7 @@ function ProductDetailContent({ productId }: { productId: string }) {
           <DetailField label="Stock quantity" value={product.stock_quantity ?? "Not provided"} />
           <DetailField label="Featured" value={displayBoolean(product.is_featured)} />
           <DetailField label="Sale" value={displayBoolean(product.is_sale)} />
-          <DetailField label="Sort order" value={product.sort_order ?? "Not provided"} />
+          <DetailField label="Sort order" value={sortOrderDisplayValue(product.sort_order)} />
           <DetailField label="Homepage section" value={displayValue(product.homepage_section)} />
           <DetailField label="Badge" value={displayValue(product.badge)} />
           <DetailField label="Published at" value={formatDate(product.published_at)} />

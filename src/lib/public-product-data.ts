@@ -81,6 +81,7 @@ const collectionSlugByCategory: Record<string, string> = {
 };
 
 const staticIndexBySlug = new Map(staticProducts.map((product, index) => [product.slug, index]));
+const DEFAULT_SORT_ORDER = 9999;
 
 function cleanString(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
@@ -186,7 +187,11 @@ function timeFromValue(value: unknown) {
 }
 
 function sortOrderFromProduct(product: Product) {
-  return typeof product.sortOrder === "number" ? product.sortOrder : Number.MAX_SAFE_INTEGER;
+  if (typeof product.sortOrder !== "number" || product.sortOrder <= 0) {
+    return DEFAULT_SORT_ORDER;
+  }
+
+  return product.sortOrder;
 }
 
 function recordFromUnknown(value: unknown): Record<string, unknown> | null {
@@ -451,10 +456,7 @@ async function selectProductRows(selectColumns: string, slug?: string) {
   } else {
     query = query
       .eq("status", "active")
-      .order("sort_order", { ascending: true, nullsFirst: false })
-      .order("published_at", { ascending: false, nullsFirst: false })
-      .order("created_at", { ascending: false })
-      .limit(250);
+      .order("created_at", { ascending: false });
   }
 
   const result = slug ? await query.limit(1) : await query;
@@ -524,12 +526,16 @@ function sortProductsForStorefront(products: Product[]) {
       return sortDifference;
     }
 
-    const dateDifference =
-      Math.max(timeFromValue(second.publishedAt), timeFromValue(second.createdAt)) -
-      Math.max(timeFromValue(first.publishedAt), timeFromValue(first.createdAt));
+    const publishedDateDifference = timeFromValue(second.publishedAt) - timeFromValue(first.publishedAt);
 
-    if (dateDifference !== 0) {
-      return dateDifference;
+    if (publishedDateDifference !== 0) {
+      return publishedDateDifference;
+    }
+
+    const createdDateDifference = timeFromValue(second.createdAt) - timeFromValue(first.createdAt);
+
+    if (createdDateDifference !== 0) {
+      return createdDateDifference;
     }
 
     const firstIndex = staticIndexBySlug.get(first.slug) ?? Number.MAX_SAFE_INTEGER;

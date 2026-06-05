@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { type ChangeEvent, type FormEvent, useEffect, useState } from "react";
 import { AdminGuard, useAdminAuth } from "@/components/admin/AdminGuard";
 import { AdminPageFrame } from "@/components/admin/AdminPageFrame";
-import { homepageSections, inventoryStatuses, productStatuses } from "@/lib/admin-products";
+import { defaultProductSortOrder, homepageSections, inventoryStatuses, productStatuses } from "@/lib/admin-products";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 type ProductFormMode = "create" | "edit";
@@ -99,6 +99,20 @@ function stringValue(value: string | number | null) {
   return value === null ? "" : String(value);
 }
 
+function sortOrderFormValue(value: string | number | null) {
+  if (value === null || value === "") {
+    return "";
+  }
+
+  const parsed = typeof value === "number" ? value : Number(value);
+
+  if (!Number.isFinite(parsed) || parsed <= 0 || parsed === defaultProductSortOrder) {
+    return "";
+  }
+
+  return String(parsed);
+}
+
 function dateTimeLocalValue(value: string | null) {
   if (!value) {
     return "";
@@ -138,7 +152,7 @@ function formFromProduct(product: AdminProductDetailRow): ProductFormState {
     stock_quantity: stringValue(product.stock_quantity),
     is_featured: Boolean(product.is_featured),
     is_sale: Boolean(product.is_sale),
-    sort_order: stringValue(product.sort_order),
+    sort_order: sortOrderFormValue(product.sort_order),
     homepage_section: product.homepage_section ?? "",
     badge: product.badge ?? "",
     published_at: dateTimeLocalValue(product.published_at),
@@ -213,8 +227,8 @@ function validateForm(form: ProductFormState) {
   if (form.sort_order.trim()) {
     const sortOrder = Number(form.sort_order);
 
-    if (!Number.isFinite(sortOrder) || !Number.isInteger(sortOrder)) {
-      errors.sort_order = "Sort order must be a whole number.";
+    if (!Number.isFinite(sortOrder) || !Number.isInteger(sortOrder) || sortOrder <= 0) {
+      errors.sort_order = "Sort order must be a positive whole number, or leave it blank.";
     }
   }
 
@@ -581,11 +595,16 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
             Sort order
             <input
               className={inputClass}
+              min="1"
+              placeholder="Default"
               step="1"
               type="number"
               value={form.sort_order}
               onChange={(event) => updateField("sort_order", event.target.value)}
             />
+            <p className="text-xs font-semibold leading-5 text-on-surface-variant">
+              Lower numbers appear first. Leave blank/default for normal ordering.
+            </p>
             <FieldError message={errors.sort_order} />
           </label>
 

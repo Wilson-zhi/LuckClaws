@@ -38,9 +38,7 @@ export async function GET(request: Request) {
   const { data, error } = await supabase
     .from("products")
     .select("id, title, slug, category, price, status, inventory_status, is_sale, sort_order, homepage_section, badge, published_at, created_at")
-    .order("sort_order", { ascending: true, nullsFirst: false })
-    .order("created_at", { ascending: false })
-    .limit(100);
+    .order("created_at", { ascending: false });
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });

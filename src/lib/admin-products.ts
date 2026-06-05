@@ -1,6 +1,7 @@
 export const productStatuses = ["active", "draft", "archived"] as const;
 export const inventoryStatuses = ["in_stock", "out_of_stock", "preorder"] as const;
 export const homepageSections = ["featured", "best_seller", "new_arrivals"] as const;
+export const defaultProductSortOrder = 9999;
 
 type ProductStatus = (typeof productStatuses)[number];
 type InventoryStatus = (typeof inventoryStatuses)[number];
@@ -114,8 +115,8 @@ export function validateAdminProductPayload(input: unknown): ValidationResult {
   }
 
   if (record.sort_order !== "" && record.sort_order !== null && record.sort_order !== undefined) {
-    if (sortOrder === null || !Number.isInteger(sortOrder)) {
-      errors.sort_order = "Sort order must be a whole number.";
+    if (sortOrder === null || !Number.isInteger(sortOrder) || sortOrder <= 0) {
+      errors.sort_order = "Sort order must be a positive whole number, or leave it blank.";
     }
   }
 

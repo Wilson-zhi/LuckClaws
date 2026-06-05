@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { AdminGuard, useAdminAuth } from "@/components/admin/AdminGuard";
 import { AdminPageFrame } from "@/components/admin/AdminPageFrame";
+import { defaultProductSortOrder } from "@/lib/admin-products";
 import { formatPrice } from "@/lib/utils";
 
 type AdminProductRow = {
@@ -55,19 +56,25 @@ function priceFromRow(product: AdminProductRow) {
 }
 
 function numberFromValue(value: number | string | null) {
-  const parsed = typeof value === "number" ? value : Number(value ?? 0);
+  if (value === null || value === "") {
+    return null;
+  }
 
-  return Number.isFinite(parsed) ? parsed : 0;
+  const parsed = typeof value === "number" ? value : Number(value);
+
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
 function sortOrderFromRow(product: AdminProductRow) {
-  if (product.sort_order === null || product.sort_order === "") {
-    return Number.MAX_SAFE_INTEGER;
-  }
+  const value = numberFromValue(product.sort_order);
 
-  const value = typeof product.sort_order === "number" ? product.sort_order : Number(product.sort_order);
+  return value !== null && value > 0 ? value : defaultProductSortOrder;
+}
 
-  return Number.isFinite(value) ? value : Number.MAX_SAFE_INTEGER;
+function displaySortOrder(product: AdminProductRow) {
+  const value = sortOrderFromRow(product);
+
+  return value === defaultProductSortOrder ? "Default" : String(value);
 }
 
 function createdTimeFromRow(product: AdminProductRow) {
@@ -348,9 +355,7 @@ function ProductsTable() {
                     <td className="px-4 py-4 text-on-surface-variant">{displayStatus(product.status)}</td>
                     <td className="px-4 py-4 text-on-surface-variant">{displayStatus(product.inventory_status)}</td>
                     <td className="px-4 py-4 text-on-surface-variant">{product.is_sale ? "Yes" : "No"}</td>
-                    <td className="px-4 py-4 text-on-surface-variant">
-                      {product.sort_order === null || product.sort_order === "" ? "Not set" : numberFromValue(product.sort_order)}
-                    </td>
+                    <td className="px-4 py-4 text-on-surface-variant">{displaySortOrder(product)}</td>
                     <td className="px-4 py-4 text-on-surface-variant">{displayValue(product.homepage_section)}</td>
                     <td className="px-4 py-4 text-on-surface-variant">{displayValue(product.badge)}</td>
                     <td className="px-4 py-4 text-on-surface-variant">{formatDate(product.created_at)}</td>
