@@ -1,13 +1,42 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { type ChangeEvent, type FormEvent, useEffect, useState } from "react";
+import { type ChangeEvent, type FormEvent, type ReactNode, useEffect, useState } from "react";
 import { AdminGuard, useAdminAuth } from "@/components/admin/AdminGuard";
 import { AdminPageFrame } from "@/components/admin/AdminPageFrame";
 import { defaultProductSortOrder, homepageSections, inventoryStatuses, productStatuses } from "@/lib/admin-products";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 type ProductFormMode = "create" | "edit";
+
+type ProductHighlightFormItem = {
+  title: string;
+  text: string;
+  icon: string;
+};
+
+type DetailRowFormItem = {
+  label: string;
+  value: string;
+};
+
+type TextItemFormItem = {
+  text: string;
+};
+
+type ProductFaqFormItem = {
+  question: string;
+  answer: string;
+};
+
+type AccordionSectionFormItem = {
+  title: string;
+  content: string;
+};
+
+type RelatedProductSlugFormItem = {
+  slug: string;
+};
 
 type ProductFormState = {
   title: string;
@@ -28,13 +57,13 @@ type ProductFormState = {
   badge: string;
   published_at: string;
   short_description: string;
-  product_highlights: string;
-  detail_rows: string;
-  best_for: string;
-  care_instructions: string;
-  product_faqs: string;
-  accordion_sections: string;
-  related_product_slugs: string;
+  product_highlights: ProductHighlightFormItem[];
+  detail_rows: DetailRowFormItem[];
+  best_for: TextItemFormItem[];
+  care_instructions: TextItemFormItem[];
+  product_faqs: ProductFaqFormItem[];
+  accordion_sections: AccordionSectionFormItem[];
+  related_product_slugs: RelatedProductSlugFormItem[];
   seo_title: string;
   seo_description: string;
   google_product_category: string;
@@ -97,13 +126,13 @@ const emptyForm: ProductFormState = {
   badge: "",
   published_at: "",
   short_description: "",
-  product_highlights: "",
-  detail_rows: "",
-  best_for: "",
-  care_instructions: "",
-  product_faqs: "",
-  accordion_sections: "",
-  related_product_slugs: "",
+  product_highlights: [],
+  detail_rows: [],
+  best_for: [],
+  care_instructions: [],
+  product_faqs: [],
+  accordion_sections: [],
+  related_product_slugs: [],
   seo_title: "",
   seo_description: "",
   google_product_category: ""
@@ -115,60 +144,9 @@ const inputClass =
 const textareaClass =
   "min-h-32 w-full rounded-md border border-outline-variant bg-white px-4 py-3 text-base outline-none transition focus:border-primary focus:ring-2 focus:ring-primary-container/30";
 
-const jsonTextareaClass = `${textareaClass} font-mono text-sm leading-6`;
-
 const PRODUCT_IMAGE_BUCKET = "product-images";
 const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
 const acceptedImageTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
-
-const jsonFieldHelp =
-  "Use valid JSON array format. Blank or [] saves an empty array and keeps fallback content on the product page.";
-
-const productHighlightsExample = `[
-  {
-    "title": "Everyday play ready",
-    "text": "Built for supervised daily enrichment.",
-    "icon": "paw"
-  }
-]`;
-
-const detailRowsExample = `[
-  {
-    "label": "Product type",
-    "value": "Dog puzzle and enrichment toy"
-  },
-  {
-    "label": "Material focus",
-    "value": "Wood"
-  }
-]`;
-
-const textItemsExample = `[
-  {
-    "text": "Supervised play sessions"
-  },
-  {
-    "text": "Adding variety to daily activity"
-  }
-]`;
-
-const productFaqsExample = `[
-  {
-    "question": "Is this product suitable for puppies?",
-    "answer": "Use only with supervision and choose based on your pet's size and chewing habits."
-  }
-]`;
-
-const accordionSectionsExample = `[
-  {
-    "title": "Product Details",
-    "content": "Designed for supervised enrichment and everyday play."
-  },
-  {
-    "title": "Safety Notice",
-    "content": "Supervise pets during play and remove the toy if damaged."
-  }
-]`;
 
 function stringValue(value: string | number | null) {
   return value === null ? "" : String(value);
@@ -198,8 +176,93 @@ function dateTimeLocalValue(value: string | null) {
   return Number.isNaN(date.getTime()) ? "" : date.toISOString().slice(0, 16);
 }
 
-function jsonTextValue(value: unknown) {
-  return Array.isArray(value) ? JSON.stringify(value, null, 2) : "[]";
+function cleanText(value: unknown) {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function recordFromUnknown(value: unknown) {
+  return value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
+}
+
+function arrayFromUnknown(value: unknown) {
+  return Array.isArray(value) ? value : [];
+}
+
+function productHighlightsFormValue(value: unknown): ProductHighlightFormItem[] {
+  return arrayFromUnknown(value)
+    .map((item) => {
+      const record = recordFromUnknown(item);
+
+      return {
+        title: cleanText(record?.title),
+        text: cleanText(record?.text),
+        icon: cleanText(record?.icon)
+      };
+    })
+    .filter((item) => item.title || item.text || item.icon);
+}
+
+function detailRowsFormValue(value: unknown): DetailRowFormItem[] {
+  return arrayFromUnknown(value)
+    .map((item) => {
+      const record = recordFromUnknown(item);
+
+      return {
+        label: cleanText(record?.label),
+        value: cleanText(record?.value)
+      };
+    })
+    .filter((item) => item.label || item.value);
+}
+
+function textItemsFormValue(value: unknown): TextItemFormItem[] {
+  return arrayFromUnknown(value)
+    .map((item) => {
+      if (typeof item === "string") {
+        return { text: cleanText(item) };
+      }
+
+      const record = recordFromUnknown(item);
+
+      return {
+        text: cleanText(record?.text)
+      };
+    })
+    .filter((item) => item.text);
+}
+
+function productFaqsFormValue(value: unknown): ProductFaqFormItem[] {
+  return arrayFromUnknown(value)
+    .map((item) => {
+      const record = recordFromUnknown(item);
+
+      return {
+        question: cleanText(record?.question) || cleanText(record?.title),
+        answer: cleanText(record?.answer) || cleanText(record?.content)
+      };
+    })
+    .filter((item) => item.question || item.answer);
+}
+
+function accordionSectionsFormValue(value: unknown): AccordionSectionFormItem[] {
+  return arrayFromUnknown(value)
+    .map((item) => {
+      const record = recordFromUnknown(item);
+
+      return {
+        title: cleanText(record?.title),
+        content: cleanText(record?.content)
+      };
+    })
+    .filter((item) => item.title || item.content);
+}
+
+function relatedProductSlugsFormValue(value: unknown): RelatedProductSlugFormItem[] {
+  return arrayFromUnknown(value)
+    .map((item) => ({
+      slug: cleanText(item)
+    }))
+    .filter((item) => item.slug);
 }
 
 function sanitizePathSegment(value: string) {
@@ -236,18 +299,13 @@ function formFromProduct(product: AdminProductDetailRow): ProductFormState {
     badge: product.badge ?? "",
     published_at: dateTimeLocalValue(product.published_at),
     short_description: product.short_description ?? "",
-    product_highlights: jsonTextValue(product.product_highlights),
-    detail_rows: jsonTextValue(product.detail_rows),
-    best_for: jsonTextValue(product.best_for),
-    care_instructions: jsonTextValue(product.care_instructions),
-    product_faqs: jsonTextValue(product.product_faqs),
-    accordion_sections: jsonTextValue(product.accordion_sections),
-    related_product_slugs: Array.isArray(product.related_product_slugs)
-      ? product.related_product_slugs
-          .map((item) => (typeof item === "string" ? item.trim() : ""))
-          .filter(Boolean)
-          .join(", ")
-      : "",
+    product_highlights: productHighlightsFormValue(product.product_highlights),
+    detail_rows: detailRowsFormValue(product.detail_rows),
+    best_for: textItemsFormValue(product.best_for),
+    care_instructions: textItemsFormValue(product.care_instructions),
+    product_faqs: productFaqsFormValue(product.product_faqs),
+    accordion_sections: accordionSectionsFormValue(product.accordion_sections),
+    related_product_slugs: relatedProductSlugsFormValue(product.related_product_slugs),
     seo_title: product.seo_title ?? "",
     seo_description: product.seo_description ?? "",
     google_product_category: product.google_product_category ?? ""
@@ -255,11 +313,45 @@ function formFromProduct(product: AdminProductDetailRow): ProductFormState {
 }
 
 function buildPayload(form: ProductFormState) {
-  const jsonArrayPayload = (value: string) => (value.trim() ? (JSON.parse(value) as unknown[]) : []);
-  const relatedProductSlugs = form.related_product_slugs
-    .split(",")
-    .map((slug) => slug.trim())
-    .filter(Boolean);
+  const productHighlights = form.product_highlights
+    .map((item) => ({
+      title: item.title.trim(),
+      text: item.text.trim(),
+      icon: item.icon.trim()
+    }))
+    .filter((item) => item.title || item.text || item.icon)
+    .map((item) => ({
+      title: item.title,
+      text: item.text,
+      ...(item.icon ? { icon: item.icon } : {})
+    }));
+  const detailRows = form.detail_rows
+    .map((item) => ({
+      label: item.label.trim(),
+      value: item.value.trim()
+    }))
+    .filter((item) => item.label || item.value);
+  const bestFor = form.best_for
+    .map((item) => ({ text: item.text.trim() }))
+    .filter((item) => item.text);
+  const careInstructions = form.care_instructions
+    .map((item) => ({ text: item.text.trim() }))
+    .filter((item) => item.text);
+  const productFaqs = form.product_faqs
+    .map((item) => ({
+      question: item.question.trim(),
+      answer: item.answer.trim()
+    }))
+    .filter((item) => item.question || item.answer);
+  const accordionSections = form.accordion_sections
+    .map((item) => ({
+      title: item.title.trim(),
+      content: item.content.trim()
+    }))
+    .filter((item) => item.title || item.content);
+  const relatedProductSlugs = Array.from(
+    new Set(form.related_product_slugs.map((item) => item.slug.trim()).filter(Boolean))
+  );
 
   return {
     title: form.title,
@@ -280,12 +372,12 @@ function buildPayload(form: ProductFormState) {
     badge: form.badge,
     published_at: form.published_at ? new Date(form.published_at).toISOString() : "",
     short_description: form.short_description,
-    product_highlights: jsonArrayPayload(form.product_highlights),
-    detail_rows: jsonArrayPayload(form.detail_rows),
-    best_for: jsonArrayPayload(form.best_for),
-    care_instructions: jsonArrayPayload(form.care_instructions),
-    product_faqs: jsonArrayPayload(form.product_faqs),
-    accordion_sections: jsonArrayPayload(form.accordion_sections),
+    product_highlights: productHighlights,
+    detail_rows: detailRows,
+    best_for: bestFor,
+    care_instructions: careInstructions,
+    product_faqs: productFaqs,
+    accordion_sections: accordionSections,
     related_product_slugs: relatedProductSlugs,
     seo_title: form.seo_title,
     seo_description: form.seo_description,
@@ -293,25 +385,8 @@ function buildPayload(form: ProductFormState) {
   };
 }
 
-function validateJsonArrayField(
-  errors: Record<string, string>,
-  field: keyof ProductFormState,
-  value: string,
-  label: string
-) {
-  if (!value.trim()) {
-    return;
-  }
-
-  try {
-    const parsed = JSON.parse(value) as unknown;
-
-    if (!Array.isArray(parsed)) {
-      errors[field] = `${label} must be a JSON array.`;
-    }
-  } catch {
-    errors[field] = `${label} must be valid JSON.`;
-  }
+function hasContent(...values: string[]) {
+  return values.some((value) => value.trim());
 }
 
 function validateForm(form: ProductFormState) {
@@ -378,12 +453,37 @@ function validateForm(form: ProductFormState) {
     errors.published_at = "Published date must be a valid date.";
   }
 
-  validateJsonArrayField(errors, "product_highlights", form.product_highlights, "Product highlights");
-  validateJsonArrayField(errors, "detail_rows", form.detail_rows, "Details at a Glance");
-  validateJsonArrayField(errors, "best_for", form.best_for, "Best For");
-  validateJsonArrayField(errors, "care_instructions", form.care_instructions, "Care Instructions");
-  validateJsonArrayField(errors, "product_faqs", form.product_faqs, "Product FAQs");
-  validateJsonArrayField(errors, "accordion_sections", form.accordion_sections, "Accordion sections");
+  if (
+    form.product_highlights.some(
+      (item) => hasContent(item.title, item.text, item.icon) && (!item.title.trim() || !item.text.trim())
+    )
+  ) {
+    errors.product_highlights = "Product highlight rows with content must include title and text.";
+  }
+
+  if (
+    form.detail_rows.some(
+      (item) => hasContent(item.label, item.value) && (!item.label.trim() || !item.value.trim())
+    )
+  ) {
+    errors.detail_rows = "Detail rows with content must include label and value.";
+  }
+
+  if (
+    form.product_faqs.some(
+      (item) => hasContent(item.question, item.answer) && (!item.question.trim() || !item.answer.trim())
+    )
+  ) {
+    errors.product_faqs = "FAQ rows with content must include question and answer.";
+  }
+
+  if (
+    form.accordion_sections.some(
+      (item) => hasContent(item.title, item.content) && (!item.title.trim() || !item.content.trim())
+    )
+  ) {
+    errors.accordion_sections = "Accordion sections with content must include title and content.";
+  }
 
   return errors;
 }
@@ -400,44 +500,337 @@ function FieldError({ message }: { message?: string }) {
   );
 }
 
-function JsonArrayField({
-  label,
-  value,
+function RepeatableSection({
+  title,
+  description,
+  addLabel,
+  emptyMessage,
   error,
-  example,
-  onChange
+  isEmpty,
+  children,
+  onAdd
 }: {
-  label: string;
-  value: string;
+  title: string;
+  description?: string;
+  addLabel: string;
+  emptyMessage: string;
   error?: string;
-  example: string;
-  onChange: (value: string) => void;
+  isEmpty: boolean;
+  children: ReactNode;
+  onAdd: () => void;
 }) {
   return (
-    <div className="grid gap-2 text-sm font-semibold text-on-surface">
-      <div className="flex items-center justify-between gap-3">
-        <span>{label}</span>
+    <section className="rounded-md border border-outline-variant bg-surface-container-lowest p-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h3 className="font-heading text-base font-bold text-on-surface">{title}</h3>
+          {description ? <p className="mt-1 text-xs font-semibold leading-5 text-on-surface-variant">{description}</p> : null}
+        </div>
         <button
           type="button"
-          className="rounded-full border border-outline-variant px-3 py-1 text-xs font-bold text-primary transition hover:border-primary hover:bg-primary-container/10"
-          onClick={() => onChange("[]")}
+          className="inline-flex w-fit rounded-full bg-primary px-4 py-2 font-heading text-xs font-bold text-white transition hover:bg-primary/90"
+          onClick={onAdd}
         >
-          Reset to []
+          {addLabel}
         </button>
       </div>
-      <textarea
-        aria-label={label}
-        className={jsonTextareaClass}
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-      />
-      <p className="text-xs font-semibold leading-5 text-on-surface-variant">{jsonFieldHelp}</p>
-      <details className="rounded-md bg-surface-container-lowest p-3 text-xs text-on-surface-variant">
-        <summary className="cursor-pointer font-bold text-on-surface">Example format</summary>
-        <pre className="mt-3 overflow-x-auto whitespace-pre-wrap font-mono leading-5">{example}</pre>
-      </details>
+      {isEmpty ? (
+        <p className="mt-4 rounded-md bg-white p-4 text-sm font-semibold text-on-surface-variant">{emptyMessage}</p>
+      ) : (
+        <div className="mt-4 grid gap-4">{children}</div>
+      )}
       <FieldError message={error} />
-    </div>
+    </section>
+  );
+}
+
+function ProductHighlightsEditor({
+  items,
+  error,
+  onChange
+}: {
+  items: ProductHighlightFormItem[];
+  error?: string;
+  onChange: (items: ProductHighlightFormItem[]) => void;
+}) {
+  const updateItem = (index: number, field: keyof ProductHighlightFormItem, value: string) => {
+    onChange(items.map((item, itemIndex) => (itemIndex === index ? { ...item, [field]: value } : item)));
+  };
+
+  return (
+    <RepeatableSection
+      title="Product Highlights"
+      description="Shown as product benefit cards. Icon is optional."
+      addLabel="Add Highlight"
+      emptyMessage="No product highlights. The product page will use fallback content if available."
+      error={error}
+      isEmpty={items.length === 0}
+      onAdd={() => onChange([...items, { title: "", text: "", icon: "" }])}
+    >
+      {items.map((item, index) => (
+        <div key={index} className="grid gap-4 rounded-md border border-outline-variant bg-white p-4">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm font-bold text-on-surface">Highlight {index + 1}</p>
+            <button
+              type="button"
+              className="rounded-full border border-outline-variant px-3 py-1 text-xs font-bold text-primary transition hover:border-primary hover:bg-primary-container/10"
+              onClick={() => onChange(items.filter((_, itemIndex) => itemIndex !== index))}
+            >
+              Remove
+            </button>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            <label className="grid gap-2 text-sm font-semibold text-on-surface">
+              Title
+              <input className={inputClass} value={item.title} onChange={(event) => updateItem(index, "title", event.target.value)} />
+            </label>
+            <label className="grid gap-2 text-sm font-semibold text-on-surface">
+              Icon optional
+              <input className={inputClass} placeholder="paw" value={item.icon} onChange={(event) => updateItem(index, "icon", event.target.value)} />
+            </label>
+            <label className="grid gap-2 text-sm font-semibold text-on-surface md:col-span-2">
+              Text
+              <textarea className={textareaClass} value={item.text} onChange={(event) => updateItem(index, "text", event.target.value)} />
+            </label>
+          </div>
+        </div>
+      ))}
+    </RepeatableSection>
+  );
+}
+
+function DetailRowsEditor({
+  items,
+  error,
+  onChange
+}: {
+  items: DetailRowFormItem[];
+  error?: string;
+  onChange: (items: DetailRowFormItem[]) => void;
+}) {
+  const updateItem = (index: number, field: keyof DetailRowFormItem, value: string) => {
+    onChange(items.map((item, itemIndex) => (itemIndex === index ? { ...item, [field]: value } : item)));
+  };
+
+  return (
+    <RepeatableSection
+      title="Details at a Glance"
+      description="Shown as compact label and value rows."
+      addLabel="Add Detail Row"
+      emptyMessage="No detail rows. The product page will use fallback content if available."
+      error={error}
+      isEmpty={items.length === 0}
+      onAdd={() => onChange([...items, { label: "", value: "" }])}
+    >
+      {items.map((item, index) => (
+        <div key={index} className="grid gap-4 rounded-md border border-outline-variant bg-white p-4 md:grid-cols-[1fr_1fr_auto] md:items-end">
+          <label className="grid gap-2 text-sm font-semibold text-on-surface">
+            Label
+            <input className={inputClass} value={item.label} onChange={(event) => updateItem(index, "label", event.target.value)} />
+          </label>
+          <label className="grid gap-2 text-sm font-semibold text-on-surface">
+            Value
+            <input className={inputClass} value={item.value} onChange={(event) => updateItem(index, "value", event.target.value)} />
+          </label>
+          <button
+            type="button"
+            className="h-11 rounded-full border border-outline-variant px-4 font-heading text-xs font-bold text-primary transition hover:border-primary hover:bg-primary-container/10"
+            onClick={() => onChange(items.filter((_, itemIndex) => itemIndex !== index))}
+          >
+            Remove
+          </button>
+        </div>
+      ))}
+    </RepeatableSection>
+  );
+}
+
+function TextItemsEditor({
+  title,
+  description,
+  addLabel,
+  emptyMessage,
+  items,
+  onChange
+}: {
+  title: string;
+  description: string;
+  addLabel: string;
+  emptyMessage: string;
+  items: TextItemFormItem[];
+  onChange: (items: TextItemFormItem[]) => void;
+}) {
+  const updateItem = (index: number, value: string) => {
+    onChange(items.map((item, itemIndex) => (itemIndex === index ? { text: value } : item)));
+  };
+
+  return (
+    <RepeatableSection
+      title={title}
+      description={description}
+      addLabel={addLabel}
+      emptyMessage={emptyMessage}
+      isEmpty={items.length === 0}
+      onAdd={() => onChange([...items, { text: "" }])}
+    >
+      {items.map((item, index) => (
+        <div key={index} className="grid gap-4 rounded-md border border-outline-variant bg-white p-4 md:grid-cols-[1fr_auto] md:items-end">
+          <label className="grid gap-2 text-sm font-semibold text-on-surface">
+            Text
+            <input className={inputClass} value={item.text} onChange={(event) => updateItem(index, event.target.value)} />
+          </label>
+          <button
+            type="button"
+            className="h-11 rounded-full border border-outline-variant px-4 font-heading text-xs font-bold text-primary transition hover:border-primary hover:bg-primary-container/10"
+            onClick={() => onChange(items.filter((_, itemIndex) => itemIndex !== index))}
+          >
+            Remove
+          </button>
+        </div>
+      ))}
+    </RepeatableSection>
+  );
+}
+
+function ProductFaqsEditor({
+  items,
+  error,
+  onChange
+}: {
+  items: ProductFaqFormItem[];
+  error?: string;
+  onChange: (items: ProductFaqFormItem[]) => void;
+}) {
+  const updateItem = (index: number, field: keyof ProductFaqFormItem, value: string) => {
+    onChange(items.map((item, itemIndex) => (itemIndex === index ? { ...item, [field]: value } : item)));
+  };
+
+  return (
+    <RepeatableSection
+      title="Product Questions / FAQ"
+      description="Shown in the product questions section."
+      addLabel="Add FAQ"
+      emptyMessage="No product FAQs. The product page will use fallback questions if available."
+      error={error}
+      isEmpty={items.length === 0}
+      onAdd={() => onChange([...items, { question: "", answer: "" }])}
+    >
+      {items.map((item, index) => (
+        <div key={index} className="grid gap-4 rounded-md border border-outline-variant bg-white p-4">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm font-bold text-on-surface">FAQ {index + 1}</p>
+            <button
+              type="button"
+              className="rounded-full border border-outline-variant px-3 py-1 text-xs font-bold text-primary transition hover:border-primary hover:bg-primary-container/10"
+              onClick={() => onChange(items.filter((_, itemIndex) => itemIndex !== index))}
+            >
+              Remove
+            </button>
+          </div>
+          <label className="grid gap-2 text-sm font-semibold text-on-surface">
+            Question
+            <input className={inputClass} value={item.question} onChange={(event) => updateItem(index, "question", event.target.value)} />
+          </label>
+          <label className="grid gap-2 text-sm font-semibold text-on-surface">
+            Answer
+            <textarea className={textareaClass} value={item.answer} onChange={(event) => updateItem(index, "answer", event.target.value)} />
+          </label>
+        </div>
+      ))}
+    </RepeatableSection>
+  );
+}
+
+function AccordionSectionsEditor({
+  items,
+  error,
+  onChange
+}: {
+  items: AccordionSectionFormItem[];
+  error?: string;
+  onChange: (items: AccordionSectionFormItem[]) => void;
+}) {
+  const updateItem = (index: number, field: keyof AccordionSectionFormItem, value: string) => {
+    onChange(items.map((item, itemIndex) => (itemIndex === index ? { ...item, [field]: value } : item)));
+  };
+
+  return (
+    <RepeatableSection
+      title="Accordion Sections"
+      description="Shown in the expandable product information area."
+      addLabel="Add Accordion Section"
+      emptyMessage="No accordion sections. The product page will use fallback sections if available."
+      error={error}
+      isEmpty={items.length === 0}
+      onAdd={() => onChange([...items, { title: "", content: "" }])}
+    >
+      {items.map((item, index) => (
+        <div key={index} className="grid gap-4 rounded-md border border-outline-variant bg-white p-4">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm font-bold text-on-surface">Section {index + 1}</p>
+            <button
+              type="button"
+              className="rounded-full border border-outline-variant px-3 py-1 text-xs font-bold text-primary transition hover:border-primary hover:bg-primary-container/10"
+              onClick={() => onChange(items.filter((_, itemIndex) => itemIndex !== index))}
+            >
+              Remove
+            </button>
+          </div>
+          <label className="grid gap-2 text-sm font-semibold text-on-surface">
+            Title
+            <input className={inputClass} value={item.title} onChange={(event) => updateItem(index, "title", event.target.value)} />
+          </label>
+          <label className="grid gap-2 text-sm font-semibold text-on-surface">
+            Content
+            <textarea className={textareaClass} value={item.content} onChange={(event) => updateItem(index, "content", event.target.value)} />
+          </label>
+        </div>
+      ))}
+    </RepeatableSection>
+  );
+}
+
+function RelatedProductSlugsEditor({
+  items,
+  onChange
+}: {
+  items: RelatedProductSlugFormItem[];
+  onChange: (items: RelatedProductSlugFormItem[]) => void;
+}) {
+  const updateItem = (index: number, value: string) => {
+    onChange(items.map((item, itemIndex) => (itemIndex === index ? { slug: value } : item)));
+  };
+
+  return (
+    <RepeatableSection
+      title="Related Product Slugs"
+      description="Enter product slugs to control related products. Blank entries are ignored."
+      addLabel="Add Related Product"
+      emptyMessage="No related product slugs. The product page will choose related products automatically."
+      isEmpty={items.length === 0}
+      onAdd={() => onChange([...items, { slug: "" }])}
+    >
+      {items.map((item, index) => (
+        <div key={index} className="grid gap-4 rounded-md border border-outline-variant bg-white p-4 md:grid-cols-[1fr_auto] md:items-end">
+          <label className="grid gap-2 text-sm font-semibold text-on-surface">
+            Product slug
+            <input
+              className={inputClass}
+              placeholder="plush-foraging-toy"
+              value={item.slug}
+              onChange={(event) => updateItem(index, event.target.value)}
+            />
+          </label>
+          <button
+            type="button"
+            className="h-11 rounded-full border border-outline-variant px-4 font-heading text-xs font-bold text-primary transition hover:border-primary hover:bg-primary-container/10"
+            onClick={() => onChange(items.filter((_, itemIndex) => itemIndex !== index))}
+          >
+            Remove
+          </button>
+        </div>
+      ))}
+    </RepeatableSection>
   );
 }
 
@@ -845,63 +1238,50 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
             </p>
           </label>
 
-          <div className="grid gap-5 xl:grid-cols-2">
-            <JsonArrayField
-              label="Product Highlights"
-              value={form.product_highlights}
+          <div className="grid gap-5">
+            <ProductHighlightsEditor
+              items={form.product_highlights}
               error={errors.product_highlights}
-              example={productHighlightsExample}
-              onChange={(value) => updateField("product_highlights", value)}
+              onChange={(items) => updateField("product_highlights", items)}
             />
-            <JsonArrayField
-              label="Details at a Glance"
-              value={form.detail_rows}
+            <DetailRowsEditor
+              items={form.detail_rows}
               error={errors.detail_rows}
-              example={detailRowsExample}
-              onChange={(value) => updateField("detail_rows", value)}
+              onChange={(items) => updateField("detail_rows", items)}
             />
-            <JsonArrayField
-              label="Best For"
-              value={form.best_for}
-              error={errors.best_for}
-              example={textItemsExample}
-              onChange={(value) => updateField("best_for", value)}
-            />
-            <JsonArrayField
-              label="Care Instructions"
-              value={form.care_instructions}
-              error={errors.care_instructions}
-              example={textItemsExample}
-              onChange={(value) => updateField("care_instructions", value)}
-            />
-            <JsonArrayField
-              label="Product Questions / FAQ"
-              value={form.product_faqs}
+            <div className="grid gap-5 xl:grid-cols-2">
+              <TextItemsEditor
+                title="Best For"
+                description="Short use-case bullets for the product page."
+                addLabel="Add Best For Item"
+                emptyMessage="No Best For items. The product page will use fallback content if available."
+                items={form.best_for}
+                onChange={(items) => updateField("best_for", items)}
+              />
+              <TextItemsEditor
+                title="Care Instructions"
+                description="Short care bullets for the product page."
+                addLabel="Add Care Instruction"
+                emptyMessage="No care instructions. The product page will use fallback content if available."
+                items={form.care_instructions}
+                onChange={(items) => updateField("care_instructions", items)}
+              />
+            </div>
+            <ProductFaqsEditor
+              items={form.product_faqs}
               error={errors.product_faqs}
-              example={productFaqsExample}
-              onChange={(value) => updateField("product_faqs", value)}
+              onChange={(items) => updateField("product_faqs", items)}
             />
-            <JsonArrayField
-              label="Accordion Sections"
-              value={form.accordion_sections}
+            <AccordionSectionsEditor
+              items={form.accordion_sections}
               error={errors.accordion_sections}
-              example={accordionSectionsExample}
-              onChange={(value) => updateField("accordion_sections", value)}
+              onChange={(items) => updateField("accordion_sections", items)}
+            />
+            <RelatedProductSlugsEditor
+              items={form.related_product_slugs}
+              onChange={(items) => updateField("related_product_slugs", items)}
             />
           </div>
-
-          <label className="grid gap-2 text-sm font-semibold text-on-surface">
-            Related product slugs
-            <input
-              className={inputClass}
-              placeholder="plush-foraging-toy, beginner-snuffle-mat"
-              value={form.related_product_slugs}
-              onChange={(event) => updateField("related_product_slugs", event.target.value)}
-            />
-            <p className="text-xs font-semibold leading-5 text-on-surface-variant">
-              Enter comma-separated slugs. Leave blank to use automatic related products.
-            </p>
-          </label>
         </div>
 
         <label className="grid gap-2 text-sm font-semibold text-on-surface md:col-span-2">

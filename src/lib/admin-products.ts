@@ -131,6 +131,10 @@ function productHighlightsValue(record: Record<string, unknown>, errors: Record<
     const text = nullableString(itemRecord?.text);
     const icon = nullableString(itemRecord?.icon);
 
+    if (!itemRecord || (!title && !text && !icon)) {
+      return itemRecord ? undefined : null;
+    }
+
     return itemRecord && title && text
       ? {
           title,
@@ -145,7 +149,7 @@ function productHighlightsValue(record: Record<string, unknown>, errors: Record<
     return [];
   }
 
-  return items as JsonObject[];
+  return items.filter(Boolean) as JsonObject[];
 }
 
 function detailRowsValue(record: Record<string, unknown>, errors: Record<string, string>) {
@@ -160,6 +164,10 @@ function detailRowsValue(record: Record<string, unknown>, errors: Record<string,
     const label = nullableString(itemRecord?.label);
     const rowValue = nullableString(itemRecord?.value);
 
+    if (!itemRecord || (!label && !rowValue)) {
+      return itemRecord ? undefined : null;
+    }
+
     return itemRecord && label && rowValue ? { label, value: rowValue } : null;
   });
 
@@ -168,7 +176,7 @@ function detailRowsValue(record: Record<string, unknown>, errors: Record<string,
     return [];
   }
 
-  return items as JsonObject[];
+  return items.filter(Boolean) as JsonObject[];
 }
 
 function textItemsValue(record: Record<string, unknown>, key: string, label: string, errors: Record<string, string>) {
@@ -182,11 +190,15 @@ function textItemsValue(record: Record<string, unknown>, key: string, label: str
     if (typeof item === "string") {
       const text = nullableString(item);
 
-      return text ? { text } : null;
+      return text ? { text } : undefined;
     }
 
     const itemRecord = recordFromUnknown(item);
     const text = nullableString(itemRecord?.text);
+
+    if (!itemRecord || !text) {
+      return itemRecord ? undefined : null;
+    }
 
     return itemRecord && text ? { text } : null;
   });
@@ -196,7 +208,7 @@ function textItemsValue(record: Record<string, unknown>, key: string, label: str
     return [];
   }
 
-  return items as JsonObject[];
+  return items.filter(Boolean) as JsonObject[];
 }
 
 function productFaqsValue(record: Record<string, unknown>, errors: Record<string, string>) {
@@ -211,6 +223,10 @@ function productFaqsValue(record: Record<string, unknown>, errors: Record<string
     const question = nullableString(itemRecord?.question) ?? nullableString(itemRecord?.title);
     const answer = nullableString(itemRecord?.answer) ?? nullableString(itemRecord?.content);
 
+    if (!itemRecord || (!question && !answer)) {
+      return itemRecord ? undefined : null;
+    }
+
     return itemRecord && question && answer ? { question, answer } : null;
   });
 
@@ -219,7 +235,7 @@ function productFaqsValue(record: Record<string, unknown>, errors: Record<string
     return [];
   }
 
-  return items as JsonObject[];
+  return items.filter(Boolean) as JsonObject[];
 }
 
 function accordionSectionsValue(record: Record<string, unknown>, errors: Record<string, string>) {
@@ -234,6 +250,10 @@ function accordionSectionsValue(record: Record<string, unknown>, errors: Record<
     const title = nullableString(itemRecord?.title);
     const content = nullableString(itemRecord?.content);
 
+    if (!itemRecord || (!title && !content)) {
+      return itemRecord ? undefined : null;
+    }
+
     return itemRecord && title && content ? { title, content } : null;
   });
 
@@ -242,7 +262,7 @@ function accordionSectionsValue(record: Record<string, unknown>, errors: Record<
     return [];
   }
 
-  return items as JsonObject[];
+  return items.filter(Boolean) as JsonObject[];
 }
 
 function relatedProductSlugsValue(record: Record<string, unknown>, errors: Record<string, string>) {
@@ -252,11 +272,10 @@ function relatedProductSlugsValue(record: Record<string, unknown>, errors: Recor
     return [];
   }
 
-  const slugs = value
-    .map((item) => nullableString(item))
-    .filter((item): item is string => Boolean(item));
+  const hasInvalidItem = value.some((item) => typeof item !== "string");
+  const slugs = value.map((item) => cleanString(item)).filter(Boolean);
 
-  if (slugs.length !== value.length) {
+  if (hasInvalidItem) {
     errors.related_product_slugs = "Related product slugs must be an array of strings.";
     return [];
   }

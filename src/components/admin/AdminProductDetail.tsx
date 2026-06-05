@@ -54,6 +54,27 @@ type AdminProductDetailPayload = {
   error?: string;
 };
 
+type ProductHighlightDisplayItem = {
+  title: string;
+  text: string;
+  icon?: string;
+};
+
+type DetailRowDisplayItem = {
+  label: string;
+  value: string;
+};
+
+type ProductFaqDisplayItem = {
+  question: string;
+  answer: string;
+};
+
+type AccordionSectionDisplayItem = {
+  title: string;
+  content: string;
+};
+
 function numberFromValue(value: number | string | null) {
   const numberValue = typeof value === "number" ? value : Number(value ?? 0);
 
@@ -100,6 +121,89 @@ function displayBoolean(value: boolean | null) {
   return value ? "Yes" : "No";
 }
 
+function cleanText(value: unknown) {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function recordFromUnknown(value: unknown) {
+  return value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
+}
+
+function arrayFromUnknown(value: unknown) {
+  return Array.isArray(value) ? value : [];
+}
+
+function productHighlightsFromValue(value: unknown): ProductHighlightDisplayItem[] {
+  return arrayFromUnknown(value)
+    .map((item) => {
+      const record = recordFromUnknown(item);
+      const title = cleanText(record?.title);
+      const text = cleanText(record?.text);
+      const icon = cleanText(record?.icon);
+
+      return title && text
+        ? {
+            title,
+            text,
+            ...(icon ? { icon } : {})
+          }
+        : null;
+    })
+    .filter((item): item is ProductHighlightDisplayItem => Boolean(item));
+}
+
+function detailRowsFromValue(value: unknown): DetailRowDisplayItem[] {
+  return arrayFromUnknown(value)
+    .map((item) => {
+      const record = recordFromUnknown(item);
+      const label = cleanText(record?.label);
+      const rowValue = cleanText(record?.value);
+
+      return label && rowValue ? { label, value: rowValue } : null;
+    })
+    .filter((item): item is DetailRowDisplayItem => Boolean(item));
+}
+
+function textItemsFromValue(value: unknown): string[] {
+  return arrayFromUnknown(value)
+    .map((item) => {
+      if (typeof item === "string") {
+        return cleanText(item);
+      }
+
+      return cleanText(recordFromUnknown(item)?.text);
+    })
+    .filter(Boolean);
+}
+
+function productFaqsFromValue(value: unknown): ProductFaqDisplayItem[] {
+  return arrayFromUnknown(value)
+    .map((item) => {
+      const record = recordFromUnknown(item);
+      const question = cleanText(record?.question) || cleanText(record?.title);
+      const answer = cleanText(record?.answer) || cleanText(record?.content);
+
+      return question && answer ? { question, answer } : null;
+    })
+    .filter((item): item is ProductFaqDisplayItem => Boolean(item));
+}
+
+function accordionSectionsFromValue(value: unknown): AccordionSectionDisplayItem[] {
+  return arrayFromUnknown(value)
+    .map((item) => {
+      const record = recordFromUnknown(item);
+      const title = cleanText(record?.title);
+      const content = cleanText(record?.content);
+
+      return title && content ? { title, content } : null;
+    })
+    .filter((item): item is AccordionSectionDisplayItem => Boolean(item));
+}
+
+function relatedProductSlugsFromValue(value: unknown): string[] {
+  return arrayFromUnknown(value).map((item) => cleanText(item)).filter(Boolean);
+}
+
 function DetailField({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="rounded-md bg-surface-container-low p-4">
@@ -109,20 +213,109 @@ function DetailField({ label, value }: { label: string; value: React.ReactNode }
   );
 }
 
-function JsonDetailCard({ title, value }: { title: string; value: unknown }) {
-  const hasValue = Array.isArray(value) ? value.length > 0 : Boolean(value);
-
+function ContentCard({ title, isEmpty, children }: { title: string; isEmpty: boolean; children: React.ReactNode }) {
   return (
     <article className="rounded-md bg-surface-container-low p-4">
       <h3 className="text-xs font-bold uppercase tracking-wide text-on-surface-variant">{title}</h3>
-      {hasValue ? (
-        <pre className="mt-3 max-h-80 overflow-auto whitespace-pre-wrap rounded-md bg-white p-4 font-mono text-xs leading-5 text-on-surface">
-          {JSON.stringify(value, null, 2)}
-        </pre>
-      ) : (
+      {isEmpty ? (
         <p className="mt-3 text-sm font-semibold text-on-surface">Not provided</p>
+      ) : (
+        <div className="mt-3 grid gap-3">{children}</div>
       )}
     </article>
+  );
+}
+
+function ProductHighlightsCard({ value }: { value: unknown }) {
+  const items = productHighlightsFromValue(value);
+
+  return (
+    <ContentCard title="Product Highlights" isEmpty={items.length === 0}>
+      {items.map((item, index) => (
+        <div key={`${item.title}-${index}`} className="rounded-md bg-white p-4">
+          <p className="font-bold text-on-surface">{item.title}</p>
+          <p className="mt-2 text-sm leading-6 text-on-surface-variant">{item.text}</p>
+          {item.icon ? <p className="mt-2 text-xs font-bold uppercase tracking-wide text-primary">Icon: {item.icon}</p> : null}
+        </div>
+      ))}
+    </ContentCard>
+  );
+}
+
+function DetailRowsCard({ value }: { value: unknown }) {
+  const rows = detailRowsFromValue(value);
+
+  return (
+    <ContentCard title="Details at a Glance" isEmpty={rows.length === 0}>
+      <dl className="grid gap-3">
+        {rows.map((row, index) => (
+          <div key={`${row.label}-${index}`} className="rounded-md bg-white p-4">
+            <dt className="text-xs font-bold uppercase tracking-wide text-on-surface-variant">{row.label}</dt>
+            <dd className="mt-2 font-semibold text-on-surface">{row.value}</dd>
+          </div>
+        ))}
+      </dl>
+    </ContentCard>
+  );
+}
+
+function TextItemsCard({ title, value }: { title: string; value: unknown }) {
+  const items = textItemsFromValue(value);
+
+  return (
+    <ContentCard title={title} isEmpty={items.length === 0}>
+      <ul className="grid gap-2 rounded-md bg-white p-4 text-sm leading-6 text-on-surface-variant">
+        {items.map((item, index) => (
+          <li key={`${item}-${index}`}>{item}</li>
+        ))}
+      </ul>
+    </ContentCard>
+  );
+}
+
+function ProductFaqsCard({ value }: { value: unknown }) {
+  const items = productFaqsFromValue(value);
+
+  return (
+    <ContentCard title="Product FAQs" isEmpty={items.length === 0}>
+      {items.map((item, index) => (
+        <div key={`${item.question}-${index}`} className="rounded-md bg-white p-4">
+          <p className="font-bold text-on-surface">{item.question}</p>
+          <p className="mt-2 text-sm leading-6 text-on-surface-variant">{item.answer}</p>
+        </div>
+      ))}
+    </ContentCard>
+  );
+}
+
+function AccordionSectionsCard({ value }: { value: unknown }) {
+  const items = accordionSectionsFromValue(value);
+
+  return (
+    <ContentCard title="Accordion Sections" isEmpty={items.length === 0}>
+      {items.map((item, index) => (
+        <div key={`${item.title}-${index}`} className="rounded-md bg-white p-4">
+          <p className="font-bold text-on-surface">{item.title}</p>
+          <p className="mt-2 text-sm leading-6 text-on-surface-variant">{item.content}</p>
+        </div>
+      ))}
+    </ContentCard>
+  );
+}
+
+function RelatedProductSlugsCard({ value }: { value: unknown }) {
+  const items = relatedProductSlugsFromValue(value);
+
+  return (
+    <ContentCard title="Related Product Slugs" isEmpty={items.length === 0}>
+      <div className="flex flex-wrap gap-2 rounded-md bg-white p-4">
+        {items.map((item) => (
+          <span key={item} className="rounded-full bg-primary-container/20 px-3 py-1 text-xs font-bold text-primary">
+            {item}
+          </span>
+        ))}
+      </div>
+    </ContentCard>
   );
 }
 
@@ -254,13 +447,13 @@ function ProductDetailContent({ productId }: { productId: string }) {
       <section className="ambient-card p-6 md:p-8">
         <h2 className="font-heading text-2xl font-bold">Editable Product Detail Content</h2>
         <div className="mt-6 grid gap-4 lg:grid-cols-2">
-          <JsonDetailCard title="Product Highlights" value={product.product_highlights} />
-          <JsonDetailCard title="Details at a Glance" value={product.detail_rows} />
-          <JsonDetailCard title="Best For" value={product.best_for} />
-          <JsonDetailCard title="Care Instructions" value={product.care_instructions} />
-          <JsonDetailCard title="Product FAQs" value={product.product_faqs} />
-          <JsonDetailCard title="Accordion Sections" value={product.accordion_sections} />
-          <JsonDetailCard title="Related Product Slugs" value={product.related_product_slugs} />
+          <ProductHighlightsCard value={product.product_highlights} />
+          <DetailRowsCard value={product.detail_rows} />
+          <TextItemsCard title="Best For" value={product.best_for} />
+          <TextItemsCard title="Care Instructions" value={product.care_instructions} />
+          <ProductFaqsCard value={product.product_faqs} />
+          <AccordionSectionsCard value={product.accordion_sections} />
+          <RelatedProductSlugsCard value={product.related_product_slugs} />
         </div>
       </section>
 
