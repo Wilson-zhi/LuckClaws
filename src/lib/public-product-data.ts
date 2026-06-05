@@ -7,6 +7,10 @@ import {
   mainProduct as staticMainProduct,
   newArrivals as staticNewArrivals,
   products as staticProducts,
+  type ProductAccordionSection,
+  type ProductDetailRow,
+  type ProductFaq,
+  type ProductHighlight,
   type Product
 } from "@/data/products";
 import { collectionConfigs, type CollectionConfig } from "@/data/collections";
@@ -37,6 +41,14 @@ type SupabaseProductRow = {
   homepage_section: string | null;
   badge: string | null;
   published_at: string | null;
+  short_description: string | null;
+  product_highlights?: unknown;
+  detail_rows?: unknown;
+  best_for?: unknown;
+  care_instructions?: unknown;
+  product_faqs?: unknown;
+  accordion_sections?: unknown;
+  related_product_slugs?: unknown;
   seo_title: string | null;
   seo_description: string | null;
   google_product_category: string | null;
@@ -64,10 +76,23 @@ type ProductLookupResult = {
 };
 
 const productSelectWithOptionalJson =
-  "id, title, slug, category, description, price, compare_at_price, currency, image_url, images, variants, status, inventory_status, stock_quantity, is_featured, is_sale, sort_order, homepage_section, badge, published_at, seo_title, seo_description, google_product_category, created_at, updated_at";
+  "id, title, slug, category, description, price, compare_at_price, currency, image_url, images, variants, status, inventory_status, stock_quantity, is_featured, is_sale, sort_order, homepage_section, badge, published_at, short_description, product_highlights, detail_rows, best_for, care_instructions, product_faqs, accordion_sections, related_product_slugs, seo_title, seo_description, google_product_category, created_at, updated_at";
 
 const productSelectBase =
   "id, title, slug, category, description, price, compare_at_price, currency, image_url, status, inventory_status, stock_quantity, is_featured, is_sale, sort_order, homepage_section, badge, published_at, seo_title, seo_description, google_product_category, created_at, updated_at";
+
+const optionalJsonColumns = [
+  "images",
+  "variants",
+  "short_description",
+  "product_highlights",
+  "detail_rows",
+  "best_for",
+  "care_instructions",
+  "product_faqs",
+  "accordion_sections",
+  "related_product_slugs"
+];
 
 const collectionSlugByCategory: Record<string, string> = {
   "Beds & Blankets": "beds-blankets",
@@ -115,8 +140,7 @@ function isOptionalJsonColumnError(message: string) {
   const normalizedMessage = message.toLowerCase();
 
   return (
-    normalizedMessage.includes("images") ||
-    normalizedMessage.includes("variants") ||
+    optionalJsonColumns.some((column) => normalizedMessage.includes(column)) ||
     normalizedMessage.includes("schema cache")
   );
 }
@@ -198,6 +222,10 @@ function recordFromUnknown(value: unknown): Record<string, unknown> | null {
   return value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
 }
 
+function arrayFromUnknown(value: unknown) {
+  return Array.isArray(value) ? value : [];
+}
+
 function stringArrayFromUnknown(value: unknown) {
   return Array.isArray(value)
     ? value.map((item) => cleanString(item)).filter(Boolean)
@@ -210,6 +238,77 @@ function valueFromVariants(variants: Record<string, unknown> | null, key: string
 
 function arrayFromVariants(variants: Record<string, unknown> | null, key: string) {
   return variants ? stringArrayFromUnknown(variants[key]) : undefined;
+}
+
+function productHighlightsFromJson(value: unknown): ProductHighlight[] | undefined {
+  const highlights = arrayFromUnknown(value)
+    .map((item) => {
+      const record = recordFromUnknown(item);
+      const title = nullableString(record?.title);
+      const text = nullableString(record?.text);
+      const icon = nullableString(record?.icon);
+
+      return title && text
+        ? {
+            title,
+            text,
+            ...(icon ? { icon } : {})
+          }
+        : null;
+    })
+    .filter((item): item is ProductHighlight => Boolean(item));
+
+  return highlights.length > 0 ? highlights : undefined;
+}
+
+function detailRowsFromJson(value: unknown): ProductDetailRow[] | undefined {
+  const rows = arrayFromUnknown(value)
+    .map((item) => {
+      const record = recordFromUnknown(item);
+      const label = nullableString(record?.label);
+      const rowValue = nullableString(record?.value);
+
+      return label && rowValue ? { label, value: rowValue } : null;
+    })
+    .filter((item): item is ProductDetailRow => Boolean(item));
+
+  return rows.length > 0 ? rows : undefined;
+}
+
+function textItemsFromJson(value: unknown): string[] | undefined {
+  const items = arrayFromUnknown(value)
+    .map((item) => (typeof item === "string" ? nullableString(item) : nullableString(recordFromUnknown(item)?.text)))
+    .filter((item): item is string => Boolean(item));
+
+  return items.length > 0 ? items : undefined;
+}
+
+function productFaqsFromJson(value: unknown): ProductFaq[] | undefined {
+  const faqs = arrayFromUnknown(value)
+    .map((item) => {
+      const record = recordFromUnknown(item);
+      const title = nullableString(record?.question) ?? nullableString(record?.title);
+      const content = nullableString(record?.answer) ?? nullableString(record?.content);
+
+      return title && content ? { title, content } : null;
+    })
+    .filter((item): item is ProductFaq => Boolean(item));
+
+  return faqs.length > 0 ? faqs : undefined;
+}
+
+function accordionSectionsFromJson(value: unknown): ProductAccordionSection[] | undefined {
+  const sections = arrayFromUnknown(value)
+    .map((item) => {
+      const record = recordFromUnknown(item);
+      const title = nullableString(record?.title);
+      const content = nullableString(record?.content);
+
+      return title && content ? { title, content } : null;
+    })
+    .filter((item): item is ProductAccordionSection => Boolean(item));
+
+  return sections.length > 0 ? sections : undefined;
 }
 
 function imageEntryFromUnknown(value: unknown, index: number): ProductImageEntry | null {
@@ -382,12 +481,20 @@ function mapSupabaseProduct(
     staticProduct?.safetyNotice ??
     defaultSafetyNotice(category);
   const seoDescription = nullableString(row.seo_description);
-  const shortDescription = seoDescription ?? staticProduct?.shortDescription ?? description;
+  const shortDescription =
+    nullableString(row.short_description) ?? seoDescription ?? staticProduct?.shortDescription ?? description;
   const isSale = Boolean(row.is_sale);
   const hasSalePricing = Boolean(activeCompareAtPrice);
   const badge = nullableString(row.badge) ?? (isSale || hasSalePricing ? "Sale" : staticProduct?.badge);
   const homepageSection = normalizeHomepageSection(row.homepage_section);
   const sortOrder = numberFromValue(row.sort_order);
+  const productHighlights = productHighlightsFromJson(row.product_highlights);
+  const detailRows = detailRowsFromJson(row.detail_rows);
+  const bestFor = textItemsFromJson(row.best_for);
+  const careInstructions = textItemsFromJson(row.care_instructions);
+  const productFaqs = productFaqsFromJson(row.product_faqs);
+  const accordionSections = accordionSectionsFromJson(row.accordion_sections);
+  const relatedProductSlugs = stringArrayFromUnknown(row.related_product_slugs);
 
   return {
     id: slug,
@@ -438,7 +545,14 @@ function mapSupabaseProduct(
     homepageSection,
     publishedAt: nullableString(row.published_at),
     createdAt: nullableString(row.created_at),
-    updatedAt: nullableString(row.updated_at)
+    updatedAt: nullableString(row.updated_at),
+    ...(productHighlights ? { productHighlights } : {}),
+    ...(detailRows ? { detailRows } : {}),
+    ...(bestFor ? { bestFor } : {}),
+    ...(careInstructions ? { careInstructions } : {}),
+    ...(productFaqs ? { productFaqs } : {}),
+    ...(accordionSections ? { accordionSections } : {}),
+    ...(relatedProductSlugs ? { relatedProductSlugs } : {})
   };
 }
 
@@ -724,14 +838,26 @@ export async function getPublicHomepageProducts() {
 
 export async function getPublicRelatedProducts(product: Product, limit = 4) {
   const catalogProducts = await getPublicProducts();
+  const selectedRelatedProducts = product.relatedProductSlugs?.length
+    ? product.relatedProductSlugs
+        .map((slug) => catalogProducts.find((relatedProduct) => relatedProduct.slug === slug))
+        .filter(
+          (relatedProduct): relatedProduct is Product =>
+            relatedProduct !== undefined && relatedProduct.slug !== product.slug
+        )
+    : [];
   const sameCategory = catalogProducts.filter(
-    (relatedProduct) => relatedProduct.slug !== product.slug && relatedProduct.category === product.category
+    (relatedProduct) =>
+      relatedProduct.slug !== product.slug &&
+      relatedProduct.category === product.category &&
+      !selectedRelatedProducts.some((selectedProduct) => selectedProduct.slug === relatedProduct.slug)
   );
   const fallback = catalogProducts.filter(
     (relatedProduct) =>
       relatedProduct.slug !== product.slug &&
+      !selectedRelatedProducts.some((selectedProduct) => selectedProduct.slug === relatedProduct.slug) &&
       !sameCategory.some((sameCategoryProduct) => sameCategoryProduct.slug === relatedProduct.slug)
   );
 
-  return [...sameCategory, ...fallback].slice(0, limit);
+  return [...selectedRelatedProducts, ...sameCategory, ...fallback].slice(0, limit);
 }

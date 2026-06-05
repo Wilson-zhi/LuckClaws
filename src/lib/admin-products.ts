@@ -6,6 +6,7 @@ export const defaultProductSortOrder = 9999;
 type ProductStatus = (typeof productStatuses)[number];
 type InventoryStatus = (typeof inventoryStatuses)[number];
 type HomepageSection = (typeof homepageSections)[number];
+type JsonObject = Record<string, unknown>;
 
 export type AdminProductMutationPayload = {
   title: string;
@@ -25,6 +26,14 @@ export type AdminProductMutationPayload = {
   homepage_section: HomepageSection | null;
   badge: string | null;
   published_at: string | null;
+  short_description: string | null;
+  product_highlights: JsonObject[] | null;
+  detail_rows: JsonObject[] | null;
+  best_for: JsonObject[] | null;
+  care_instructions: JsonObject[] | null;
+  product_faqs: JsonObject[] | null;
+  accordion_sections: JsonObject[] | null;
+  related_product_slugs: string[] | null;
   seo_title: string | null;
   seo_description: string | null;
   google_product_category: string | null;
@@ -52,6 +61,10 @@ function nullableString(value: unknown) {
   return cleaned || null;
 }
 
+function recordFromUnknown(value: unknown): JsonObject | null {
+  return value && typeof value === "object" && !Array.isArray(value) ? (value as JsonObject) : null;
+}
+
 function numberValue(value: unknown) {
   if (value === "" || value === null || value === undefined) {
     return null;
@@ -74,6 +87,183 @@ function isHomepageSection(value: string): value is HomepageSection {
   return homepageSections.includes(value as HomepageSection);
 }
 
+function jsonArrayValue(record: Record<string, unknown>, key: string, label: string, errors: Record<string, string>) {
+  const value = record[key];
+
+  if (value === "" || value === null || value === undefined) {
+    return null;
+  }
+
+  if (typeof value === "string") {
+    try {
+      const parsed = JSON.parse(value) as unknown;
+
+      if (Array.isArray(parsed)) {
+        return parsed;
+      }
+    } catch {
+      errors[key] = `${label} must be valid JSON.`;
+      return null;
+    }
+
+    errors[key] = `${label} must be a JSON array.`;
+    return null;
+  }
+
+  if (!Array.isArray(value)) {
+    errors[key] = `${label} must be a JSON array.`;
+    return null;
+  }
+
+  return value;
+}
+
+function productHighlightsValue(record: Record<string, unknown>, errors: Record<string, string>) {
+  const value = jsonArrayValue(record, "product_highlights", "Product highlights", errors);
+
+  if (!value) {
+    return null;
+  }
+
+  const items = value.map((item) => {
+    const itemRecord = recordFromUnknown(item);
+    const title = nullableString(itemRecord?.title);
+    const text = nullableString(itemRecord?.text);
+    const icon = nullableString(itemRecord?.icon);
+
+    return itemRecord && title && text
+      ? {
+          title,
+          text,
+          ...(icon ? { icon } : {})
+        }
+      : null;
+  });
+
+  if (items.some((item) => item === null)) {
+    errors.product_highlights = "Each product highlight must include title and text.";
+    return null;
+  }
+
+  return items.length > 0 ? (items as JsonObject[]) : null;
+}
+
+function detailRowsValue(record: Record<string, unknown>, errors: Record<string, string>) {
+  const value = jsonArrayValue(record, "detail_rows", "Details at a Glance", errors);
+
+  if (!value) {
+    return null;
+  }
+
+  const items = value.map((item) => {
+    const itemRecord = recordFromUnknown(item);
+    const label = nullableString(itemRecord?.label);
+    const rowValue = nullableString(itemRecord?.value);
+
+    return itemRecord && label && rowValue ? { label, value: rowValue } : null;
+  });
+
+  if (items.some((item) => item === null)) {
+    errors.detail_rows = "Each detail row must include label and value.";
+    return null;
+  }
+
+  return items.length > 0 ? (items as JsonObject[]) : null;
+}
+
+function textItemsValue(record: Record<string, unknown>, key: string, label: string, errors: Record<string, string>) {
+  const value = jsonArrayValue(record, key, label, errors);
+
+  if (!value) {
+    return null;
+  }
+
+  const items = value.map((item) => {
+    if (typeof item === "string") {
+      const text = nullableString(item);
+
+      return text ? { text } : null;
+    }
+
+    const itemRecord = recordFromUnknown(item);
+    const text = nullableString(itemRecord?.text);
+
+    return itemRecord && text ? { text } : null;
+  });
+
+  if (items.some((item) => item === null)) {
+    errors[key] = `Each ${label.toLowerCase()} item must include text.`;
+    return null;
+  }
+
+  return items.length > 0 ? (items as JsonObject[]) : null;
+}
+
+function productFaqsValue(record: Record<string, unknown>, errors: Record<string, string>) {
+  const value = jsonArrayValue(record, "product_faqs", "Product FAQs", errors);
+
+  if (!value) {
+    return null;
+  }
+
+  const items = value.map((item) => {
+    const itemRecord = recordFromUnknown(item);
+    const question = nullableString(itemRecord?.question) ?? nullableString(itemRecord?.title);
+    const answer = nullableString(itemRecord?.answer) ?? nullableString(itemRecord?.content);
+
+    return itemRecord && question && answer ? { question, answer } : null;
+  });
+
+  if (items.some((item) => item === null)) {
+    errors.product_faqs = "Each product FAQ must include question and answer.";
+    return null;
+  }
+
+  return items.length > 0 ? (items as JsonObject[]) : null;
+}
+
+function accordionSectionsValue(record: Record<string, unknown>, errors: Record<string, string>) {
+  const value = jsonArrayValue(record, "accordion_sections", "Accordion sections", errors);
+
+  if (!value) {
+    return null;
+  }
+
+  const items = value.map((item) => {
+    const itemRecord = recordFromUnknown(item);
+    const title = nullableString(itemRecord?.title);
+    const content = nullableString(itemRecord?.content);
+
+    return itemRecord && title && content ? { title, content } : null;
+  });
+
+  if (items.some((item) => item === null)) {
+    errors.accordion_sections = "Each accordion section must include title and content.";
+    return null;
+  }
+
+  return items.length > 0 ? (items as JsonObject[]) : null;
+}
+
+function relatedProductSlugsValue(record: Record<string, unknown>, errors: Record<string, string>) {
+  const value = jsonArrayValue(record, "related_product_slugs", "Related product slugs", errors);
+
+  if (!value) {
+    return null;
+  }
+
+  const slugs = value
+    .map((item) => nullableString(item))
+    .filter((item): item is string => Boolean(item));
+
+  if (slugs.length !== value.length) {
+    errors.related_product_slugs = "Related product slugs must be an array of strings.";
+    return null;
+  }
+
+  return slugs.length > 0 ? Array.from(new Set(slugs)) : null;
+}
+
 export function validateAdminProductPayload(input: unknown): ValidationResult {
   const record = typeof input === "object" && input !== null ? (input as Record<string, unknown>) : {};
   const errors: Record<string, string> = {};
@@ -89,6 +279,13 @@ export function validateAdminProductPayload(input: unknown): ValidationResult {
   const inventoryStatus = cleanString(record.inventory_status) || "in_stock";
   const homepageSection = cleanString(record.homepage_section);
   const publishedAt = nullableString(record.published_at);
+  const productHighlights = productHighlightsValue(record, errors);
+  const detailRows = detailRowsValue(record, errors);
+  const bestFor = textItemsValue(record, "best_for", "Best For", errors);
+  const careInstructions = textItemsValue(record, "care_instructions", "Care Instructions", errors);
+  const productFaqs = productFaqsValue(record, errors);
+  const accordionSections = accordionSectionsValue(record, errors);
+  const relatedProductSlugs = relatedProductSlugsValue(record, errors);
 
   if (!title) {
     errors.title = "Title is required.";
@@ -163,6 +360,14 @@ export function validateAdminProductPayload(input: unknown): ValidationResult {
       homepage_section: homepageSection ? (homepageSection as HomepageSection) : null,
       badge: nullableString(record.badge),
       published_at: publishedAt ? new Date(publishedAt).toISOString() : null,
+      short_description: nullableString(record.short_description),
+      product_highlights: productHighlights,
+      detail_rows: detailRows,
+      best_for: bestFor,
+      care_instructions: careInstructions,
+      product_faqs: productFaqs,
+      accordion_sections: accordionSections,
+      related_product_slugs: relatedProductSlugs,
       seo_title: nullableString(record.seo_title),
       seo_description: nullableString(record.seo_description),
       google_product_category: nullableString(record.google_product_category)

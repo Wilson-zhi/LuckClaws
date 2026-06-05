@@ -1,5 +1,30 @@
 import { DEFAULT_SHIPPING_RATE, standardShippingSentence } from "@/lib/shipping";
 
+export type ProductHighlight = {
+  title: string;
+  text: string;
+  icon?: string;
+};
+
+export type ProductDetailRow = {
+  label: string;
+  value: string;
+};
+
+export type ProductTextItem = {
+  text: string;
+};
+
+export type ProductFaq = {
+  title: string;
+  content: string;
+};
+
+export type ProductAccordionSection = {
+  title: string;
+  content: string;
+};
+
 type ProductBase = {
   id: string;
   slug: string;
@@ -33,6 +58,13 @@ type ProductBase = {
   publishedAt?: string | null;
   createdAt?: string | null;
   updatedAt?: string | null;
+  productHighlights?: ProductHighlight[];
+  detailRows?: ProductDetailRow[];
+  bestFor?: string[];
+  careInstructions?: string[];
+  productFaqs?: ProductFaq[];
+  accordionSections?: ProductAccordionSection[];
+  relatedProductSlugs?: string[];
 };
 
 export const brandName = "LUCK CLAWS";

@@ -27,6 +27,14 @@ type ProductFormState = {
   homepage_section: string;
   badge: string;
   published_at: string;
+  short_description: string;
+  product_highlights: string;
+  detail_rows: string;
+  best_for: string;
+  care_instructions: string;
+  product_faqs: string;
+  accordion_sections: string;
+  related_product_slugs: string;
   seo_title: string;
   seo_description: string;
   google_product_category: string;
@@ -51,6 +59,14 @@ type AdminProductDetailRow = {
   homepage_section: string | null;
   badge: string | null;
   published_at: string | null;
+  short_description: string | null;
+  product_highlights: unknown;
+  detail_rows: unknown;
+  best_for: unknown;
+  care_instructions: unknown;
+  product_faqs: unknown;
+  accordion_sections: unknown;
+  related_product_slugs: unknown;
   seo_title: string | null;
   seo_description: string | null;
   google_product_category: string | null;
@@ -80,6 +96,14 @@ const emptyForm: ProductFormState = {
   homepage_section: "",
   badge: "",
   published_at: "",
+  short_description: "",
+  product_highlights: "",
+  detail_rows: "",
+  best_for: "",
+  care_instructions: "",
+  product_faqs: "",
+  accordion_sections: "",
+  related_product_slugs: "",
   seo_title: "",
   seo_description: "",
   google_product_category: ""
@@ -91,9 +115,60 @@ const inputClass =
 const textareaClass =
   "min-h-32 w-full rounded-md border border-outline-variant bg-white px-4 py-3 text-base outline-none transition focus:border-primary focus:ring-2 focus:ring-primary-container/30";
 
+const jsonTextareaClass = `${textareaClass} font-mono text-sm leading-6`;
+
 const PRODUCT_IMAGE_BUCKET = "product-images";
 const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
 const acceptedImageTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
+
+const jsonFieldHelp =
+  "Use valid JSON array format. Leave blank to use the product page fallback content.";
+
+const productHighlightsExample = `[
+  {
+    "title": "Everyday play ready",
+    "text": "Built for supervised daily enrichment.",
+    "icon": "paw"
+  }
+]`;
+
+const detailRowsExample = `[
+  {
+    "label": "Product type",
+    "value": "Dog puzzle and enrichment toy"
+  },
+  {
+    "label": "Material focus",
+    "value": "Wood"
+  }
+]`;
+
+const textItemsExample = `[
+  {
+    "text": "Supervised play sessions"
+  },
+  {
+    "text": "Adding variety to daily activity"
+  }
+]`;
+
+const productFaqsExample = `[
+  {
+    "question": "Is this product suitable for puppies?",
+    "answer": "Use only with supervision and choose based on your pet's size and chewing habits."
+  }
+]`;
+
+const accordionSectionsExample = `[
+  {
+    "title": "Product Details",
+    "content": "Designed for supervised enrichment and everyday play."
+  },
+  {
+    "title": "Safety Notice",
+    "content": "Supervise pets during play and remove the toy if damaged."
+  }
+]`;
 
 function stringValue(value: string | number | null) {
   return value === null ? "" : String(value);
@@ -121,6 +196,10 @@ function dateTimeLocalValue(value: string | null) {
   const date = new Date(value);
 
   return Number.isNaN(date.getTime()) ? "" : date.toISOString().slice(0, 16);
+}
+
+function jsonTextValue(value: unknown) {
+  return Array.isArray(value) && value.length > 0 ? JSON.stringify(value, null, 2) : "";
 }
 
 function sanitizePathSegment(value: string) {
@@ -156,6 +235,19 @@ function formFromProduct(product: AdminProductDetailRow): ProductFormState {
     homepage_section: product.homepage_section ?? "",
     badge: product.badge ?? "",
     published_at: dateTimeLocalValue(product.published_at),
+    short_description: product.short_description ?? "",
+    product_highlights: jsonTextValue(product.product_highlights),
+    detail_rows: jsonTextValue(product.detail_rows),
+    best_for: jsonTextValue(product.best_for),
+    care_instructions: jsonTextValue(product.care_instructions),
+    product_faqs: jsonTextValue(product.product_faqs),
+    accordion_sections: jsonTextValue(product.accordion_sections),
+    related_product_slugs: Array.isArray(product.related_product_slugs)
+      ? product.related_product_slugs
+          .map((item) => (typeof item === "string" ? item.trim() : ""))
+          .filter(Boolean)
+          .join(", ")
+      : "",
     seo_title: product.seo_title ?? "",
     seo_description: product.seo_description ?? "",
     google_product_category: product.google_product_category ?? ""
@@ -163,6 +255,12 @@ function formFromProduct(product: AdminProductDetailRow): ProductFormState {
 }
 
 function buildPayload(form: ProductFormState) {
+  const jsonArrayPayload = (value: string) => (value.trim() ? (JSON.parse(value) as unknown[]) : null);
+  const relatedProductSlugs = form.related_product_slugs
+    .split(",")
+    .map((slug) => slug.trim())
+    .filter(Boolean);
+
   return {
     title: form.title,
     slug: form.slug,
@@ -181,10 +279,39 @@ function buildPayload(form: ProductFormState) {
     homepage_section: form.homepage_section,
     badge: form.badge,
     published_at: form.published_at ? new Date(form.published_at).toISOString() : "",
+    short_description: form.short_description,
+    product_highlights: jsonArrayPayload(form.product_highlights),
+    detail_rows: jsonArrayPayload(form.detail_rows),
+    best_for: jsonArrayPayload(form.best_for),
+    care_instructions: jsonArrayPayload(form.care_instructions),
+    product_faqs: jsonArrayPayload(form.product_faqs),
+    accordion_sections: jsonArrayPayload(form.accordion_sections),
+    related_product_slugs: relatedProductSlugs.length > 0 ? relatedProductSlugs : null,
     seo_title: form.seo_title,
     seo_description: form.seo_description,
     google_product_category: form.google_product_category
   };
+}
+
+function validateJsonArrayField(
+  errors: Record<string, string>,
+  field: keyof ProductFormState,
+  value: string,
+  label: string
+) {
+  if (!value.trim()) {
+    return;
+  }
+
+  try {
+    const parsed = JSON.parse(value) as unknown;
+
+    if (!Array.isArray(parsed)) {
+      errors[field] = `${label} must be a JSON array.`;
+    }
+  } catch {
+    errors[field] = `${label} must be valid JSON.`;
+  }
 }
 
 function validateForm(form: ProductFormState) {
@@ -251,6 +378,13 @@ function validateForm(form: ProductFormState) {
     errors.published_at = "Published date must be a valid date.";
   }
 
+  validateJsonArrayField(errors, "product_highlights", form.product_highlights, "Product highlights");
+  validateJsonArrayField(errors, "detail_rows", form.detail_rows, "Details at a Glance");
+  validateJsonArrayField(errors, "best_for", form.best_for, "Best For");
+  validateJsonArrayField(errors, "care_instructions", form.care_instructions, "Care Instructions");
+  validateJsonArrayField(errors, "product_faqs", form.product_faqs, "Product FAQs");
+  validateJsonArrayField(errors, "accordion_sections", form.accordion_sections, "Accordion sections");
+
   return errors;
 }
 
@@ -263,6 +397,33 @@ function FieldError({ message }: { message?: string }) {
     <p className="text-sm font-semibold text-error" role="alert">
       {message}
     </p>
+  );
+}
+
+function JsonArrayField({
+  label,
+  value,
+  error,
+  example,
+  onChange
+}: {
+  label: string;
+  value: string;
+  error?: string;
+  example: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <label className="grid gap-2 text-sm font-semibold text-on-surface">
+      {label}
+      <textarea className={jsonTextareaClass} value={value} onChange={(event) => onChange(event.target.value)} />
+      <p className="text-xs font-semibold leading-5 text-on-surface-variant">{jsonFieldHelp}</p>
+      <details className="rounded-md bg-surface-container-lowest p-3 text-xs text-on-surface-variant">
+        <summary className="cursor-pointer font-bold text-on-surface">Example format</summary>
+        <pre className="mt-3 overflow-x-auto whitespace-pre-wrap font-mono leading-5">{example}</pre>
+      </details>
+      <FieldError message={error} />
+    </label>
   );
 }
 
@@ -649,6 +810,85 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
           Description
           <textarea className={textareaClass} value={form.description} onChange={(event) => updateField("description", event.target.value)} />
         </label>
+
+        <div className="grid gap-5 rounded-md bg-surface-container-low p-4 md:col-span-2">
+          <div>
+            <h2 className="font-heading text-lg font-bold text-on-surface">Product detail content</h2>
+            <p className="mt-1 text-sm leading-6 text-on-surface-variant">
+              These fields control the public product detail page. Leave any field blank to keep the current fallback content.
+            </p>
+          </div>
+
+          <label className="grid gap-2 text-sm font-semibold text-on-surface">
+            Short description
+            <textarea
+              className={textareaClass}
+              value={form.short_description}
+              onChange={(event) => updateField("short_description", event.target.value)}
+            />
+            <p className="text-xs font-semibold leading-5 text-on-surface-variant">
+              Used near the top of the product page. Leave blank to use Description.
+            </p>
+          </label>
+
+          <div className="grid gap-5 xl:grid-cols-2">
+            <JsonArrayField
+              label="Product Highlights"
+              value={form.product_highlights}
+              error={errors.product_highlights}
+              example={productHighlightsExample}
+              onChange={(value) => updateField("product_highlights", value)}
+            />
+            <JsonArrayField
+              label="Details at a Glance"
+              value={form.detail_rows}
+              error={errors.detail_rows}
+              example={detailRowsExample}
+              onChange={(value) => updateField("detail_rows", value)}
+            />
+            <JsonArrayField
+              label="Best For"
+              value={form.best_for}
+              error={errors.best_for}
+              example={textItemsExample}
+              onChange={(value) => updateField("best_for", value)}
+            />
+            <JsonArrayField
+              label="Care Instructions"
+              value={form.care_instructions}
+              error={errors.care_instructions}
+              example={textItemsExample}
+              onChange={(value) => updateField("care_instructions", value)}
+            />
+            <JsonArrayField
+              label="Product Questions / FAQ"
+              value={form.product_faqs}
+              error={errors.product_faqs}
+              example={productFaqsExample}
+              onChange={(value) => updateField("product_faqs", value)}
+            />
+            <JsonArrayField
+              label="Accordion Sections"
+              value={form.accordion_sections}
+              error={errors.accordion_sections}
+              example={accordionSectionsExample}
+              onChange={(value) => updateField("accordion_sections", value)}
+            />
+          </div>
+
+          <label className="grid gap-2 text-sm font-semibold text-on-surface">
+            Related product slugs
+            <input
+              className={inputClass}
+              placeholder="plush-foraging-toy, beginner-snuffle-mat"
+              value={form.related_product_slugs}
+              onChange={(event) => updateField("related_product_slugs", event.target.value)}
+            />
+            <p className="text-xs font-semibold leading-5 text-on-surface-variant">
+              Enter comma-separated slugs. Leave blank to use automatic related products.
+            </p>
+          </label>
+        </div>
 
         <label className="grid gap-2 text-sm font-semibold text-on-surface md:col-span-2">
           SEO title

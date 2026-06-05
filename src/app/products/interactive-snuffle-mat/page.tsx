@@ -51,6 +51,10 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 function createAccordions(product: Product) {
+  if (product.accordionSections?.length) {
+    return product.accordionSections;
+  }
+
   return [
     {
       title: "Product Details",
@@ -188,7 +192,12 @@ export default async function ProductPage() {
   ];
   const structuredData = createProductJsonLd(product);
   const accordions = createAccordions(product);
-  const productSpecs = createProductSpecs(product);
+  const productSpecs = product.detailRows?.length
+    ? product.detailRows.map((detailRow) => [detailRow.label, detailRow.value] as const)
+    : createProductSpecs(product);
+  const bestForItems = product.bestFor?.length ? product.bestFor : bestFor;
+  const careInstructionItems = product.careInstructions?.length ? product.careInstructions : careInstructions;
+  const faqItems = product.productFaqs?.length ? product.productFaqs : productFaqs;
   const galleryImages = product.gallery?.length ? product.gallery : [product.image];
 
   return (
@@ -233,7 +242,7 @@ export default async function ProductPage() {
         </div>
       </section>
 
-      <ProductBenefits />
+      <ProductBenefits product={product} />
 
       <section className="section-shell py-14 md:py-20">
         <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
@@ -261,7 +270,7 @@ export default async function ProductPage() {
                 <div>
                   <p className="text-sm font-bold uppercase tracking-wide text-primary">Best for</p>
                   <ul className="mt-3 space-y-3 text-sm text-on-surface-variant">
-                    {bestFor.map((item) => (
+                    {bestForItems.map((item) => (
                       <li key={item} className="flex gap-2">
                         <CheckCircle2 aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                         <span>{item}</span>
@@ -288,7 +297,7 @@ export default async function ProductPage() {
             <div className="ambient-card p-6 md:p-8">
               <h2 className="font-heading text-2xl font-bold">Care Instructions</h2>
               <ul className="mt-5 grid gap-3 text-sm text-on-surface-variant sm:grid-cols-2">
-                {careInstructions.map((item) => (
+                {careInstructionItems.map((item) => (
                   <li key={item} className="flex gap-2">
                     <CheckCircle2 aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                     <span>{item}</span>
@@ -327,7 +336,7 @@ export default async function ProductPage() {
           <div className="ambient-card p-6 md:p-8">
             <h2 className="font-heading text-2xl font-bold">Product Questions</h2>
             <div className="mt-4">
-              <ProductAccordion items={productFaqs} />
+              <ProductAccordion items={faqItems} />
             </div>
           </div>
         </div>

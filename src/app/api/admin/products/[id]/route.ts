@@ -28,6 +28,14 @@ export type AdminProductDetailRow = {
   homepage_section: string | null;
   badge: string | null;
   published_at: string | null;
+  short_description: string | null;
+  product_highlights: unknown;
+  detail_rows: unknown;
+  best_for: unknown;
+  care_instructions: unknown;
+  product_faqs: unknown;
+  accordion_sections: unknown;
+  related_product_slugs: unknown;
   seo_title: string | null;
   seo_description: string | null;
   google_product_category: string | null;
@@ -67,7 +75,7 @@ export async function GET(request: Request, { params }: RouteContext) {
   const { data: productData, error: productError } = await supabase
     .from("products")
     .select(
-      "id, title, slug, category, description, price, compare_at_price, currency, image_url, status, inventory_status, stock_quantity, is_featured, is_sale, sort_order, homepage_section, badge, published_at, seo_title, seo_description, google_product_category, created_at, updated_at"
+      "id, title, slug, category, description, price, compare_at_price, currency, image_url, status, inventory_status, stock_quantity, is_featured, is_sale, sort_order, homepage_section, badge, published_at, short_description, product_highlights, detail_rows, best_for, care_instructions, product_faqs, accordion_sections, related_product_slugs, seo_title, seo_description, google_product_category, created_at, updated_at"
     )
     .eq("id", id)
     .maybeSingle();

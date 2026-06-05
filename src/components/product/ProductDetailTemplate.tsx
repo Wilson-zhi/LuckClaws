@@ -57,37 +57,41 @@ export function ProductDetailTemplate({
   relatedProducts?: Product[];
 }) {
   const relatedProducts = providedRelatedProducts ?? getRelatedProducts(product);
-  const highlights = getProductHighlights(product);
-  const details = getProductDetails(product);
-  const bestFor = getBestForItems(product);
-  const careInstructions = getCareInstructions(product);
+  const highlights = product.productHighlights?.length ? product.productHighlights : getProductHighlights(product);
+  const details = product.detailRows?.length
+    ? product.detailRows.map((detailRow) => [detailRow.label, detailRow.value] as const)
+    : getProductDetails(product);
+  const bestFor = product.bestFor?.length ? product.bestFor : getBestForItems(product);
+  const careInstructions = product.careInstructions?.length ? product.careInstructions : getCareInstructions(product);
   const shippingReturns = getShippingReturnItems();
-  const productFaqs = getProductFaqs(product);
+  const productFaqs = product.productFaqs?.length ? product.productFaqs : getProductFaqs(product);
   const collectionHref = getCollectionPath(product);
   const itemListName = `${product.name} Related Products`;
-  const accordions = [
-    {
-      title: "Product Details",
-      content: product.shortDescription
-    },
-    {
-      title: "Materials & Care",
-      content: product.material ? `${product.material}. ${product.careGuidance}` : product.careGuidance
-    },
-    {
-      title: "Safety Notice",
-      content: product.safetyNotice
-    },
-    {
-      title: "Shipping Information",
-      content: `${freeShippingSentence} ${standardShippingSentence} ${variableShippingSentence} Orders are typically processed within 1-3 business days. Standard delivery usually takes 7-15 business days after processing.`
-    },
-    {
-      title: "Returns & Exchanges",
-      content:
-        "General returns for preference changes or buyer's remorse are not accepted. Damaged, defective, or incorrect items must be reported within 7 days of delivery."
-    }
-  ];
+  const accordions = product.accordionSections?.length
+    ? product.accordionSections
+    : [
+        {
+          title: "Product Details",
+          content: product.shortDescription
+        },
+        {
+          title: "Materials & Care",
+          content: product.material ? `${product.material}. ${product.careGuidance}` : product.careGuidance
+        },
+        {
+          title: "Safety Notice",
+          content: product.safetyNotice
+        },
+        {
+          title: "Shipping Information",
+          content: `${freeShippingSentence} ${standardShippingSentence} ${variableShippingSentence} Orders are typically processed within 1-3 business days. Standard delivery usually takes 7-15 business days after processing.`
+        },
+        {
+          title: "Returns & Exchanges",
+          content:
+            "General returns for preference changes or buyer's remorse are not accepted. Damaged, defective, or incorrect items must be reported within 7 days of delivery."
+        }
+      ];
 
   return (
     <SiteShell>

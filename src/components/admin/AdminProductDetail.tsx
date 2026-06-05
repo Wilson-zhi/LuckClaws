@@ -26,6 +26,14 @@ type AdminProductDetailRow = {
   homepage_section: string | null;
   badge: string | null;
   published_at: string | null;
+  short_description: string | null;
+  product_highlights: unknown;
+  detail_rows: unknown;
+  best_for: unknown;
+  care_instructions: unknown;
+  product_faqs: unknown;
+  accordion_sections: unknown;
+  related_product_slugs: unknown;
   seo_title: string | null;
   seo_description: string | null;
   google_product_category: string | null;
@@ -98,6 +106,23 @@ function DetailField({ label, value }: { label: string; value: React.ReactNode }
       <dt className="text-xs font-bold uppercase tracking-wide text-on-surface-variant">{label}</dt>
       <dd className="mt-2 break-words font-semibold text-on-surface">{value}</dd>
     </div>
+  );
+}
+
+function JsonDetailCard({ title, value }: { title: string; value: unknown }) {
+  const hasValue = Array.isArray(value) ? value.length > 0 : Boolean(value);
+
+  return (
+    <article className="rounded-md bg-surface-container-low p-4">
+      <h3 className="text-xs font-bold uppercase tracking-wide text-on-surface-variant">{title}</h3>
+      {hasValue ? (
+        <pre className="mt-3 max-h-80 overflow-auto whitespace-pre-wrap rounded-md bg-white p-4 font-mono text-xs leading-5 text-on-surface">
+          {JSON.stringify(value, null, 2)}
+        </pre>
+      ) : (
+        <p className="mt-3 text-sm font-semibold text-on-surface">Not provided</p>
+      )}
+    </article>
   );
 }
 
@@ -217,12 +242,26 @@ function ProductDetailContent({ productId }: { productId: string }) {
           <DetailField label="Homepage section" value={displayValue(product.homepage_section)} />
           <DetailField label="Badge" value={displayValue(product.badge)} />
           <DetailField label="Published at" value={formatDate(product.published_at)} />
+          <DetailField label="Short description" value={displayValue(product.short_description)} />
           <DetailField label="SEO title" value={displayValue(product.seo_title)} />
           <DetailField label="SEO description" value={displayValue(product.seo_description)} />
           <DetailField label="Google product category" value={displayValue(product.google_product_category)} />
           <DetailField label="Created" value={formatDate(product.created_at)} />
           <DetailField label="Updated" value={formatDate(product.updated_at)} />
         </dl>
+      </section>
+
+      <section className="ambient-card p-6 md:p-8">
+        <h2 className="font-heading text-2xl font-bold">Editable Product Detail Content</h2>
+        <div className="mt-6 grid gap-4 lg:grid-cols-2">
+          <JsonDetailCard title="Product Highlights" value={product.product_highlights} />
+          <JsonDetailCard title="Details at a Glance" value={product.detail_rows} />
+          <JsonDetailCard title="Best For" value={product.best_for} />
+          <JsonDetailCard title="Care Instructions" value={product.care_instructions} />
+          <JsonDetailCard title="Product FAQs" value={product.product_faqs} />
+          <JsonDetailCard title="Accordion Sections" value={product.accordion_sections} />
+          <JsonDetailCard title="Related Product Slugs" value={product.related_product_slugs} />
+        </div>
       </section>
 
       <section className="ambient-card p-6 md:p-8">

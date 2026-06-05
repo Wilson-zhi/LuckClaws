@@ -44,7 +44,7 @@ export function ProductPurchasePanel({ product }: { product: Product }) {
       <h1 className="mt-3 font-heading text-4xl font-extrabold leading-tight md:text-5xl">
         {product.name}
       </h1>
-      <p className="mt-3 text-base leading-7 text-on-surface-variant">{product.description}</p>
+      <p className="mt-3 text-base leading-7 text-on-surface-variant">{product.shortDescription}</p>
 
       <div className="mt-6 rounded-md bg-surface-container-lowest p-5 shadow-soft">
         {product.regularPrice && (
