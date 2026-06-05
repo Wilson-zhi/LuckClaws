@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { type ChangeEvent, type FormEvent, useEffect, useState } from "react";
 import { AdminGuard, useAdminAuth } from "@/components/admin/AdminGuard";
 import { AdminPageFrame } from "@/components/admin/AdminPageFrame";
-import { inventoryStatuses, productStatuses } from "@/lib/admin-products";
+import { homepageSections, inventoryStatuses, productStatuses } from "@/lib/admin-products";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 type ProductFormMode = "create" | "edit";
@@ -23,6 +23,10 @@ type ProductFormState = {
   stock_quantity: string;
   is_featured: boolean;
   is_sale: boolean;
+  sort_order: string;
+  homepage_section: string;
+  badge: string;
+  published_at: string;
   seo_title: string;
   seo_description: string;
   google_product_category: string;
@@ -43,6 +47,10 @@ type AdminProductDetailRow = {
   stock_quantity: number | string | null;
   is_featured: boolean | null;
   is_sale: boolean | null;
+  sort_order: number | string | null;
+  homepage_section: string | null;
+  badge: string | null;
+  published_at: string | null;
   seo_title: string | null;
   seo_description: string | null;
   google_product_category: string | null;
@@ -68,6 +76,10 @@ const emptyForm: ProductFormState = {
   stock_quantity: "",
   is_featured: false,
   is_sale: false,
+  sort_order: "",
+  homepage_section: "",
+  badge: "",
+  published_at: "",
   seo_title: "",
   seo_description: "",
   google_product_category: ""
@@ -85,6 +97,16 @@ const acceptedImageTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
 
 function stringValue(value: string | number | null) {
   return value === null ? "" : String(value);
+}
+
+function dateTimeLocalValue(value: string | null) {
+  if (!value) {
+    return "";
+  }
+
+  const date = new Date(value);
+
+  return Number.isNaN(date.getTime()) ? "" : date.toISOString().slice(0, 16);
 }
 
 function sanitizePathSegment(value: string) {
@@ -116,6 +138,10 @@ function formFromProduct(product: AdminProductDetailRow): ProductFormState {
     stock_quantity: stringValue(product.stock_quantity),
     is_featured: Boolean(product.is_featured),
     is_sale: Boolean(product.is_sale),
+    sort_order: stringValue(product.sort_order),
+    homepage_section: product.homepage_section ?? "",
+    badge: product.badge ?? "",
+    published_at: dateTimeLocalValue(product.published_at),
     seo_title: product.seo_title ?? "",
     seo_description: product.seo_description ?? "",
     google_product_category: product.google_product_category ?? ""
@@ -137,6 +163,10 @@ function buildPayload(form: ProductFormState) {
     stock_quantity: form.stock_quantity,
     is_featured: form.is_featured,
     is_sale: form.is_sale,
+    sort_order: form.sort_order,
+    homepage_section: form.homepage_section,
+    badge: form.badge,
+    published_at: form.published_at ? new Date(form.published_at).toISOString() : "",
     seo_title: form.seo_title,
     seo_description: form.seo_description,
     google_product_category: form.google_product_category
@@ -180,12 +210,31 @@ function validateForm(form: ProductFormState) {
     }
   }
 
+  if (form.sort_order.trim()) {
+    const sortOrder = Number(form.sort_order);
+
+    if (!Number.isFinite(sortOrder) || !Number.isInteger(sortOrder)) {
+      errors.sort_order = "Sort order must be a whole number.";
+    }
+  }
+
   if (!productStatuses.includes(form.status as (typeof productStatuses)[number])) {
     errors.status = "Status must be active, draft, or archived.";
   }
 
   if (!inventoryStatuses.includes(form.inventory_status as (typeof inventoryStatuses)[number])) {
     errors.inventory_status = "Inventory status must be in stock, out of stock, or preorder.";
+  }
+
+  if (
+    form.homepage_section &&
+    !homepageSections.includes(form.homepage_section as (typeof homepageSections)[number])
+  ) {
+    errors.homepage_section = "Homepage section must be featured, best_seller, new_arrivals, or blank.";
+  }
+
+  if (form.published_at && Number.isNaN(new Date(form.published_at).getTime())) {
+    errors.published_at = "Published date must be a valid date.";
   }
 
   return errors;
@@ -517,6 +566,63 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
               onChange={(event) => updateField("is_sale", event.target.checked)}
             />
             Sale
+          </label>
+        </div>
+
+        <div className="grid gap-5 rounded-md bg-surface-container-low p-4 md:col-span-2 md:grid-cols-2">
+          <div className="md:col-span-2">
+            <h2 className="font-heading text-lg font-bold text-on-surface">Storefront display</h2>
+            <p className="mt-1 text-sm leading-6 text-on-surface-variant">
+              Control product ordering, homepage placement, and card badges.
+            </p>
+          </div>
+
+          <label className="grid gap-2 text-sm font-semibold text-on-surface">
+            Sort order
+            <input
+              className={inputClass}
+              step="1"
+              type="number"
+              value={form.sort_order}
+              onChange={(event) => updateField("sort_order", event.target.value)}
+            />
+            <FieldError message={errors.sort_order} />
+          </label>
+
+          <label className="grid gap-2 text-sm font-semibold text-on-surface">
+            Homepage section
+            <select
+              className={inputClass}
+              value={form.homepage_section}
+              onChange={(event) => updateField("homepage_section", event.target.value)}
+            >
+              <option value="">None</option>
+              <option value="featured">featured</option>
+              <option value="best_seller">best_seller</option>
+              <option value="new_arrivals">new_arrivals</option>
+            </select>
+            <FieldError message={errors.homepage_section} />
+          </label>
+
+          <label className="grid gap-2 text-sm font-semibold text-on-surface">
+            Badge
+            <input
+              className={inputClass}
+              placeholder="Best Seller, New, Sale, Featured"
+              value={form.badge}
+              onChange={(event) => updateField("badge", event.target.value)}
+            />
+          </label>
+
+          <label className="grid gap-2 text-sm font-semibold text-on-surface">
+            Published at
+            <input
+              className={inputClass}
+              type="datetime-local"
+              value={form.published_at}
+              onChange={(event) => updateField("published_at", event.target.value)}
+            />
+            <FieldError message={errors.published_at} />
           </label>
         </div>
 

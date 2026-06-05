@@ -21,6 +21,10 @@ type AdminProductDetailRow = {
   stock_quantity: number | string | null;
   is_featured: boolean | null;
   is_sale: boolean | null;
+  sort_order: number | string | null;
+  homepage_section: string | null;
+  badge: string | null;
+  published_at: string | null;
   seo_title: string | null;
   seo_description: string | null;
   google_product_category: string | null;
@@ -194,6 +198,10 @@ function ProductDetailContent({ productId }: { productId: string }) {
           <DetailField label="Stock quantity" value={product.stock_quantity ?? "Not provided"} />
           <DetailField label="Featured" value={displayBoolean(product.is_featured)} />
           <DetailField label="Sale" value={displayBoolean(product.is_sale)} />
+          <DetailField label="Sort order" value={product.sort_order ?? "Not provided"} />
+          <DetailField label="Homepage section" value={displayValue(product.homepage_section)} />
+          <DetailField label="Badge" value={displayValue(product.badge)} />
+          <DetailField label="Published at" value={formatDate(product.published_at)} />
           <DetailField label="SEO title" value={displayValue(product.seo_title)} />
           <DetailField label="SEO description" value={displayValue(product.seo_description)} />
           <DetailField label="Google product category" value={displayValue(product.google_product_category)} />

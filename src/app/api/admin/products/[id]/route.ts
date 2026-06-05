@@ -24,6 +24,10 @@ export type AdminProductDetailRow = {
   stock_quantity: number | string | null;
   is_featured: boolean | null;
   is_sale: boolean | null;
+  sort_order: number | string | null;
+  homepage_section: string | null;
+  badge: string | null;
+  published_at: string | null;
   seo_title: string | null;
   seo_description: string | null;
   google_product_category: string | null;
@@ -63,7 +67,7 @@ export async function GET(request: Request, { params }: RouteContext) {
   const { data: productData, error: productError } = await supabase
     .from("products")
     .select(
-      "id, title, slug, category, description, price, compare_at_price, currency, image_url, status, inventory_status, stock_quantity, is_featured, is_sale, seo_title, seo_description, google_product_category, created_at, updated_at"
+      "id, title, slug, category, description, price, compare_at_price, currency, image_url, status, inventory_status, stock_quantity, is_featured, is_sale, sort_order, homepage_section, badge, published_at, seo_title, seo_description, google_product_category, created_at, updated_at"
     )
     .eq("id", id)
     .maybeSingle();

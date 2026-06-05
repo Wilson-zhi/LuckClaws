@@ -14,6 +14,7 @@ import { DEFAULT_SHIPPING_RATE, standardShippingSentence } from "@/lib/shipping"
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
 
 type PublicInventoryStatus = Product["availability"];
+type PublicHomepageSection = NonNullable<Product["homepageSection"]>;
 
 type SupabaseProductRow = {
   id: string;
@@ -32,6 +33,10 @@ type SupabaseProductRow = {
   stock_quantity: number | string | null;
   is_featured: boolean | null;
   is_sale: boolean | null;
+  sort_order: number | string | null;
+  homepage_section: string | null;
+  badge: string | null;
+  published_at: string | null;
   seo_title: string | null;
   seo_description: string | null;
   google_product_category: string | null;
@@ -59,10 +64,10 @@ type ProductLookupResult = {
 };
 
 const productSelectWithOptionalJson =
-  "id, title, slug, category, description, price, compare_at_price, currency, image_url, images, variants, status, inventory_status, stock_quantity, is_featured, is_sale, seo_title, seo_description, google_product_category, created_at, updated_at";
+  "id, title, slug, category, description, price, compare_at_price, currency, image_url, images, variants, status, inventory_status, stock_quantity, is_featured, is_sale, sort_order, homepage_section, badge, published_at, seo_title, seo_description, google_product_category, created_at, updated_at";
 
 const productSelectBase =
-  "id, title, slug, category, description, price, compare_at_price, currency, image_url, status, inventory_status, stock_quantity, is_featured, is_sale, seo_title, seo_description, google_product_category, created_at, updated_at";
+  "id, title, slug, category, description, price, compare_at_price, currency, image_url, status, inventory_status, stock_quantity, is_featured, is_sale, sort_order, homepage_section, badge, published_at, seo_title, seo_description, google_product_category, created_at, updated_at";
 
 const collectionSlugByCategory: Record<string, string> = {
   "Beds & Blankets": "beds-blankets",
@@ -158,6 +163,30 @@ function normalizeInventoryStatus(value: unknown): PublicInventoryStatus {
     default:
       return "in_stock";
   }
+}
+
+function normalizeHomepageSection(value: unknown): PublicHomepageSection | null {
+  const section = cleanString(value);
+
+  return section === "featured" || section === "best_seller" || section === "new_arrivals"
+    ? section
+    : null;
+}
+
+function timeFromValue(value: unknown) {
+  const dateValue = nullableString(value);
+
+  if (!dateValue) {
+    return 0;
+  }
+
+  const time = new Date(dateValue).getTime();
+
+  return Number.isFinite(time) ? time : 0;
+}
+
+function sortOrderFromProduct(product: Product) {
+  return typeof product.sortOrder === "number" ? product.sortOrder : Number.MAX_SAFE_INTEGER;
 }
 
 function recordFromUnknown(value: unknown): Record<string, unknown> | null {
@@ -349,7 +378,11 @@ function mapSupabaseProduct(
     defaultSafetyNotice(category);
   const seoDescription = nullableString(row.seo_description);
   const shortDescription = seoDescription ?? staticProduct?.shortDescription ?? description;
-  const isSale = Boolean(row.is_sale) || Boolean(activeCompareAtPrice);
+  const isSale = Boolean(row.is_sale);
+  const hasSalePricing = Boolean(activeCompareAtPrice);
+  const badge = nullableString(row.badge) ?? (isSale || hasSalePricing ? "Sale" : staticProduct?.badge);
+  const homepageSection = normalizeHomepageSection(row.homepage_section);
+  const sortOrder = numberFromValue(row.sort_order);
 
   return {
     id: slug,
@@ -360,7 +393,7 @@ function mapSupabaseProduct(
     ...(subcategory ? { subcategory } : {}),
     price,
     ...(activeCompareAtPrice ? { regularPrice: activeCompareAtPrice, compareAtPrice: activeCompareAtPrice } : {}),
-    ...(isSale ? { badge: "Sale" } : staticProduct?.badge ? { badge: staticProduct.badge } : {}),
+    ...(badge ? { badge } : {}),
     ...(staticProduct?.rating ? { rating: staticProduct.rating } : {}),
     ...(staticProduct?.reviewCount ? { reviewCount: staticProduct.reviewCount } : {}),
     ...(selectedColor ? { selectedColor } : {}),
@@ -377,6 +410,8 @@ function mapSupabaseProduct(
     shippingClass,
     shippingDescription,
     ...(staticProduct?.isNew ? { isNew: staticProduct.isNew } : {}),
+    isFeatured: Boolean(row.is_featured),
+    isSale,
     brand: brandName,
     currency: cleanString(row.currency) === "USD" ? "USD" : "USD",
     availability: normalizeInventoryStatus(row.inventory_status),
@@ -393,7 +428,12 @@ function mapSupabaseProduct(
     ...(nullableString(row.google_product_category)
       ? { googleProductCategory: nullableString(row.google_product_category)! }
       : {}),
-    stockQuantity: numberFromValue(row.stock_quantity)
+    stockQuantity: numberFromValue(row.stock_quantity),
+    sortOrder,
+    homepageSection,
+    publishedAt: nullableString(row.published_at),
+    createdAt: nullableString(row.created_at),
+    updatedAt: nullableString(row.updated_at)
   };
 }
 
@@ -409,7 +449,12 @@ async function selectProductRows(selectColumns: string, slug?: string) {
   if (slug) {
     query = query.eq("slug", slug);
   } else {
-    query = query.eq("status", "active").order("created_at", { ascending: true }).limit(250);
+    query = query
+      .eq("status", "active")
+      .order("sort_order", { ascending: true, nullsFirst: false })
+      .order("published_at", { ascending: false, nullsFirst: false })
+      .order("created_at", { ascending: false })
+      .limit(250);
   }
 
   const result = slug ? await query.limit(1) : await query;
@@ -473,6 +518,20 @@ async function fetchImageRowsByProductId(productIds: string[]) {
 
 function sortProductsForStorefront(products: Product[]) {
   return [...products].sort((first, second) => {
+    const sortDifference = sortOrderFromProduct(first) - sortOrderFromProduct(second);
+
+    if (sortDifference !== 0) {
+      return sortDifference;
+    }
+
+    const dateDifference =
+      Math.max(timeFromValue(second.publishedAt), timeFromValue(second.createdAt)) -
+      Math.max(timeFromValue(first.publishedAt), timeFromValue(first.createdAt));
+
+    if (dateDifference !== 0) {
+      return dateDifference;
+    }
+
     const firstIndex = staticIndexBySlug.get(first.slug) ?? Number.MAX_SAFE_INTEGER;
     const secondIndex = staticIndexBySlug.get(second.slug) ?? Number.MAX_SAFE_INTEGER;
 
@@ -539,7 +598,7 @@ async function fetchSupabaseProductBySlug(slug: string): Promise<ProductLookupRe
 }
 
 function isSaleProduct(product: Product) {
-  return Boolean(product.compareAtPrice && product.compareAtPrice > product.price) || product.badge === "Sale";
+  return Boolean(product.isSale);
 }
 
 function productsForCollection(slug: string, products: Product[]) {
@@ -632,7 +691,13 @@ export function pickPublicProductsByStaticProducts(
 
 export async function getPublicHomepageProducts() {
   const catalogProducts = await getPublicProducts();
+  const featuredProducts = catalogProducts.filter(
+    (product) => product.homepageSection === "featured" || product.isFeatured
+  );
+  const bestSellerProducts = catalogProducts.filter((product) => product.homepageSection === "best_seller");
+  const newArrivalProducts = catalogProducts.filter((product) => product.homepageSection === "new_arrivals");
   const featuredProduct =
+    featuredProducts[0] ??
     catalogProducts.find((product) => product.slug === staticMainProduct.slug) ??
     (await getPublicProductBySlug(staticMainProduct.slug)) ??
     catalogProducts[0] ??
@@ -640,8 +705,14 @@ export async function getPublicHomepageProducts() {
 
   return {
     featuredProduct,
-    bestSellers: pickPublicProductsByStaticProducts(staticBestSellers, catalogProducts, staticBestSellers.length),
-    newArrivals: pickPublicProductsByStaticProducts(staticNewArrivals, catalogProducts, staticNewArrivals.length)
+    bestSellers:
+      bestSellerProducts.length > 0
+        ? fillSelection(bestSellerProducts, catalogProducts, staticBestSellers.length)
+        : pickPublicProductsByStaticProducts(staticBestSellers, catalogProducts, staticBestSellers.length),
+    newArrivals:
+      newArrivalProducts.length > 0
+        ? fillSelection(newArrivalProducts, catalogProducts, staticNewArrivals.length)
+        : pickPublicProductsByStaticProducts(staticNewArrivals, catalogProducts, staticNewArrivals.length)
   };
 }
 

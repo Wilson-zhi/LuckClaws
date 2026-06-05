@@ -15,6 +15,10 @@ type AdminProductRow = {
   status: string | null;
   inventory_status: string | null;
   is_sale: boolean | null;
+  sort_order: number | string | null;
+  homepage_section: string | null;
+  badge: string | null;
+  published_at: string | null;
   created_at: string | null;
 };
 
@@ -48,6 +52,40 @@ function priceFromRow(product: AdminProductRow) {
   const value = typeof product.price === "number" ? product.price : Number(product.price ?? 0);
 
   return Number.isFinite(value) ? value : 0;
+}
+
+function numberFromValue(value: number | string | null) {
+  const parsed = typeof value === "number" ? value : Number(value ?? 0);
+
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function sortOrderFromRow(product: AdminProductRow) {
+  if (product.sort_order === null || product.sort_order === "") {
+    return Number.MAX_SAFE_INTEGER;
+  }
+
+  const value = typeof product.sort_order === "number" ? product.sort_order : Number(product.sort_order);
+
+  return Number.isFinite(value) ? value : Number.MAX_SAFE_INTEGER;
+}
+
+function createdTimeFromRow(product: AdminProductRow) {
+  const time = product.created_at ? new Date(product.created_at).getTime() : 0;
+
+  return Number.isFinite(time) ? time : 0;
+}
+
+function sortProductsForAdmin(products: AdminProductRow[]) {
+  return [...products].sort((first, second) => {
+    const sortDifference = sortOrderFromRow(first) - sortOrderFromRow(second);
+
+    if (sortDifference !== 0) {
+      return sortDifference;
+    }
+
+    return createdTimeFromRow(second) - createdTimeFromRow(first);
+  });
 }
 
 function normalizedValue(value: string | null) {
@@ -89,7 +127,7 @@ function ProductsTable() {
         }
 
         if (active) {
-          setProducts(payload.products ?? []);
+          setProducts(sortProductsForAdmin(payload.products ?? []));
         }
       })
       .catch((loadError: unknown) => {
@@ -281,7 +319,7 @@ function ProductsTable() {
       ) : (
         <div className="overflow-hidden rounded-lg bg-surface-container-lowest shadow-soft">
           <div className="max-h-[72vh] overflow-auto">
-            <table className="w-full min-w-[1720px] text-left text-sm">
+            <table className="w-full min-w-[1980px] text-left text-sm">
               <thead className="sticky top-0 z-20 bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant">
                 <tr>
                   <th className="min-w-[340px] px-5 py-3">Title</th>
@@ -291,6 +329,9 @@ function ProductsTable() {
                   <th className="min-w-[115px] px-4 py-3">Status</th>
                   <th className="min-w-[135px] px-4 py-3">Inventory</th>
                   <th className="min-w-[80px] px-4 py-3">Sale</th>
+                  <th className="min-w-[95px] px-4 py-3">Sort</th>
+                  <th className="min-w-[150px] px-4 py-3">Homepage</th>
+                  <th className="min-w-[130px] px-4 py-3">Badge</th>
                   <th className="min-w-[130px] px-4 py-3">Created</th>
                   <th className="sticky right-0 z-30 min-w-[360px] border-l border-outline-variant bg-surface-container-low px-4 py-3 shadow-[-10px_0_22px_rgba(67,45,31,0.10)]">
                     Actions
@@ -307,6 +348,11 @@ function ProductsTable() {
                     <td className="px-4 py-4 text-on-surface-variant">{displayStatus(product.status)}</td>
                     <td className="px-4 py-4 text-on-surface-variant">{displayStatus(product.inventory_status)}</td>
                     <td className="px-4 py-4 text-on-surface-variant">{product.is_sale ? "Yes" : "No"}</td>
+                    <td className="px-4 py-4 text-on-surface-variant">
+                      {product.sort_order === null || product.sort_order === "" ? "Not set" : numberFromValue(product.sort_order)}
+                    </td>
+                    <td className="px-4 py-4 text-on-surface-variant">{displayValue(product.homepage_section)}</td>
+                    <td className="px-4 py-4 text-on-surface-variant">{displayValue(product.badge)}</td>
                     <td className="px-4 py-4 text-on-surface-variant">{formatDate(product.created_at)}</td>
                     <td className="sticky right-0 z-10 border-l border-outline-variant bg-surface-container-lowest px-4 py-4 shadow-[-10px_0_22px_rgba(67,45,31,0.10)]">
                       <div className="flex min-w-[328px] flex-wrap gap-2 whitespace-nowrap">

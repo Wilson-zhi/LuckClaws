@@ -12,6 +12,10 @@ export type AdminProductRow = {
   status: string | null;
   inventory_status: string | null;
   is_sale: boolean | null;
+  sort_order: number | string | null;
+  homepage_section: string | null;
+  badge: string | null;
+  published_at: string | null;
   created_at: string | null;
 };
 
@@ -33,7 +37,8 @@ export async function GET(request: Request) {
 
   const { data, error } = await supabase
     .from("products")
-    .select("id, title, slug, category, price, status, inventory_status, is_sale, created_at")
+    .select("id, title, slug, category, price, status, inventory_status, is_sale, sort_order, homepage_section, badge, published_at, created_at")
+    .order("sort_order", { ascending: true, nullsFirst: false })
     .order("created_at", { ascending: false })
     .limit(100);
 

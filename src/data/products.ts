@@ -26,6 +26,13 @@ type ProductBase = {
   shippingClass?: string;
   shippingDescription?: string;
   isNew?: boolean;
+  isFeatured?: boolean;
+  isSale?: boolean;
+  sortOrder?: number | null;
+  homepageSection?: "featured" | "best_seller" | "new_arrivals" | null;
+  publishedAt?: string | null;
+  createdAt?: string | null;
+  updatedAt?: string | null;
 };
 
 export const brandName = "LUCK CLAWS";
@@ -146,6 +153,7 @@ function createProduct(product: ProductInput): Product {
     shippingRate: product.shippingRate ?? DEFAULT_SHIPPING_RATE,
     shippingClass: product.shippingClass ?? "standard",
     shippingDescription: product.shippingDescription ?? standardShippingSentence,
+    isSale: product.isSale ?? Boolean(product.regularPrice && product.regularPrice > product.price),
     collectionSlug: product.collectionSlug ?? collectionSlugByCategory[product.category] ?? "all",
     shortDescription: product.shortDescription ?? product.description,
     productType: product.productType ?? defaultProductType(product),

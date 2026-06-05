@@ -1,8 +1,10 @@
 export const productStatuses = ["active", "draft", "archived"] as const;
 export const inventoryStatuses = ["in_stock", "out_of_stock", "preorder"] as const;
+export const homepageSections = ["featured", "best_seller", "new_arrivals"] as const;
 
 type ProductStatus = (typeof productStatuses)[number];
 type InventoryStatus = (typeof inventoryStatuses)[number];
+type HomepageSection = (typeof homepageSections)[number];
 
 export type AdminProductMutationPayload = {
   title: string;
@@ -18,6 +20,10 @@ export type AdminProductMutationPayload = {
   stock_quantity: number | null;
   is_featured: boolean;
   is_sale: boolean;
+  sort_order: number | null;
+  homepage_section: HomepageSection | null;
+  badge: string | null;
+  published_at: string | null;
   seo_title: string | null;
   seo_description: string | null;
   google_product_category: string | null;
@@ -63,6 +69,10 @@ function isInventoryStatus(value: string): value is InventoryStatus {
   return inventoryStatuses.includes(value as InventoryStatus);
 }
 
+function isHomepageSection(value: string): value is HomepageSection {
+  return homepageSections.includes(value as HomepageSection);
+}
+
 export function validateAdminProductPayload(input: unknown): ValidationResult {
   const record = typeof input === "object" && input !== null ? (input as Record<string, unknown>) : {};
   const errors: Record<string, string> = {};
@@ -72,9 +82,12 @@ export function validateAdminProductPayload(input: unknown): ValidationResult {
   const price = numberValue(record.price);
   const compareAtPrice = numberValue(record.compare_at_price);
   const stockQuantity = numberValue(record.stock_quantity);
+  const sortOrder = numberValue(record.sort_order);
   const currency = cleanString(record.currency) || "USD";
   const status = cleanString(record.status) || "draft";
   const inventoryStatus = cleanString(record.inventory_status) || "in_stock";
+  const homepageSection = cleanString(record.homepage_section);
+  const publishedAt = nullableString(record.published_at);
 
   if (!title) {
     errors.title = "Title is required.";
@@ -100,12 +113,26 @@ export function validateAdminProductPayload(input: unknown): ValidationResult {
     errors.stock_quantity = "Stock quantity must be greater than or equal to 0.";
   }
 
+  if (record.sort_order !== "" && record.sort_order !== null && record.sort_order !== undefined) {
+    if (sortOrder === null || !Number.isInteger(sortOrder)) {
+      errors.sort_order = "Sort order must be a whole number.";
+    }
+  }
+
   if (!isProductStatus(status)) {
     errors.status = "Status must be active, draft, or archived.";
   }
 
   if (!isInventoryStatus(inventoryStatus)) {
     errors.inventory_status = "Inventory status must be in stock, out of stock, or preorder.";
+  }
+
+  if (homepageSection && !isHomepageSection(homepageSection)) {
+    errors.homepage_section = "Homepage section must be featured, best_seller, new_arrivals, or blank.";
+  }
+
+  if (publishedAt && Number.isNaN(new Date(publishedAt).getTime())) {
+    errors.published_at = "Published date must be a valid date.";
   }
 
   if (Object.keys(errors).length > 0) {
@@ -131,6 +158,10 @@ export function validateAdminProductPayload(input: unknown): ValidationResult {
       stock_quantity: stockQuantity,
       is_featured: Boolean(record.is_featured),
       is_sale: Boolean(record.is_sale),
+      sort_order: sortOrder,
+      homepage_section: homepageSection ? (homepageSection as HomepageSection) : null,
+      badge: nullableString(record.badge),
+      published_at: publishedAt ? new Date(publishedAt).toISOString() : null,
       seo_title: nullableString(record.seo_title),
       seo_description: nullableString(record.seo_description),
       google_product_category: nullableString(record.google_product_category)
