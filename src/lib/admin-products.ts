@@ -349,13 +349,16 @@ function productImagesValue(record: Record<string, unknown>, errors: Record<stri
   }
 
   const primaryIndex = cleanedItems.findIndex((item) => item.is_primary);
-  const normalizedPrimaryIndex = primaryIndex >= 0 ? primaryIndex : 0;
+  const orderedItems =
+    primaryIndex >= 0
+      ? [cleanedItems[primaryIndex], ...cleanedItems.filter((_, index) => index !== primaryIndex)]
+      : cleanedItems;
 
-  return cleanedItems.map((item, index) => ({
+  return orderedItems.map((item, index) => ({
     url: item.url,
     ...(item.alt ? { alt: item.alt } : {}),
     position: index + 1,
-    is_primary: index === normalizedPrimaryIndex
+    is_primary: index === 0
   }));
 }
 

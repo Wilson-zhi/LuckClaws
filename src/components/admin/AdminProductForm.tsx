@@ -307,12 +307,15 @@ function normalizeGalleryImages(images: ProductGalleryImageFormItem[]) {
   }
 
   const primaryIndex = validImages.findIndex((image) => image.is_primary);
-  const normalizedPrimaryIndex = primaryIndex >= 0 ? primaryIndex : 0;
+  const orderedImages =
+    primaryIndex >= 0
+      ? [validImages[primaryIndex], ...validImages.filter((_, index) => index !== primaryIndex)]
+      : validImages;
 
-  return validImages.map((image, index) => ({
+  return orderedImages.map((image, index) => ({
     ...image,
     position: index + 1,
-    is_primary: index === normalizedPrimaryIndex
+    is_primary: index === 0
   }));
 }
 
@@ -354,6 +357,27 @@ function galleryImagesFormValue(value: unknown): ProductGalleryImageFormItem[] {
 
 function primaryGalleryImage(images: ProductGalleryImageFormItem[]) {
   return images.find((image) => image.is_primary) ?? images[0] ?? null;
+}
+
+function setPrimaryGalleryImage(images: ProductGalleryImageFormItem[], selectedIndex: number) {
+  const selectedImage = images[selectedIndex];
+
+  if (!selectedImage) {
+    return normalizeGalleryImages(images);
+  }
+
+  return normalizeGalleryImages([
+    {
+      ...selectedImage,
+      is_primary: true
+    },
+    ...images
+      .filter((_, index) => index !== selectedIndex)
+      .map((image) => ({
+        ...image,
+        is_primary: false
+      }))
+  ]);
 }
 
 function sanitizePathSegment(value: string) {
@@ -1032,7 +1056,7 @@ function ProductImageGalleryEditor({
                     <button
                       type="button"
                       className="rounded-full border border-outline-variant px-3 py-1 text-xs font-bold text-primary transition hover:border-primary hover:bg-primary-container/10"
-                      onClick={() => updateImage(index, { is_primary: true })}
+                      onClick={() => onChange(setPrimaryGalleryImage(images, index))}
                     >
                       Set as Primary
                     </button>
@@ -1193,30 +1217,6 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
           : {})
       };
     });
-  };
-
-  const handleImageUpload = async (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    event.target.value = "";
-    setUploadMessage("");
-    setUploadError("");
-
-    if (!file) {
-      return;
-    }
-
-    setUploading(true);
-
-    try {
-      const publicUrl = await uploadProductImage(file);
-
-      updateField("image_url", publicUrl);
-      setUploadMessage("Image uploaded. Image URL has been updated.");
-    } catch (uploadErrorResult: unknown) {
-      setUploadError(uploadErrorResult instanceof Error ? uploadErrorResult.message : "Unable to upload image.");
-    } finally {
-      setUploading(false);
-    }
   };
 
   const handleGalleryImagesUpload = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -1411,29 +1411,14 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
           <input className={inputClass} value={form.currency} onChange={(event) => updateField("currency", event.target.value)} />
         </label>
 
-        <label className="grid gap-2 text-sm font-semibold text-on-surface md:col-span-2">
-          Image URL
-          <input className={inputClass} value={form.image_url} onChange={(event) => updateField("image_url", event.target.value)} />
-        </label>
-
         <div className="grid gap-4 rounded-md bg-surface-container-low p-4 md:col-span-2">
           <label className="grid gap-2 text-sm font-semibold text-on-surface">
-            Upload product image
-            <input
-              accept="image/jpeg,image/png,image/webp"
-              className="block w-full rounded-md border border-outline-variant bg-white px-4 py-3 text-sm text-on-surface file:mr-4 file:rounded-full file:border-0 file:bg-primary-container file:px-4 file:py-2 file:font-heading file:font-bold file:text-on-primary-container"
-              disabled={uploading}
-              type="file"
-              onChange={handleImageUpload}
-            />
+            Main Image URL (auto-updated from gallery primary image)
+            <input className={inputClass} value={form.image_url} readOnly />
           </label>
-          {uploading && <p className="text-sm font-semibold text-on-surface-variant">Uploading image...</p>}
-          {uploadMessage && <p className="text-sm font-semibold text-primary">{uploadMessage}</p>}
-          {uploadError && (
-            <p className="text-sm font-semibold text-error" role="alert">
-              {uploadError}
-            </p>
-          )}
+          <p className="text-sm leading-6 text-on-surface-variant">
+            Use Product Image Gallery below to upload and manage product images.
+          </p>
           {form.image_url ? (
             <div className="grid gap-3 sm:grid-cols-[120px_1fr] sm:items-center">
               <div className="aspect-square overflow-hidden rounded-md bg-surface-container-lowest">
@@ -1442,7 +1427,11 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
               </div>
               <p className="break-all text-sm leading-6 text-on-surface-variant">{form.image_url}</p>
             </div>
-          ) : null}
+          ) : (
+            <p className="rounded-md bg-white p-4 text-sm font-semibold text-on-surface-variant">
+              No main image URL yet.
+            </p>
+          )}
         </div>
 
         <ProductImageGalleryEditor

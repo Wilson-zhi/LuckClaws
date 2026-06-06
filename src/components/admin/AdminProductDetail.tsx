@@ -265,12 +265,13 @@ function galleryImagesFromValue(value: unknown): GalleryImageDisplayItem[] {
   }
 
   const primaryIndex = images.findIndex((image) => image.isPrimary);
-  const normalizedPrimaryIndex = primaryIndex >= 0 ? primaryIndex : 0;
+  const orderedImages =
+    primaryIndex >= 0 ? [images[primaryIndex], ...images.filter((_, index) => index !== primaryIndex)] : images;
 
-  return images.map((image, index) => ({
+  return orderedImages.map((image, index) => ({
     ...image,
     position: index + 1,
-    isPrimary: index === normalizedPrimaryIndex
+    isPrimary: index === 0
   }));
 }
 
@@ -590,7 +591,7 @@ function ProductDetailContent({ productId }: { productId: string }) {
                   </div>
                   <dl className="grid gap-3 text-sm text-on-surface-variant sm:grid-cols-2">
                     <div>
-                      <dt className="font-semibold text-on-surface">Primary</dt>
+                      <dt className="font-semibold text-on-surface">Primary Image</dt>
                       <dd className="mt-1">{image.isPrimary ? "Yes" : "No"}</dd>
                     </div>
                     <div>
