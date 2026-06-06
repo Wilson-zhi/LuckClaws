@@ -2,7 +2,6 @@ import { brandName, products, type Product } from "@/data/products";
 import { absoluteUrl, createSeoMetadata } from "@/lib/seo";
 import {
   DEFAULT_SHIPPING_RATE,
-  FREE_SHIPPING_THRESHOLD,
   freeShippingSentence,
   standardShippingSentence,
   variableShippingSentence
@@ -29,17 +28,9 @@ function createOfferShippingDetails(product: Product) {
     description: `${standardShippingSentence} ${freeShippingSentence} ${variableShippingSentence}`,
     url: absoluteUrl("/shipping-returns"),
     shippingRate: {
-      "@type": "ShippingRateSettings",
-      shippingRate: {
-        "@type": "MonetaryAmount",
-        value: Number(shippingRate.toFixed(2)),
-        currency: product.currency
-      },
-      freeShippingThreshold: {
-        "@type": "MonetaryAmount",
-        value: FREE_SHIPPING_THRESHOLD,
-        currency: product.currency
-      }
+      "@type": "MonetaryAmount",
+      value: Number(shippingRate.toFixed(2)),
+      currency: product.currency
     },
     shippingDestination: {
       "@type": "DefinedRegion",
