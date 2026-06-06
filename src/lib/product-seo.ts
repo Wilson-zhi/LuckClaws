@@ -2,6 +2,7 @@ import { brandName, products, type Product } from "@/data/products";
 import { absoluteUrl, createSeoMetadata } from "@/lib/seo";
 import {
   DEFAULT_SHIPPING_RATE,
+  FREE_SHIPPING_THRESHOLD,
   freeShippingSentence,
   standardShippingSentence,
   variableShippingSentence
@@ -23,13 +24,22 @@ function createOfferShippingDetails(product: Product) {
 
   return {
     "@type": "OfferShippingDetails",
+    "@id": absoluteUrl("/shipping-returns#standard-door-to-door-shipping"),
     name: "Standard door-to-door shipping",
     description: `${standardShippingSentence} ${freeShippingSentence} ${variableShippingSentence}`,
     url: absoluteUrl("/shipping-returns"),
     shippingRate: {
-      "@type": "MonetaryAmount",
-      value: Number(shippingRate.toFixed(2)),
-      currency: product.currency
+      "@type": "ShippingRateSettings",
+      shippingRate: {
+        "@type": "MonetaryAmount",
+        value: Number(shippingRate.toFixed(2)),
+        currency: product.currency
+      },
+      freeShippingThreshold: {
+        "@type": "MonetaryAmount",
+        value: FREE_SHIPPING_THRESHOLD,
+        currency: product.currency
+      }
     },
     shippingDestination: {
       "@type": "DefinedRegion",
@@ -56,6 +66,7 @@ function createOfferShippingDetails(product: Product) {
 function createMerchantReturnPolicy() {
   return {
     "@type": "MerchantReturnPolicy",
+    "@id": absoluteUrl("/refund-policy#merchant-return-policy"),
     applicableCountry: "US",
     returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
     description:
