@@ -14,6 +14,7 @@ import {
   type Product
 } from "@/data/products";
 import { collectionConfigs, type CollectionConfig } from "@/data/collections";
+import { normalizeProductHighlightIconKey } from "@/lib/product-highlight-icons";
 import { DEFAULT_SHIPPING_RATE, standardShippingSentence } from "@/lib/shipping";
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
 
@@ -245,11 +246,11 @@ function arrayFromVariants(variants: Record<string, unknown> | null, key: string
 
 function productHighlightsFromJson(value: unknown): ProductHighlight[] | undefined {
   const highlights = arrayFromUnknown(value)
-    .map((item) => {
+    .map((item): ProductHighlight | null => {
       const record = recordFromUnknown(item);
       const title = nullableString(record?.title);
       const text = nullableString(record?.text);
-      const icon = nullableString(record?.icon);
+      const icon = normalizeProductHighlightIconKey(record?.icon);
 
       return title && text
         ? {

@@ -6,6 +6,11 @@ import { AdminGuard, useAdminAuth } from "@/components/admin/AdminGuard";
 import { AdminPageFrame } from "@/components/admin/AdminPageFrame";
 import { type AdminLabelKey, useAdminLanguage } from "@/components/admin/admin-language";
 import { defaultProductSortOrder, homepageSections, inventoryStatuses, productStatuses } from "@/lib/admin-products";
+import {
+  normalizeProductHighlightIconKey,
+  productHighlightIconKeys,
+  type ProductHighlightIconKey
+} from "@/lib/product-highlight-icons";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 type ProductFormMode = "create" | "edit";
@@ -15,6 +20,25 @@ type ProductHighlightFormItem = {
   text: string;
   icon: string;
 };
+
+const productHighlightIconLabelKeys = {
+  paw: "iconPaw",
+  shield: "iconShield",
+  heart: "iconHeart",
+  star: "iconStar",
+  sparkles: "iconSparkles",
+  leaf: "iconLeaf",
+  truck: "iconTruck",
+  package: "iconPackage",
+  check: "iconCheck",
+  rotate: "iconRotate",
+  lock: "iconLock"
+} as const satisfies Record<ProductHighlightIconKey, AdminLabelKey>;
+
+const productHighlightIconOptions = productHighlightIconKeys.map((value) => ({
+  value,
+  labelKey: productHighlightIconLabelKeys[value]
+}));
 
 type DetailRowFormItem = {
   label: string;
@@ -210,7 +234,7 @@ function productHighlightsFormValue(value: unknown): ProductHighlightFormItem[] 
       return {
         title: cleanText(record?.title),
         text: cleanText(record?.text),
-        icon: cleanText(record?.icon)
+        icon: normalizeProductHighlightIconKey(record?.icon)
       };
     })
     .filter((item) => item.title || item.text || item.icon);
@@ -435,7 +459,7 @@ function buildPayload(form: ProductFormState) {
     .map((item) => ({
       title: item.title.trim(),
       text: item.text.trim(),
-      icon: item.icon.trim()
+      icon: normalizeProductHighlightIconKey(item.icon)
     }))
     .filter((item) => item.title || item.text || item.icon)
     .map((item) => ({
@@ -709,7 +733,18 @@ function ProductHighlightsEditor({
             </label>
             <label className="grid gap-2 text-sm font-semibold text-on-surface">
               {t("iconOptional")}
-              <input className={inputClass} placeholder="paw" value={item.icon} onChange={(event) => updateItem(index, "icon", event.target.value)} />
+              <select
+                className={inputClass}
+                value={normalizeProductHighlightIconKey(item.icon)}
+                onChange={(event) => updateItem(index, "icon", event.target.value)}
+              >
+                <option value="">{t("none")}</option>
+                {productHighlightIconOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {t(option.labelKey)}
+                  </option>
+                ))}
+              </select>
             </label>
             <label className="grid gap-2 text-sm font-semibold text-on-surface md:col-span-2">
               {t("text")}

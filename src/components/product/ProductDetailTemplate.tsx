@@ -3,13 +3,17 @@ import Link from "next/link";
 import {
   CheckCircle2,
   Heart,
+  Leaf,
   ListChecks,
+  Lock,
   Mail,
   Package,
+  PawPrint,
   RotateCcw,
   Search,
   ShieldCheck,
   Sparkles,
+  Star,
   Truck
 } from "lucide-react";
 import { ViewItemListTracker, ViewItemTracker } from "@/components/analytics/EcommerceEventTrackers";
@@ -31,6 +35,7 @@ import {
   getShippingReturnItems
 } from "@/lib/product-detail-content";
 import { getCollectionPath } from "@/lib/product-links";
+import { normalizeProductHighlightIconKey, type ProductHighlightIconKey } from "@/lib/product-highlight-icons";
 import { createProductJsonLd } from "@/lib/product-seo";
 import {
   freeShippingLabel,
@@ -48,6 +53,26 @@ const trustItems: CompactTrustItem[] = [
 ];
 
 const highlightIcons = [Sparkles, Search, ShieldCheck, RotateCcw];
+
+const productHighlightIconMap = {
+  paw: PawPrint,
+  shield: ShieldCheck,
+  heart: Heart,
+  star: Star,
+  sparkles: Sparkles,
+  leaf: Leaf,
+  truck: Truck,
+  package: Package,
+  check: CheckCircle2,
+  rotate: RotateCcw,
+  lock: Lock
+} satisfies Record<ProductHighlightIconKey, typeof Sparkles>;
+
+function getHighlightIcon(icon: string | undefined, fallbackIndex: number) {
+  const iconKey = normalizeProductHighlightIconKey(icon);
+
+  return iconKey ? productHighlightIconMap[iconKey] : (highlightIcons[fallbackIndex] ?? Sparkles);
+}
 
 export function ProductDetailTemplate({
   product,
@@ -141,7 +166,7 @@ export function ProductDetailTemplate({
           <h2 className="font-heading text-2xl font-bold">Product Highlights</h2>
           <div className="mt-6 grid gap-4 md:grid-cols-4">
             {highlights.map((highlight, index) => {
-              const Icon = highlightIcons[index] ?? Sparkles;
+              const Icon = getHighlightIcon(highlight.icon, index);
 
               return (
                 <div key={highlight.title} className="rounded-md bg-surface-container-low p-5 text-center">

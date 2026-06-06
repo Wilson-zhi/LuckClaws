@@ -13,6 +13,7 @@ export type ProductFaqItem = {
 type Highlight = {
   title: string;
   text: string;
+  icon?: string;
 };
 
 function productUse(product: Product) {

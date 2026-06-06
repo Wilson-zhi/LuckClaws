@@ -1,3 +1,5 @@
+import { normalizeProductHighlightIconKey } from "@/lib/product-highlight-icons";
+
 export const productStatuses = ["active", "draft", "archived"] as const;
 export const inventoryStatuses = ["in_stock", "out_of_stock", "preorder"] as const;
 export const homepageSections = ["featured", "best_seller", "new_arrivals"] as const;
@@ -138,7 +140,7 @@ function productHighlightsValue(record: Record<string, unknown>, errors: Record<
     const itemRecord = recordFromUnknown(item);
     const title = nullableString(itemRecord?.title);
     const text = nullableString(itemRecord?.text);
-    const icon = nullableString(itemRecord?.icon);
+    const icon = normalizeProductHighlightIconKey(itemRecord?.icon);
 
     if (!itemRecord || (!title && !text && !icon)) {
       return itemRecord ? undefined : null;
