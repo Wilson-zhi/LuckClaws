@@ -25,13 +25,13 @@ type AdminProductRow = {
 
 function formatDate(value: string | null) {
   if (!value) {
-    return "Unavailable";
+    return "不可用 / Unavailable";
   }
 
   const date = new Date(value);
 
   if (Number.isNaN(date.getTime())) {
-    return "Unavailable";
+    return "不可用 / Unavailable";
   }
 
   return new Intl.DateTimeFormat("en-US", {
@@ -42,11 +42,21 @@ function formatDate(value: string | null) {
 }
 
 function displayValue(value: string | null) {
-  return value?.trim() || "Not provided";
+  return value?.trim() || "未填写 / Not provided";
 }
 
 function displayStatus(value: string | null) {
-  return value ? value.replaceAll("_", " ") : "Not provided";
+  const normalizedValue = value?.trim() ?? "";
+  const statusLabels: Record<string, string> = {
+    active: "上架 / Active",
+    draft: "草稿 / Draft",
+    archived: "已归档 / Archived",
+    in_stock: "有库存 / In stock",
+    out_of_stock: "缺货 / Out of stock",
+    preorder: "预售 / Preorder"
+  };
+
+  return statusLabels[normalizedValue] ?? (normalizedValue ? normalizedValue.replaceAll("_", " ") : "未填写 / Not provided");
 }
 
 function priceFromRow(product: AdminProductRow) {
@@ -74,7 +84,7 @@ function sortOrderFromRow(product: AdminProductRow) {
 function displaySortOrder(product: AdminProductRow) {
   const value = sortOrderFromRow(product);
 
-  return value === defaultProductSortOrder ? "Default" : String(value);
+  return value === defaultProductSortOrder ? "默认 / Default" : String(value);
 }
 
 function createdTimeFromRow(product: AdminProductRow) {
@@ -130,7 +140,7 @@ function ProductsTable() {
         const payload = (await response.json()) as { products?: AdminProductRow[]; error?: string };
 
         if (!response.ok) {
-          throw new Error(payload.error ?? "Unable to load products.");
+          throw new Error(payload.error ?? "无法加载商品 / Unable to load products.");
         }
 
         if (active) {
@@ -139,7 +149,7 @@ function ProductsTable() {
       })
       .catch((loadError: unknown) => {
         if (active) {
-          setError(loadError instanceof Error ? loadError.message : "Unable to load products.");
+          setError(loadError instanceof Error ? loadError.message : "无法加载商品 / Unable to load products.");
         }
       })
       .finally(() => {
@@ -193,7 +203,7 @@ function ProductsTable() {
     }
 
     const confirmed = window.confirm(
-      `Archive ${displayValue(product.title)}? Archived products are hidden publicly but remain available in admin.`
+      `归档 ${displayValue(product.title)}？已归档商品会从前台隐藏，但仍保留在后台。/ Archive ${displayValue(product.title)}? Archived products are hidden publicly but remain available in admin.`
     );
 
     if (!confirmed) {
@@ -215,7 +225,7 @@ function ProductsTable() {
     const payload = (await response.json().catch(() => ({}))) as { error?: string };
 
     if (!response.ok) {
-      setActionError(payload.error ?? "Unable to archive product.");
+      setActionError(payload.error ?? "无法归档商品 / Unable to archive product.");
       setArchivingId("");
       return;
     }
@@ -231,7 +241,7 @@ function ProductsTable() {
   if (loading) {
     return (
       <div className="ambient-card p-6 text-sm leading-6 text-on-surface-variant">
-        Loading products...
+        正在加载商品 / Loading products...
       </div>
     );
   }
@@ -249,10 +259,10 @@ function ProductsTable() {
       <section className="rounded-lg bg-surface-container-lowest p-5 shadow-soft">
         <div className="grid gap-4 xl:grid-cols-[minmax(280px,1.5fr)_minmax(180px,0.9fr)_minmax(130px,0.65fr)_minmax(170px,0.8fr)_minmax(150px,0.65fr)]">
           <label className="grid gap-2 text-sm font-semibold text-on-surface">
-            Search by title or slug
+            搜索标题或 Slug / Search by title or slug
             <input
               className={inputClass}
-              placeholder="Search by title or slug"
+              placeholder="搜索标题或 Slug / Search by title or slug"
               type="search"
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
@@ -260,9 +270,9 @@ function ProductsTable() {
           </label>
 
           <label className="grid gap-2 text-sm font-semibold text-on-surface">
-            Category
+            分类 / Category
             <select className={selectClass} value={categoryFilter} onChange={(event) => setCategoryFilter(event.target.value)}>
-              <option value="all">All categories</option>
+              <option value="all">全部分类 / All categories</option>
               {categories.map((category) => (
                 <option key={category} value={category}>
                   {category}
@@ -272,40 +282,40 @@ function ProductsTable() {
           </label>
 
           <label className="grid gap-2 text-sm font-semibold text-on-surface">
-            Status
+            状态 / Status
             <select className={selectClass} value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
-              <option value="all">All</option>
-              <option value="active">active</option>
-              <option value="draft">draft</option>
-              <option value="archived">archived</option>
+              <option value="all">全部 / All</option>
+              <option value="active">上架 / active</option>
+              <option value="draft">草稿 / draft</option>
+              <option value="archived">已归档 / archived</option>
             </select>
           </label>
 
           <label className="grid gap-2 text-sm font-semibold text-on-surface">
-            Inventory
+            库存 / Inventory
             <select
               className={selectClass}
               value={inventoryFilter}
               onChange={(event) => setInventoryFilter(event.target.value)}
             >
-              <option value="all">All</option>
-              <option value="in_stock">in_stock</option>
-              <option value="out_of_stock">out_of_stock</option>
-              <option value="preorder">preorder</option>
+              <option value="all">全部 / All</option>
+              <option value="in_stock">有库存 / in_stock</option>
+              <option value="out_of_stock">缺货 / out_of_stock</option>
+              <option value="preorder">预售 / preorder</option>
             </select>
           </label>
 
           <label className="grid gap-2 text-sm font-semibold text-on-surface">
-            Sale
+            促销 / Sale
             <select className={selectClass} value={saleFilter} onChange={(event) => setSaleFilter(event.target.value)}>
-              <option value="all">All</option>
-              <option value="sale">Sale only</option>
-              <option value="non-sale">Non-sale only</option>
+              <option value="all">全部 / All</option>
+              <option value="sale">仅促销 / Sale only</option>
+              <option value="non-sale">非促销 / Non-sale only</option>
             </select>
           </label>
         </div>
         <p className="mt-4 text-sm font-semibold text-on-surface-variant" aria-live="polite">
-          Showing {filteredProducts.length} of {products.length} products.
+          显示 {filteredProducts.length} / {products.length} 个商品 / Showing {filteredProducts.length} of {products.length} products.
         </p>
       </section>
 
@@ -317,11 +327,11 @@ function ProductsTable() {
 
       {products.length === 0 ? (
         <div className="ambient-card p-6 text-sm leading-6 text-on-surface-variant">
-          No products yet.
+          暂无商品 / No products yet.
         </div>
       ) : filteredProducts.length === 0 ? (
         <div className="ambient-card p-6 text-sm leading-6 text-on-surface-variant">
-          No products match your filters.
+          没有符合筛选条件的商品 / No products match your filters.
         </div>
       ) : (
         <div className="overflow-hidden rounded-lg bg-surface-container-lowest shadow-soft">
@@ -329,19 +339,19 @@ function ProductsTable() {
             <table className="w-full min-w-[1980px] text-left text-sm">
               <thead className="sticky top-0 z-20 bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant">
                 <tr>
-                  <th className="min-w-[340px] px-5 py-3">Title</th>
+                  <th className="min-w-[340px] px-5 py-3">标题 / Title</th>
                   <th className="min-w-[280px] px-5 py-3">Slug</th>
-                  <th className="min-w-[170px] px-4 py-3">Category</th>
-                  <th className="min-w-[110px] px-4 py-3">Price</th>
-                  <th className="min-w-[115px] px-4 py-3">Status</th>
-                  <th className="min-w-[135px] px-4 py-3">Inventory</th>
-                  <th className="min-w-[80px] px-4 py-3">Sale</th>
-                  <th className="min-w-[95px] px-4 py-3">Sort</th>
-                  <th className="min-w-[150px] px-4 py-3">Homepage</th>
-                  <th className="min-w-[130px] px-4 py-3">Badge</th>
-                  <th className="min-w-[130px] px-4 py-3">Created</th>
+                  <th className="min-w-[170px] px-4 py-3">分类 / Category</th>
+                  <th className="min-w-[110px] px-4 py-3">价格 / Price</th>
+                  <th className="min-w-[115px] px-4 py-3">状态 / Status</th>
+                  <th className="min-w-[135px] px-4 py-3">库存 / Inventory</th>
+                  <th className="min-w-[80px] px-4 py-3">促销 / Sale</th>
+                  <th className="min-w-[95px] px-4 py-3">排序 / Sort</th>
+                  <th className="min-w-[150px] px-4 py-3">首页 / Homepage</th>
+                  <th className="min-w-[130px] px-4 py-3">标签 / Badge</th>
+                  <th className="min-w-[130px] px-4 py-3">创建 / Created</th>
                   <th className="sticky right-0 z-30 min-w-[360px] border-l border-outline-variant bg-surface-container-low px-4 py-3 shadow-[-10px_0_22px_rgba(67,45,31,0.10)]">
-                    Actions
+                    操作 / Actions
                   </th>
                 </tr>
               </thead>
@@ -354,7 +364,7 @@ function ProductsTable() {
                     <td className="px-4 py-4 font-semibold">{formatPrice(priceFromRow(product))}</td>
                     <td className="px-4 py-4 text-on-surface-variant">{displayStatus(product.status)}</td>
                     <td className="px-4 py-4 text-on-surface-variant">{displayStatus(product.inventory_status)}</td>
-                    <td className="px-4 py-4 text-on-surface-variant">{product.is_sale ? "Yes" : "No"}</td>
+                    <td className="px-4 py-4 text-on-surface-variant">{product.is_sale ? "是 / Yes" : "否 / No"}</td>
                     <td className="px-4 py-4 text-on-surface-variant">{displaySortOrder(product)}</td>
                     <td className="px-4 py-4 text-on-surface-variant">{displayValue(product.homepage_section)}</td>
                     <td className="px-4 py-4 text-on-surface-variant">{displayValue(product.badge)}</td>
@@ -365,13 +375,13 @@ function ProductsTable() {
                           href={`/admin/products/${product.id}`}
                           className="inline-flex rounded-full border border-primary px-3 py-2 font-heading text-xs font-bold text-primary transition hover:bg-primary-container/10"
                         >
-                          View
+                          查看 / View
                         </Link>
                         <Link
                           href={`/admin/products/${product.id}/edit`}
                           className="inline-flex rounded-full bg-primary-container px-3 py-2 font-heading text-xs font-bold text-on-primary-container transition hover:bg-[#e08f00]"
                         >
-                          Edit
+                          编辑 / Edit
                         </Link>
                         {product.status === "active" && product.slug ? (
                           <Link
@@ -380,14 +390,14 @@ function ProductsTable() {
                             rel="noreferrer"
                             className="inline-flex rounded-full border border-outline-variant px-3 py-2 font-heading text-xs font-bold text-on-surface-variant transition hover:border-primary hover:text-primary"
                           >
-                            Preview
+                            预览 / Preview
                           </Link>
                         ) : (
                           <span
                             className="inline-flex rounded-full border border-outline-variant px-3 py-2 font-heading text-xs font-bold text-on-surface-variant/70"
-                            title="Product is not public."
+                            title="商品未公开 / Product is not public."
                           >
-                            Not public
+                            未公开 / Not public
                           </span>
                         )}
                         {product.status !== "archived" && (
@@ -397,7 +407,7 @@ function ProductsTable() {
                             disabled={archivingId === product.id}
                             onClick={() => handleArchive(product)}
                           >
-                            {archivingId === product.id ? "Archiving..." : "Archive"}
+                            {archivingId === product.id ? "正在归档 / Archiving..." : "归档 / Archive"}
                           </button>
                         )}
                       </div>
@@ -417,18 +427,18 @@ export function AdminProducts() {
   return (
     <AdminGuard>
       {() => (
-        <AdminPageFrame title="Products" description="Manage Supabase product records." layout="wide" backLink>
+        <AdminPageFrame title="商品 / Products" description="管理 Supabase 商品记录 / Manage Supabase product records." layout="wide" backLink>
           <div className="space-y-6">
             <section className="ambient-card flex flex-col gap-4 p-5 text-sm leading-7 text-on-surface-variant md:flex-row md:items-center md:justify-between md:p-6">
               <p className="max-w-4xl">
-                Active products are visible on the public storefront. Draft and archived products stay hidden from public product pages,
+                上架 = 前台公开显示；草稿和已归档 = 前台隐藏 / Active products are visible on the public storefront. Draft and archived products stay hidden from public product pages,
                 collections, search, product feed, and sitemap.
               </p>
               <Link
                 href="/admin/products/new"
                 className="inline-flex shrink-0 justify-center rounded-full bg-primary px-6 py-3 font-heading font-bold text-white transition hover:bg-primary/90"
               >
-                Add Product
+                添加商品 / Add Product
               </Link>
             </section>
             <ProductsTable />

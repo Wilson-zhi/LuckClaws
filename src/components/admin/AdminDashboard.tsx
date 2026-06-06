@@ -7,21 +7,21 @@ import { AdminPageFrame } from "@/components/admin/AdminPageFrame";
 
 const adminCards = [
   {
-    title: "Orders",
+    title: "订单 / Orders",
     href: "/admin/orders",
-    description: "Review payment and fulfillment status.",
+    description: "查看付款和发货状态 / Review payment and fulfillment status.",
     Icon: Package
   },
   {
-    title: "Customers",
+    title: "客户 / Customers",
     href: "/admin/customers",
-    description: "View customer profile and role basics.",
+    description: "查看客户资料和角色 / View customer profile and role basics.",
     Icon: Users
   },
   {
-    title: "Products",
+    title: "商品 / Products",
     href: "/admin/products",
-    description: "Prepare for catalog management tools.",
+    description: "管理商品目录和展示设置 / Manage catalog and display settings.",
     Icon: Box
   }
 ];
@@ -30,7 +30,7 @@ export function AdminDashboard() {
   return (
     <AdminGuard>
       {() => (
-        <AdminPageFrame title="Admin Dashboard" description="Manage LUCK CLAWS store operations.">
+        <AdminPageFrame title="仪表盘 / Admin Dashboard" description="管理 LUCK CLAWS 店铺运营 / Manage LUCK CLAWS store operations.">
           <div className="grid gap-5 md:grid-cols-3">
             {adminCards.map(({ title, href, description, Icon }) => (
               <Link

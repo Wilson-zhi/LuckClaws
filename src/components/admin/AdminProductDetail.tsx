@@ -92,13 +92,13 @@ function numberFromValue(value: number | string | null) {
 
 function sortOrderDisplayValue(value: number | string | null) {
   if (value === null || value === "") {
-    return "Default";
+    return "默认 / Default";
   }
 
   const numberValue = typeof value === "number" ? value : Number(value);
 
   if (!Number.isFinite(numberValue) || numberValue <= 0 || numberValue === defaultProductSortOrder) {
-    return "Default";
+    return "默认 / Default";
   }
 
   return String(numberValue);
@@ -106,13 +106,13 @@ function sortOrderDisplayValue(value: number | string | null) {
 
 function formatDate(value: string | null) {
   if (!value) {
-    return "Unavailable";
+    return "不可用 / Unavailable";
   }
 
   const date = new Date(value);
 
   if (Number.isNaN(date.getTime())) {
-    return "Unavailable";
+    return "不可用 / Unavailable";
   }
 
   return new Intl.DateTimeFormat("en-US", {
@@ -123,11 +123,25 @@ function formatDate(value: string | null) {
 }
 
 function displayValue(value: string | null) {
-  return value?.trim() || "Not provided";
+  return value?.trim() || "未填写 / Not provided";
 }
 
 function displayBoolean(value: boolean | null) {
-  return value ? "Yes" : "No";
+  return value ? "是 / Yes" : "否 / No";
+}
+
+function displayStatus(value: string | null) {
+  const normalizedValue = value?.trim() ?? "";
+  const statusLabels: Record<string, string> = {
+    active: "上架 / Active",
+    draft: "草稿 / Draft",
+    archived: "已归档 / Archived",
+    in_stock: "有库存 / In stock",
+    out_of_stock: "缺货 / Out of stock",
+    preorder: "预售 / Preorder"
+  };
+
+  return statusLabels[normalizedValue] ?? (normalizedValue ? normalizedValue.replaceAll("_", " ") : "未填写 / Not provided");
 }
 
 function cleanText(value: unknown) {
@@ -307,7 +321,7 @@ function ContentCard({ title, isEmpty, children }: { title: string; isEmpty: boo
     <article className="rounded-md bg-surface-container-low p-4">
       <h3 className="text-xs font-bold uppercase tracking-wide text-on-surface-variant">{title}</h3>
       {isEmpty ? (
-        <p className="mt-3 text-sm font-semibold text-on-surface">Not provided</p>
+        <p className="mt-3 text-sm font-semibold text-on-surface">未填写 / Not provided</p>
       ) : (
         <div className="mt-3 grid gap-3">{children}</div>
       )}
@@ -319,12 +333,12 @@ function ProductHighlightsCard({ value }: { value: unknown }) {
   const items = productHighlightsFromValue(value);
 
   return (
-    <ContentCard title="Product Highlights" isEmpty={items.length === 0}>
+    <ContentCard title="商品亮点 / Product Highlights" isEmpty={items.length === 0}>
       {items.map((item, index) => (
         <div key={`${item.title}-${index}`} className="rounded-md bg-white p-4">
           <p className="font-bold text-on-surface">{item.title}</p>
           <p className="mt-2 text-sm leading-6 text-on-surface-variant">{item.text}</p>
-          {item.icon ? <p className="mt-2 text-xs font-bold uppercase tracking-wide text-primary">Icon: {item.icon}</p> : null}
+          {item.icon ? <p className="mt-2 text-xs font-bold uppercase tracking-wide text-primary">图标 / Icon: {item.icon}</p> : null}
         </div>
       ))}
     </ContentCard>
@@ -335,7 +349,7 @@ function DetailRowsCard({ value }: { value: unknown }) {
   const rows = detailRowsFromValue(value);
 
   return (
-    <ContentCard title="Details at a Glance" isEmpty={rows.length === 0}>
+    <ContentCard title="商品概览 / Details at a Glance" isEmpty={rows.length === 0}>
       <dl className="grid gap-3">
         {rows.map((row, index) => (
           <div key={`${row.label}-${index}`} className="rounded-md bg-white p-4">
@@ -366,7 +380,7 @@ function ProductFaqsCard({ value }: { value: unknown }) {
   const items = productFaqsFromValue(value);
 
   return (
-    <ContentCard title="Product FAQs" isEmpty={items.length === 0}>
+    <ContentCard title="商品问答 / Product FAQs" isEmpty={items.length === 0}>
       {items.map((item, index) => (
         <div key={`${item.question}-${index}`} className="rounded-md bg-white p-4">
           <p className="font-bold text-on-surface">{item.question}</p>
@@ -381,7 +395,7 @@ function AccordionSectionsCard({ value }: { value: unknown }) {
   const items = accordionSectionsFromValue(value);
 
   return (
-    <ContentCard title="Accordion Sections" isEmpty={items.length === 0}>
+    <ContentCard title="折叠内容区 / Accordion Sections" isEmpty={items.length === 0}>
       {items.map((item, index) => (
         <div key={`${item.title}-${index}`} className="rounded-md bg-white p-4">
           <p className="font-bold text-on-surface">{item.title}</p>
@@ -396,7 +410,7 @@ function RelatedProductSlugsCard({ value }: { value: unknown }) {
   const items = relatedProductSlugsFromValue(value);
 
   return (
-    <ContentCard title="Related Product Slugs" isEmpty={items.length === 0}>
+    <ContentCard title="相关商品 Slug / Related Product Slugs" isEmpty={items.length === 0}>
       <div className="flex flex-wrap gap-2 rounded-md bg-white p-4">
         {items.map((item) => (
           <span key={item} className="rounded-full bg-primary-container/20 px-3 py-1 text-xs font-bold text-primary">
@@ -427,7 +441,7 @@ function ProductDetailContent({ productId }: { productId: string }) {
         const payload = (await response.json()) as AdminProductDetailPayload;
 
         if (!response.ok) {
-          throw new Error(payload.error ?? "Unable to load product.");
+          throw new Error(payload.error ?? "无法加载商品 / Unable to load product.");
         }
 
         if (active) {
@@ -437,7 +451,7 @@ function ProductDetailContent({ productId }: { productId: string }) {
       })
       .catch((loadError: unknown) => {
         if (active) {
-          setError(loadError instanceof Error ? loadError.message : "Unable to load product.");
+          setError(loadError instanceof Error ? loadError.message : "无法加载商品 / Unable to load product.");
         }
       })
       .finally(() => {
@@ -454,7 +468,7 @@ function ProductDetailContent({ productId }: { productId: string }) {
   if (loading) {
     return (
       <div className="ambient-card p-6 text-sm leading-6 text-on-surface-variant">
-        Loading product...
+        正在加载商品 / Loading product...
       </div>
     );
   }
@@ -470,7 +484,7 @@ function ProductDetailContent({ productId }: { productId: string }) {
   if (!product) {
     return (
       <div className="ambient-card p-6 text-sm leading-6 text-on-surface-variant">
-        Product not found.
+        未找到商品 / Product not found.
       </div>
     );
   }
@@ -485,65 +499,65 @@ function ProductDetailContent({ productId }: { productId: string }) {
           href={`/admin/products/${product.id}/edit`}
           className="inline-flex rounded-full bg-primary px-5 py-2 font-heading text-sm font-bold text-white transition hover:bg-primary/90"
         >
-          Edit Product
+          编辑商品 / Edit Product
         </Link>
         <Link
           href="/admin"
           className="inline-flex rounded-full border border-primary px-5 py-2 font-heading text-sm font-bold text-primary transition hover:bg-primary-container/10"
         >
-          Back to Admin
+          返回后台 / Back to Admin
         </Link>
       </div>
 
       <section className="ambient-card p-6 md:p-8">
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-wide text-primary">Product Detail</p>
+            <p className="text-xs font-bold uppercase tracking-wide text-primary">商品详情 / Product Detail</p>
             <h2 className="mt-2 font-heading text-2xl font-bold">{displayValue(product.title)}</h2>
           </div>
           <span className="inline-flex w-fit rounded-full bg-primary-container/20 px-4 py-2 text-xs font-bold uppercase tracking-wide text-primary">
-            {displayValue(product.status)}
+            {displayStatus(product.status)}
           </span>
         </div>
 
         <dl className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          <DetailField label="Title" value={displayValue(product.title)} />
+          <DetailField label="标题 / Title" value={displayValue(product.title)} />
           <DetailField label="Slug" value={displayValue(product.slug)} />
-          <DetailField label="Category" value={displayValue(product.category)} />
-          <DetailField label="Description" value={displayValue(product.description)} />
-          <DetailField label="Price" value={formatPrice(numberFromValue(product.price))} />
+          <DetailField label="分类 / Category" value={displayValue(product.category)} />
+          <DetailField label="描述 / Description" value={displayValue(product.description)} />
+          <DetailField label="价格 / Price" value={formatPrice(numberFromValue(product.price))} />
           <DetailField
-            label="Compare at price"
-            value={product.compare_at_price === null ? "Not provided" : formatPrice(numberFromValue(product.compare_at_price))}
+            label="对比价 / Compare at price"
+            value={product.compare_at_price === null ? "未填写 / Not provided" : formatPrice(numberFromValue(product.compare_at_price))}
           />
-          <DetailField label="Currency" value={product.currency ?? "USD"} />
-          <DetailField label="Image URL" value={displayValue(product.image_url)} />
-          <DetailField label="Image alt text" value={displayValue(product.image_alt)} />
-          <DetailField label="Status" value={displayValue(product.status)} />
-          <DetailField label="Inventory status" value={displayValue(product.inventory_status)} />
-          <DetailField label="Stock quantity" value={product.stock_quantity ?? "Not provided"} />
-          <DetailField label="Featured" value={displayBoolean(product.is_featured)} />
-          <DetailField label="Sale" value={displayBoolean(product.is_sale)} />
-          <DetailField label="Sort order" value={sortOrderDisplayValue(product.sort_order)} />
-          <DetailField label="Homepage section" value={displayValue(product.homepage_section)} />
-          <DetailField label="Badge" value={displayValue(product.badge)} />
-          <DetailField label="Published at" value={formatDate(product.published_at)} />
-          <DetailField label="Short description" value={displayValue(product.short_description)} />
-          <DetailField label="SEO title" value={displayValue(product.seo_title)} />
-          <DetailField label="SEO description" value={displayValue(product.seo_description)} />
-          <DetailField label="Google product category" value={displayValue(product.google_product_category)} />
-          <DetailField label="Created" value={formatDate(product.created_at)} />
-          <DetailField label="Updated" value={formatDate(product.updated_at)} />
+          <DetailField label="币种 / Currency" value={product.currency ?? "USD"} />
+          <DetailField label="图片 URL / Image URL" value={displayValue(product.image_url)} />
+          <DetailField label="图片 Alt 文案 / Image alt text" value={displayValue(product.image_alt)} />
+          <DetailField label="状态 / Status" value={displayStatus(product.status)} />
+          <DetailField label="库存状态 / Inventory status" value={displayStatus(product.inventory_status)} />
+          <DetailField label="库存数量 / Stock quantity" value={product.stock_quantity ?? "未填写 / Not provided"} />
+          <DetailField label="推荐 / Featured" value={displayBoolean(product.is_featured)} />
+          <DetailField label="促销 / Sale" value={displayBoolean(product.is_sale)} />
+          <DetailField label="排序 / Sort order" value={sortOrderDisplayValue(product.sort_order)} />
+          <DetailField label="首页展示区 / Homepage section" value={displayValue(product.homepage_section)} />
+          <DetailField label="标签 / Badge" value={displayValue(product.badge)} />
+          <DetailField label="发布时间 / Published at" value={formatDate(product.published_at)} />
+          <DetailField label="短描述 / Short description" value={displayValue(product.short_description)} />
+          <DetailField label="SEO 标题 / SEO title" value={displayValue(product.seo_title)} />
+          <DetailField label="SEO 描述 / SEO description" value={displayValue(product.seo_description)} />
+          <DetailField label="Google 商品分类 / Google product category" value={displayValue(product.google_product_category)} />
+          <DetailField label="创建 / Created" value={formatDate(product.created_at)} />
+          <DetailField label="更新 / Updated" value={formatDate(product.updated_at)} />
         </dl>
       </section>
 
       <section className="ambient-card p-6 md:p-8">
-        <h2 className="font-heading text-2xl font-bold">Editable Product Detail Content</h2>
+        <h2 className="font-heading text-2xl font-bold">可编辑商品详情内容 / Editable Product Detail Content</h2>
         <div className="mt-6 grid gap-4 lg:grid-cols-2">
           <ProductHighlightsCard value={product.product_highlights} />
           <DetailRowsCard value={product.detail_rows} />
-          <TextItemsCard title="Best For" value={product.best_for} />
-          <TextItemsCard title="Care Instructions" value={product.care_instructions} />
+          <TextItemsCard title="适用场景 / Best For" value={product.best_for} />
+          <TextItemsCard title="护理说明 / Care Instructions" value={product.care_instructions} />
           <ProductFaqsCard value={product.product_faqs} />
           <AccordionSectionsCard value={product.accordion_sections} />
           <RelatedProductSlugsCard value={product.related_product_slugs} />
@@ -551,7 +565,7 @@ function ProductDetailContent({ productId }: { productId: string }) {
       </section>
 
       <section className="ambient-card p-6 md:p-8">
-        <h2 className="font-heading text-2xl font-bold">Product Image</h2>
+        <h2 className="font-heading text-2xl font-bold">商品主图 / Product Image</h2>
         {product.image_url ? (
           <div className="mt-6 grid gap-5 md:grid-cols-[180px_1fr] md:items-start">
             <div className="aspect-square overflow-hidden rounded-md bg-surface-container-low">
@@ -563,19 +577,19 @@ function ProductDetailContent({ productId }: { productId: string }) {
               />
             </div>
             <div>
-              <p className="text-sm font-semibold text-on-surface">Image URL</p>
+              <p className="text-sm font-semibold text-on-surface">图片 URL / Image URL</p>
               <p className="mt-2 break-all text-sm leading-6 text-on-surface-variant">{product.image_url}</p>
             </div>
           </div>
         ) : (
-          <p className="mt-5 text-sm leading-6 text-on-surface-variant">No product image yet.</p>
+          <p className="mt-5 text-sm leading-6 text-on-surface-variant">暂无商品图片 / No product image yet.</p>
         )}
       </section>
 
       <section className="ambient-card p-6 md:p-8">
-        <h2 className="font-heading text-2xl font-bold">Product Image Gallery</h2>
+        <h2 className="font-heading text-2xl font-bold">商品图片库 / Product Image Gallery</h2>
         {displayedGalleryImages.length === 0 ? (
-          <p className="mt-5 text-sm leading-6 text-on-surface-variant">No gallery images yet.</p>
+          <p className="mt-5 text-sm leading-6 text-on-surface-variant">暂无图库图片 / No gallery images yet.</p>
         ) : (
           <div className="mt-6 grid gap-4">
             {displayedGalleryImages.map((image) => (
@@ -591,19 +605,19 @@ function ProductDetailContent({ productId }: { productId: string }) {
                   </div>
                   <dl className="grid gap-3 text-sm text-on-surface-variant sm:grid-cols-2">
                     <div>
-                      <dt className="font-semibold text-on-surface">Primary Image</dt>
-                      <dd className="mt-1">{image.isPrimary ? "Yes" : "No"}</dd>
+                      <dt className="font-semibold text-on-surface">主图 / Primary Image</dt>
+                      <dd className="mt-1">{image.isPrimary ? "是 / Yes" : "否 / No"}</dd>
                     </div>
                     <div>
                       <dt className="font-semibold text-on-surface">URL</dt>
                       <dd className="mt-1 break-all">{image.url}</dd>
                     </div>
                     <div>
-                      <dt className="font-semibold text-on-surface">Alt text</dt>
-                      <dd className="mt-1">{image.alt || "Not provided"}</dd>
+                      <dt className="font-semibold text-on-surface">Alt 文案 / Alt text</dt>
+                      <dd className="mt-1">{image.alt || "未填写 / Not provided"}</dd>
                     </div>
                     <div>
-                      <dt className="font-semibold text-on-surface">Position</dt>
+                      <dt className="font-semibold text-on-surface">位置 / Position</dt>
                       <dd className="mt-1">{image.position}</dd>
                     </div>
                   </dl>
@@ -622,9 +636,9 @@ export function AdminProductDetail({ productId }: { productId: string }) {
     <AdminGuard>
       {() => (
         <AdminPageFrame
-          title="Product Detail"
-          description="Review Supabase product records before public catalog migration."
-          backLink={{ href: "/admin/products", label: "Back to Products" }}
+          title="商品详情 / Product Detail"
+          description="查看 Supabase 商品记录 / Review Supabase product records."
+          backLink={{ href: "/admin/products", label: "返回商品 / Back to Products" }}
         >
           <ProductDetailContent productId={productId} />
         </AdminPageFrame>

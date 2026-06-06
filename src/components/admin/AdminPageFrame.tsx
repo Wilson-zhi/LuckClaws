@@ -17,10 +17,10 @@ type AdminPageFrameProps = {
 };
 
 const adminNavItems = [
-  { label: "Dashboard", href: "/admin", Icon: LayoutDashboard },
-  { label: "Orders", href: "/admin/orders", Icon: Package },
-  { label: "Customers", href: "/admin/customers", Icon: Users },
-  { label: "Products", href: "/admin/products", Icon: Box }
+  { label: "仪表盘 / Dashboard", href: "/admin", Icon: LayoutDashboard },
+  { label: "订单 / Orders", href: "/admin/orders", Icon: Package },
+  { label: "客户 / Customers", href: "/admin/customers", Icon: Users },
+  { label: "商品 / Products", href: "/admin/products", Icon: Box }
 ];
 
 export function AdminPageFrame({
@@ -34,7 +34,7 @@ export function AdminPageFrame({
     typeof backLink === "object"
       ? backLink
       : backLink
-        ? { href: "/admin", label: "Back to Admin" }
+        ? { href: "/admin", label: "返回后台 / Back to Admin" }
         : null;
   const shellClass =
     layout === "wide"
@@ -59,7 +59,7 @@ export function AdminPageFrame({
             </Link>
           )}
           <span className="inline-flex rounded-full bg-primary-container/20 px-4 py-2 text-xs font-bold uppercase tracking-wide text-primary">
-            Admin
+            后台 / Admin
           </span>
           <h1 className="mt-6 font-heading text-4xl font-extrabold leading-tight md:text-6xl">{title}</h1>
           {description && (

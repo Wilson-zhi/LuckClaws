@@ -516,26 +516,26 @@ function validateForm(form: ProductFormState) {
   const price = Number(form.price);
 
   if (!form.title.trim()) {
-    errors.title = "Title is required.";
+    errors.title = "标题必填 / Title is required.";
   }
 
   if (!form.slug.trim()) {
-    errors.slug = "Slug is required.";
+    errors.slug = "Slug 必填 / Slug is required.";
   } else if (!slugPattern.test(form.slug.trim())) {
-    errors.slug = "Slug must use lowercase letters, numbers, and hyphens.";
+    errors.slug = "Slug 只能使用小写字母、数字和连字符 / Slug must use lowercase letters, numbers, and hyphens.";
   }
 
   if (!form.price.trim()) {
-    errors.price = "Price is required.";
+    errors.price = "价格必填 / Price is required.";
   } else if (!Number.isFinite(price) || price < 0) {
-    errors.price = "Price must be greater than or equal to 0.";
+    errors.price = "价格必须大于或等于 0 / Price must be greater than or equal to 0.";
   }
 
   if (form.compare_at_price.trim()) {
     const compareAtPrice = Number(form.compare_at_price);
 
     if (!Number.isFinite(compareAtPrice) || compareAtPrice < 0) {
-      errors.compare_at_price = "Compare at price must be greater than or equal to 0.";
+      errors.compare_at_price = "对比价必须大于或等于 0 / Compare at price must be greater than or equal to 0.";
     }
   }
 
@@ -543,7 +543,7 @@ function validateForm(form: ProductFormState) {
     const stockQuantity = Number(form.stock_quantity);
 
     if (!Number.isFinite(stockQuantity) || stockQuantity < 0) {
-      errors.stock_quantity = "Stock quantity must be greater than or equal to 0.";
+      errors.stock_quantity = "库存数量必须大于或等于 0 / Stock quantity must be greater than or equal to 0.";
     }
   }
 
@@ -551,27 +551,27 @@ function validateForm(form: ProductFormState) {
     const sortOrder = Number(form.sort_order);
 
     if (!Number.isFinite(sortOrder) || !Number.isInteger(sortOrder) || sortOrder <= 0) {
-      errors.sort_order = "Sort order must be a positive whole number, or leave it blank.";
+      errors.sort_order = "排序必须是正整数，或留空 / Sort order must be a positive whole number, or leave it blank.";
     }
   }
 
   if (!productStatuses.includes(form.status as (typeof productStatuses)[number])) {
-    errors.status = "Status must be active, draft, or archived.";
+    errors.status = "状态必须是 active、draft 或 archived / Status must be active, draft, or archived.";
   }
 
   if (!inventoryStatuses.includes(form.inventory_status as (typeof inventoryStatuses)[number])) {
-    errors.inventory_status = "Inventory status must be in stock, out of stock, or preorder.";
+    errors.inventory_status = "库存状态必须是 in_stock、out_of_stock 或 preorder / Inventory status must be in stock, out of stock, or preorder.";
   }
 
   if (
     form.homepage_section &&
     !homepageSections.includes(form.homepage_section as (typeof homepageSections)[number])
   ) {
-    errors.homepage_section = "Homepage section must be featured, best_seller, new_arrivals, or blank.";
+    errors.homepage_section = "首页展示区必须是 featured、best_seller、new_arrivals 或留空 / Homepage section must be featured, best_seller, new_arrivals, or blank.";
   }
 
   if (form.published_at && Number.isNaN(new Date(form.published_at).getTime())) {
-    errors.published_at = "Published date must be a valid date.";
+    errors.published_at = "发布时间必须是有效日期 / Published date must be a valid date.";
   }
 
   if (
@@ -579,7 +579,7 @@ function validateForm(form: ProductFormState) {
       (item) => hasContent(item.title, item.text, item.icon) && (!item.title.trim() || !item.text.trim())
     )
   ) {
-    errors.product_highlights = "Product highlight rows with content must include title and text.";
+    errors.product_highlights = "有内容的商品亮点必须包含标题和文案 / Product highlight rows with content must include title and text.";
   }
 
   if (
@@ -587,7 +587,7 @@ function validateForm(form: ProductFormState) {
       (item) => hasContent(item.label, item.value) && (!item.label.trim() || !item.value.trim())
     )
   ) {
-    errors.detail_rows = "Detail rows with content must include label and value.";
+    errors.detail_rows = "有内容的概览行必须包含标签和值 / Detail rows with content must include label and value.";
   }
 
   if (
@@ -595,7 +595,7 @@ function validateForm(form: ProductFormState) {
       (item) => hasContent(item.question, item.answer) && (!item.question.trim() || !item.answer.trim())
     )
   ) {
-    errors.product_faqs = "FAQ rows with content must include question and answer.";
+    errors.product_faqs = "有内容的 FAQ 必须包含问题和回答 / FAQ rows with content must include question and answer.";
   }
 
   if (
@@ -603,7 +603,7 @@ function validateForm(form: ProductFormState) {
       (item) => hasContent(item.title, item.content) && (!item.title.trim() || !item.content.trim())
     )
   ) {
-    errors.accordion_sections = "Accordion sections with content must include title and content.";
+    errors.accordion_sections = "有内容的折叠内容区必须包含标题和内容 / Accordion sections with content must include title and content.";
   }
 
   return errors;
@@ -680,10 +680,10 @@ function ProductHighlightsEditor({
 
   return (
     <RepeatableSection
-      title="Product Highlights"
-      description="Shown as product benefit cards. Icon is optional."
-      addLabel="Add Highlight"
-      emptyMessage="No product highlights. The product page will use fallback content if available."
+      title="商品亮点 / Product Highlights"
+      description="显示为商品卖点卡片；图标可选 / Shown as product benefit cards. Icon is optional."
+      addLabel="添加亮点 / Add Highlight"
+      emptyMessage="暂无商品亮点。商品页会使用可用的备用内容 / No product highlights. The product page will use fallback content if available."
       error={error}
       isEmpty={items.length === 0}
       onAdd={() => onChange([...items, { title: "", text: "", icon: "" }])}
@@ -691,26 +691,26 @@ function ProductHighlightsEditor({
       {items.map((item, index) => (
         <div key={index} className="grid gap-4 rounded-md border border-outline-variant bg-white p-4">
           <div className="flex items-center justify-between gap-3">
-            <p className="text-sm font-bold text-on-surface">Highlight {index + 1}</p>
+            <p className="text-sm font-bold text-on-surface">亮点 / Highlight {index + 1}</p>
             <button
               type="button"
               className="rounded-full border border-outline-variant px-3 py-1 text-xs font-bold text-primary transition hover:border-primary hover:bg-primary-container/10"
               onClick={() => onChange(items.filter((_, itemIndex) => itemIndex !== index))}
             >
-              Remove
+              删除 / Remove
             </button>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
             <label className="grid gap-2 text-sm font-semibold text-on-surface">
-              Title
+              标题 / Title
               <input className={inputClass} value={item.title} onChange={(event) => updateItem(index, "title", event.target.value)} />
             </label>
             <label className="grid gap-2 text-sm font-semibold text-on-surface">
-              Icon optional
+              图标（可选） / Icon optional
               <input className={inputClass} placeholder="paw" value={item.icon} onChange={(event) => updateItem(index, "icon", event.target.value)} />
             </label>
             <label className="grid gap-2 text-sm font-semibold text-on-surface md:col-span-2">
-              Text
+              文案 / Text
               <textarea className={textareaClass} value={item.text} onChange={(event) => updateItem(index, "text", event.target.value)} />
             </label>
           </div>
@@ -735,10 +735,10 @@ function DetailRowsEditor({
 
   return (
     <RepeatableSection
-      title="Details at a Glance"
-      description="Shown as compact label and value rows."
-      addLabel="Add Detail Row"
-      emptyMessage="No detail rows. The product page will use fallback content if available."
+      title="商品概览 / Details at a Glance"
+      description="显示为紧凑的标签和值 / Shown as compact label and value rows."
+      addLabel="添加概览行 / Add Detail Row"
+      emptyMessage="暂无概览行。商品页会使用可用的备用内容 / No detail rows. The product page will use fallback content if available."
       error={error}
       isEmpty={items.length === 0}
       onAdd={() => onChange([...items, { label: "", value: "" }])}
@@ -746,11 +746,11 @@ function DetailRowsEditor({
       {items.map((item, index) => (
         <div key={index} className="grid gap-4 rounded-md border border-outline-variant bg-white p-4 md:grid-cols-[1fr_1fr_auto] md:items-end">
           <label className="grid gap-2 text-sm font-semibold text-on-surface">
-            Label
+            标签 / Label
             <input className={inputClass} value={item.label} onChange={(event) => updateItem(index, "label", event.target.value)} />
           </label>
           <label className="grid gap-2 text-sm font-semibold text-on-surface">
-            Value
+            值 / Value
             <input className={inputClass} value={item.value} onChange={(event) => updateItem(index, "value", event.target.value)} />
           </label>
           <button
@@ -758,7 +758,7 @@ function DetailRowsEditor({
             className="h-11 rounded-full border border-outline-variant px-4 font-heading text-xs font-bold text-primary transition hover:border-primary hover:bg-primary-container/10"
             onClick={() => onChange(items.filter((_, itemIndex) => itemIndex !== index))}
           >
-            Remove
+            删除 / Remove
           </button>
         </div>
       ))}
@@ -797,7 +797,7 @@ function TextItemsEditor({
       {items.map((item, index) => (
         <div key={index} className="grid gap-4 rounded-md border border-outline-variant bg-white p-4 md:grid-cols-[1fr_auto] md:items-end">
           <label className="grid gap-2 text-sm font-semibold text-on-surface">
-            Text
+            文案 / Text
             <input className={inputClass} value={item.text} onChange={(event) => updateItem(index, event.target.value)} />
           </label>
           <button
@@ -805,7 +805,7 @@ function TextItemsEditor({
             className="h-11 rounded-full border border-outline-variant px-4 font-heading text-xs font-bold text-primary transition hover:border-primary hover:bg-primary-container/10"
             onClick={() => onChange(items.filter((_, itemIndex) => itemIndex !== index))}
           >
-            Remove
+            删除 / Remove
           </button>
         </div>
       ))}
@@ -828,10 +828,10 @@ function ProductFaqsEditor({
 
   return (
     <RepeatableSection
-      title="Product Questions / FAQ"
-      description="Shown in the product questions section."
-      addLabel="Add FAQ"
-      emptyMessage="No product FAQs. The product page will use fallback questions if available."
+      title="商品问答 / Product Questions / FAQ"
+      description="显示在商品问答区域 / Shown in the product questions section."
+      addLabel="添加问答 / Add FAQ"
+      emptyMessage="暂无商品问答。商品页会使用可用的备用问题 / No product FAQs. The product page will use fallback questions if available."
       error={error}
       isEmpty={items.length === 0}
       onAdd={() => onChange([...items, { question: "", answer: "" }])}
@@ -839,21 +839,21 @@ function ProductFaqsEditor({
       {items.map((item, index) => (
         <div key={index} className="grid gap-4 rounded-md border border-outline-variant bg-white p-4">
           <div className="flex items-center justify-between gap-3">
-            <p className="text-sm font-bold text-on-surface">FAQ {index + 1}</p>
+            <p className="text-sm font-bold text-on-surface">问答 / FAQ {index + 1}</p>
             <button
               type="button"
               className="rounded-full border border-outline-variant px-3 py-1 text-xs font-bold text-primary transition hover:border-primary hover:bg-primary-container/10"
               onClick={() => onChange(items.filter((_, itemIndex) => itemIndex !== index))}
             >
-              Remove
+              删除 / Remove
             </button>
           </div>
           <label className="grid gap-2 text-sm font-semibold text-on-surface">
-            Question
+            问题 / Question
             <input className={inputClass} value={item.question} onChange={(event) => updateItem(index, "question", event.target.value)} />
           </label>
           <label className="grid gap-2 text-sm font-semibold text-on-surface">
-            Answer
+            回答 / Answer
             <textarea className={textareaClass} value={item.answer} onChange={(event) => updateItem(index, "answer", event.target.value)} />
           </label>
         </div>
@@ -877,10 +877,10 @@ function AccordionSectionsEditor({
 
   return (
     <RepeatableSection
-      title="Accordion Sections"
-      description="Shown in the expandable product information area."
-      addLabel="Add Accordion Section"
-      emptyMessage="No accordion sections. The product page will use fallback sections if available."
+      title="折叠内容区 / Accordion Sections"
+      description="显示在可展开的商品信息区域 / Shown in the expandable product information area."
+      addLabel="添加折叠内容 / Add Accordion Section"
+      emptyMessage="暂无折叠内容。商品页会使用可用的备用内容 / No accordion sections. The product page will use fallback sections if available."
       error={error}
       isEmpty={items.length === 0}
       onAdd={() => onChange([...items, { title: "", content: "" }])}
@@ -888,21 +888,21 @@ function AccordionSectionsEditor({
       {items.map((item, index) => (
         <div key={index} className="grid gap-4 rounded-md border border-outline-variant bg-white p-4">
           <div className="flex items-center justify-between gap-3">
-            <p className="text-sm font-bold text-on-surface">Section {index + 1}</p>
+            <p className="text-sm font-bold text-on-surface">内容区 / Section {index + 1}</p>
             <button
               type="button"
               className="rounded-full border border-outline-variant px-3 py-1 text-xs font-bold text-primary transition hover:border-primary hover:bg-primary-container/10"
               onClick={() => onChange(items.filter((_, itemIndex) => itemIndex !== index))}
             >
-              Remove
+              删除 / Remove
             </button>
           </div>
           <label className="grid gap-2 text-sm font-semibold text-on-surface">
-            Title
+            标题 / Title
             <input className={inputClass} value={item.title} onChange={(event) => updateItem(index, "title", event.target.value)} />
           </label>
           <label className="grid gap-2 text-sm font-semibold text-on-surface">
-            Content
+            内容 / Content
             <textarea className={textareaClass} value={item.content} onChange={(event) => updateItem(index, "content", event.target.value)} />
           </label>
         </div>
@@ -924,17 +924,17 @@ function RelatedProductSlugsEditor({
 
   return (
     <RepeatableSection
-      title="Related Product Slugs"
-      description="Enter product slugs to control related products. Blank entries are ignored."
-      addLabel="Add Related Product"
-      emptyMessage="No related product slugs. The product page will choose related products automatically."
+      title="相关商品 Slug / Related Product Slugs"
+      description="输入商品 slug 来控制相关商品；空白会被忽略 / Enter product slugs to control related products. Blank entries are ignored."
+      addLabel="添加相关商品 / Add Related Product"
+      emptyMessage="暂无相关商品 slug。商品页会自动选择相关商品 / No related product slugs. The product page will choose related products automatically."
       isEmpty={items.length === 0}
       onAdd={() => onChange([...items, { slug: "" }])}
     >
       {items.map((item, index) => (
         <div key={index} className="grid gap-4 rounded-md border border-outline-variant bg-white p-4 md:grid-cols-[1fr_auto] md:items-end">
           <label className="grid gap-2 text-sm font-semibold text-on-surface">
-            Product slug
+            商品 Slug / Product slug
             <input
               className={inputClass}
               placeholder="plush-foraging-toy"
@@ -947,7 +947,7 @@ function RelatedProductSlugsEditor({
             className="h-11 rounded-full border border-outline-variant px-4 font-heading text-xs font-bold text-primary transition hover:border-primary hover:bg-primary-container/10"
             onClick={() => onChange(items.filter((_, itemIndex) => itemIndex !== index))}
           >
-            Remove
+            删除 / Remove
           </button>
         </div>
       ))}
@@ -996,9 +996,9 @@ function ProductImageGalleryEditor({
     <section className="grid gap-4 rounded-md bg-surface-container-low p-4 md:col-span-2">
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div>
-          <h2 className="font-heading text-lg font-bold text-on-surface">Product Image Gallery</h2>
+          <h2 className="font-heading text-lg font-bold text-on-surface">商品图片库 / Product Image Gallery</h2>
           <p className="mt-1 text-sm leading-6 text-on-surface-variant">
-            Upload product gallery images, choose one primary image, and edit alt text.
+            上传商品图片、选择主图并编辑 alt 文案 / Upload product gallery images, choose one primary image, and edit alt text.
           </p>
         </div>
         <button
@@ -1006,12 +1006,12 @@ function ProductImageGalleryEditor({
           className="inline-flex w-fit rounded-full border border-primary px-4 py-2 font-heading text-xs font-bold text-primary transition hover:bg-primary-container/10"
           onClick={onAddImageUrl}
         >
-          Add Image URL to Gallery
+          添加图片 URL 到图库 / Add Image URL to Gallery
         </button>
       </div>
 
       <label className="grid gap-2 text-sm font-semibold text-on-surface">
-        Upload gallery images
+        上传图库图片 / Upload gallery images
         <input
           multiple
           accept="image/jpeg,image/png,image/webp"
@@ -1021,7 +1021,7 @@ function ProductImageGalleryEditor({
           onChange={onUpload}
         />
       </label>
-      {uploading && <p className="text-sm font-semibold text-on-surface-variant">Uploading image...</p>}
+      {uploading && <p className="text-sm font-semibold text-on-surface-variant">正在上传图片 / Uploading image...</p>}
       {uploadMessage && <p className="text-sm font-semibold text-primary">{uploadMessage}</p>}
       {uploadError && (
         <p className="text-sm font-semibold text-error" role="alert">
@@ -1031,7 +1031,7 @@ function ProductImageGalleryEditor({
 
       {images.length === 0 ? (
         <p className="rounded-md bg-white p-4 text-sm font-semibold text-on-surface-variant">
-          No gallery images yet.
+          暂无图库图片 / No gallery images yet.
         </p>
       ) : (
         <div className="grid gap-4">
@@ -1050,7 +1050,7 @@ function ProductImageGalleryEditor({
                   <div className="flex flex-wrap items-center gap-2">
                     {image.is_primary ? (
                       <span className="rounded-full bg-primary-container/30 px-3 py-1 text-xs font-bold text-primary">
-                        Primary image
+                        主图 / Primary image
                       </span>
                     ) : null}
                     <button
@@ -1058,7 +1058,7 @@ function ProductImageGalleryEditor({
                       className="rounded-full border border-outline-variant px-3 py-1 text-xs font-bold text-primary transition hover:border-primary hover:bg-primary-container/10"
                       onClick={() => onChange(setPrimaryGalleryImage(images, index))}
                     >
-                      Set as Primary
+                      设为主图 / Set as Primary
                     </button>
                     <button
                       type="button"
@@ -1066,7 +1066,7 @@ function ProductImageGalleryEditor({
                       disabled={index === 0}
                       onClick={() => moveImage(index, -1)}
                     >
-                      Move Up
+                      上移 / Move Up
                     </button>
                     <button
                       type="button"
@@ -1074,18 +1074,18 @@ function ProductImageGalleryEditor({
                       disabled={index === images.length - 1}
                       onClick={() => moveImage(index, 1)}
                     >
-                      Move Down
+                      下移 / Move Down
                     </button>
                     <button
                       type="button"
                       className="rounded-full border border-error/50 px-3 py-1 text-xs font-bold text-error transition hover:bg-error/10"
                       onClick={() => onChange(normalizeGalleryImages(images.filter((_, imageIndex) => imageIndex !== index)))}
                     >
-                      Remove
+                      删除 / Remove
                     </button>
                   </div>
                   <label className="grid gap-2 text-sm font-semibold text-on-surface">
-                    Alt text
+                    Alt 文案 / Alt text
                     <input
                       className={inputClass}
                       value={image.alt}
@@ -1093,7 +1093,7 @@ function ProductImageGalleryEditor({
                     />
                   </label>
                   <div>
-                    <p className="text-xs font-bold uppercase tracking-wide text-on-surface-variant">Image URL</p>
+                    <p className="text-xs font-bold uppercase tracking-wide text-on-surface-variant">图片 URL / Image URL</p>
                     <p className="mt-1 break-all text-sm leading-6 text-on-surface-variant">{image.url}</p>
                   </div>
                 </div>
@@ -1135,7 +1135,7 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
         const payload = (await response.json()) as ProductResponse;
 
         if (!response.ok || !payload.product) {
-          throw new Error(payload.error ?? "Unable to load product.");
+          throw new Error(payload.error ?? "无法加载商品 / Unable to load product.");
         }
 
         if (active) {
@@ -1144,7 +1144,7 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
       })
       .catch((loadError: unknown) => {
         if (active) {
-          setFormError(loadError instanceof Error ? loadError.message : "Unable to load product.");
+          setFormError(loadError instanceof Error ? loadError.message : "无法加载商品 / Unable to load product.");
         }
       })
       .finally(() => {
@@ -1167,19 +1167,19 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
 
   const uploadProductImage = async (file: File) => {
     if (!file) {
-      throw new Error("Please choose an image.");
+      throw new Error("请选择一张图片 / Please choose an image.");
     }
 
     if (!acceptedImageTypes.has(file.type)) {
-      throw new Error("Please choose a JPEG, PNG, or WebP image.");
+      throw new Error("请选择 JPEG、PNG 或 WebP 图片 / Please choose a JPEG, PNG, or WebP image.");
     }
 
     if (file.size > MAX_IMAGE_SIZE_BYTES) {
-      throw new Error("Image must be 5MB or smaller.");
+      throw new Error("图片必须小于或等于 5MB / Image must be 5MB or smaller.");
     }
 
     if (!supabase) {
-      throw new Error("Supabase is not configured for uploads in this build.");
+      throw new Error("当前构建未配置 Supabase 上传 / Supabase is not configured for uploads in this build.");
     }
 
     const folderSlug = sanitizePathSegment(form.slug) || "uploads";
@@ -1262,11 +1262,11 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
       });
       setUploadMessage(
         uploadedImages.length === 1
-          ? "Gallery image uploaded."
-          : `${uploadedImages.length} gallery images uploaded.`
+          ? "图库图片已上传 / Gallery image uploaded."
+          : `已上传 ${uploadedImages.length} 张图库图片 / ${uploadedImages.length} gallery images uploaded.`
       );
     } catch (uploadErrorResult: unknown) {
-      setUploadError(uploadErrorResult instanceof Error ? uploadErrorResult.message : "Unable to upload gallery images.");
+      setUploadError(uploadErrorResult instanceof Error ? uploadErrorResult.message : "无法上传图库图片 / Unable to upload gallery images.");
     } finally {
       setUploading(false);
     }
@@ -1276,12 +1276,12 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
     const imageUrl = form.image_url.trim();
 
     if (!imageUrl) {
-      setUploadError("Add an Image URL before adding it to the gallery.");
+      setUploadError("请先有主图 URL，再添加到图库 / Add an Image URL before adding it to the gallery.");
       return;
     }
 
     if (form.images.some((image) => image.url === imageUrl)) {
-      setUploadError("This Image URL is already in the gallery.");
+      setUploadError("此图片 URL 已在图库中 / This Image URL is already in the gallery.");
       return;
     }
 
@@ -1294,7 +1294,7 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
         is_primary: form.images.length === 0
       }
     ]);
-    setUploadMessage("Image URL added to gallery.");
+    setUploadMessage("图片 URL 已添加到图库 / Image URL added to gallery.");
     setUploadError("");
   };
 
@@ -1324,7 +1324,7 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
 
     if (!response.ok) {
       setErrors(payload.errors ?? {});
-      setFormError(payload.error ?? "Unable to save product.");
+      setFormError(payload.error ?? "无法保存商品 / Unable to save product.");
       setSaving(false);
       return;
     }
@@ -1336,7 +1336,7 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
   if (loading) {
     return (
       <div className="ambient-card p-6 text-sm leading-6 text-on-surface-variant">
-        Loading product...
+        正在加载商品 / Loading product...
       </div>
     );
   }
@@ -1359,7 +1359,7 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
 
       <div className="grid gap-5 md:grid-cols-2">
         <label className="grid gap-2 text-sm font-semibold text-on-surface">
-          Title
+          标题 / Title
           <input className={inputClass} value={form.title} onChange={(event) => updateField("title", event.target.value)} />
           <FieldError message={errors.title} />
         </label>
@@ -1369,19 +1369,19 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
           <input className={inputClass} value={form.slug} onChange={(event) => updateField("slug", event.target.value)} />
           {mode === "edit" && (
             <p className="text-xs font-semibold leading-5 text-on-surface-variant">
-              Changing slug may change the public product URL.
+              修改 Slug 可能会改变前台商品链接 / Changing slug may change the public product URL.
             </p>
           )}
           <FieldError message={errors.slug} />
         </label>
 
         <label className="grid gap-2 text-sm font-semibold text-on-surface">
-          Category
+          分类 / Category
           <input className={inputClass} value={form.category} onChange={(event) => updateField("category", event.target.value)} />
         </label>
 
         <label className="grid gap-2 text-sm font-semibold text-on-surface">
-          Price
+          价格 / Price
           <input
             className={inputClass}
             min="0"
@@ -1394,7 +1394,7 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
         </label>
 
         <label className="grid gap-2 text-sm font-semibold text-on-surface">
-          Compare at price
+          对比价 / Compare at price
           <input
             className={inputClass}
             min="0"
@@ -1407,29 +1407,29 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
         </label>
 
         <label className="grid gap-2 text-sm font-semibold text-on-surface">
-          Currency
+          币种 / Currency
           <input className={inputClass} value={form.currency} onChange={(event) => updateField("currency", event.target.value)} />
         </label>
 
         <div className="grid gap-4 rounded-md bg-surface-container-low p-4 md:col-span-2">
           <label className="grid gap-2 text-sm font-semibold text-on-surface">
-            Main Image URL (auto-updated from gallery primary image)
+            主图 URL（由图库主图自动更新） / Main Image URL (auto-updated from gallery primary image)
             <input className={inputClass} value={form.image_url} readOnly />
           </label>
           <p className="text-sm leading-6 text-on-surface-variant">
-            Use Product Image Gallery below to upload and manage product images.
+            使用下方商品图片库上传和管理图片 / Use Product Image Gallery below to upload and manage product images.
           </p>
           {form.image_url ? (
             <div className="grid gap-3 sm:grid-cols-[120px_1fr] sm:items-center">
               <div className="aspect-square overflow-hidden rounded-md bg-surface-container-lowest">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={form.image_url} alt="Product image preview" className="h-full w-full object-cover" />
+                <img src={form.image_url} alt="商品图片预览 / Product image preview" className="h-full w-full object-cover" />
               </div>
               <p className="break-all text-sm leading-6 text-on-surface-variant">{form.image_url}</p>
             </div>
           ) : (
             <p className="rounded-md bg-white p-4 text-sm font-semibold text-on-surface-variant">
-              No main image URL yet.
+              暂无主图 URL / No main image URL yet.
             </p>
           )}
         </div>
@@ -1445,34 +1445,34 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
         />
 
         <label className="grid gap-2 text-sm font-semibold text-on-surface">
-          Status
+          状态 / Status
           <select className={inputClass} value={form.status} onChange={(event) => updateField("status", event.target.value)}>
-            <option value="active">Active</option>
-            <option value="draft">Draft</option>
-            <option value="archived">Archived</option>
+            <option value="active">上架 / Active</option>
+            <option value="draft">草稿 / Draft</option>
+            <option value="archived">已归档 / Archived</option>
           </select>
           <p className="text-xs font-semibold leading-5 text-on-surface-variant">
-            active = visible publicly; draft = hidden from public storefront; archived = hidden and kept for record.
+            上架 = 前台公开显示；草稿 = 前台隐藏；已归档 = 前台隐藏并保留记录 / Active = visible publicly; Draft = hidden from public storefront; Archived = hidden and kept for record.
           </p>
           <FieldError message={errors.status} />
         </label>
 
         <label className="grid gap-2 text-sm font-semibold text-on-surface">
-          Inventory status
+          库存状态 / Inventory status
           <select
             className={inputClass}
             value={form.inventory_status}
             onChange={(event) => updateField("inventory_status", event.target.value)}
           >
-            <option value="in_stock">In stock</option>
-            <option value="out_of_stock">Out of stock</option>
-            <option value="preorder">Preorder</option>
+            <option value="in_stock">有库存 / In stock</option>
+            <option value="out_of_stock">缺货 / Out of stock</option>
+            <option value="preorder">预售 / Preorder</option>
           </select>
           <FieldError message={errors.inventory_status} />
         </label>
 
         <label className="grid gap-2 text-sm font-semibold text-on-surface">
-          Stock quantity
+          库存数量 / Stock quantity
           <input
             className={inputClass}
             min="0"
@@ -1492,7 +1492,7 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
               type="checkbox"
               onChange={(event) => updateField("is_featured", event.target.checked)}
             />
-            Featured
+            推荐 / Featured
           </label>
           <label className="flex items-center gap-3 text-sm font-semibold text-on-surface">
             <input
@@ -1501,43 +1501,43 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
               type="checkbox"
               onChange={(event) => updateField("is_sale", event.target.checked)}
             />
-            Sale
+            促销 / Sale
           </label>
         </div>
 
         <div className="grid gap-5 rounded-md bg-surface-container-low p-4 md:col-span-2 md:grid-cols-2">
           <div className="md:col-span-2">
-            <h2 className="font-heading text-lg font-bold text-on-surface">Storefront display</h2>
+            <h2 className="font-heading text-lg font-bold text-on-surface">前台展示 / Storefront display</h2>
             <p className="mt-1 text-sm leading-6 text-on-surface-variant">
-              Control product ordering, homepage placement, and card badges.
+              控制商品排序、首页展示位置和卡片标签 / Control product ordering, homepage placement, and card badges.
             </p>
           </div>
 
           <label className="grid gap-2 text-sm font-semibold text-on-surface">
-            Sort order
+            排序 / Sort order
             <input
               className={inputClass}
               min="1"
-              placeholder="Default"
+              placeholder="默认 / Default"
               step="1"
               type="number"
               value={form.sort_order}
               onChange={(event) => updateField("sort_order", event.target.value)}
             />
             <p className="text-xs font-semibold leading-5 text-on-surface-variant">
-              Lower numbers appear first. Leave blank/default for normal ordering.
+              数字越小越靠前；留空使用默认排序 / Lower numbers appear first. Leave blank/default for normal ordering.
             </p>
             <FieldError message={errors.sort_order} />
           </label>
 
           <label className="grid gap-2 text-sm font-semibold text-on-surface">
-            Homepage section
+            首页展示区 / Homepage section
             <select
               className={inputClass}
               value={form.homepage_section}
               onChange={(event) => updateField("homepage_section", event.target.value)}
             >
-              <option value="">None</option>
+              <option value="">无 / None</option>
               <option value="featured">featured</option>
               <option value="best_seller">best_seller</option>
               <option value="new_arrivals">new_arrivals</option>
@@ -1546,7 +1546,7 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
           </label>
 
           <label className="grid gap-2 text-sm font-semibold text-on-surface">
-            Badge
+            标签 / Badge
             <input
               className={inputClass}
               placeholder="Best Seller, New, Sale, Featured"
@@ -1556,7 +1556,7 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
           </label>
 
           <label className="grid gap-2 text-sm font-semibold text-on-surface">
-            Published at
+            发布时间 / Published at
             <input
               className={inputClass}
               type="datetime-local"
@@ -1568,27 +1568,27 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
         </div>
 
         <label className="grid gap-2 text-sm font-semibold text-on-surface md:col-span-2">
-          Description
+          描述 / Description
           <textarea className={textareaClass} value={form.description} onChange={(event) => updateField("description", event.target.value)} />
         </label>
 
         <div className="grid gap-5 rounded-md bg-surface-container-low p-4 md:col-span-2">
           <div>
-            <h2 className="font-heading text-lg font-bold text-on-surface">Product detail content</h2>
+            <h2 className="font-heading text-lg font-bold text-on-surface">商品详情内容 / Product detail content</h2>
             <p className="mt-1 text-sm leading-6 text-on-surface-variant">
-              These fields control the public product detail page. Leave any field blank to keep the current fallback content.
+              这些字段控制前台商品详情页；留空会使用当前备用内容 / These fields control the public product detail page. Leave any field blank to keep the current fallback content.
             </p>
           </div>
 
           <label className="grid gap-2 text-sm font-semibold text-on-surface">
-            Short description
+            短描述 / Short description
             <textarea
               className={textareaClass}
               value={form.short_description}
               onChange={(event) => updateField("short_description", event.target.value)}
             />
             <p className="text-xs font-semibold leading-5 text-on-surface-variant">
-              Used near the top of the product page. Leave blank to use Description.
+              显示在商品页顶部附近；留空则使用 Description / Used near the top of the product page. Leave blank to use Description.
             </p>
           </label>
 
@@ -1605,18 +1605,18 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
             />
             <div className="grid gap-5 xl:grid-cols-2">
               <TextItemsEditor
-                title="Best For"
-                description="Short use-case bullets for the product page."
-                addLabel="Add Best For Item"
-                emptyMessage="No Best For items. The product page will use fallback content if available."
+                title="适用场景 / Best For"
+                description="商品页使用场景短要点 / Short use-case bullets for the product page."
+                addLabel="添加适用场景 / Add Best For Item"
+                emptyMessage="暂无适用场景。商品页会使用可用的备用内容 / No Best For items. The product page will use fallback content if available."
                 items={form.best_for}
                 onChange={(items) => updateField("best_for", items)}
               />
               <TextItemsEditor
-                title="Care Instructions"
-                description="Short care bullets for the product page."
-                addLabel="Add Care Instruction"
-                emptyMessage="No care instructions. The product page will use fallback content if available."
+                title="护理说明 / Care Instructions"
+                description="商品页护理短要点 / Short care bullets for the product page."
+                addLabel="添加护理说明 / Add Care Instruction"
+                emptyMessage="暂无护理说明。商品页会使用可用的备用内容 / No care instructions. The product page will use fallback content if available."
                 items={form.care_instructions}
                 onChange={(items) => updateField("care_instructions", items)}
               />
@@ -1639,17 +1639,17 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
         </div>
 
         <label className="grid gap-2 text-sm font-semibold text-on-surface md:col-span-2">
-          SEO title
+          SEO 标题 / SEO title
           <input className={inputClass} value={form.seo_title} onChange={(event) => updateField("seo_title", event.target.value)} />
         </label>
 
         <label className="grid gap-2 text-sm font-semibold text-on-surface md:col-span-2">
-          SEO description
+          SEO 描述 / SEO description
           <textarea className={textareaClass} value={form.seo_description} onChange={(event) => updateField("seo_description", event.target.value)} />
         </label>
 
         <label className="grid gap-2 text-sm font-semibold text-on-surface md:col-span-2">
-          Google product category
+          Google 商品分类 / Google product category
           <input
             className={inputClass}
             value={form.google_product_category}
@@ -1664,14 +1664,14 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
           disabled={saving}
           className="inline-flex rounded-full bg-primary px-7 py-3 font-heading font-bold text-white transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {saving ? "Saving..." : mode === "edit" ? "Save Product" : "Add Product"}
+          {saving ? "正在保存 / Saving..." : mode === "edit" ? "保存商品 / Save Product" : "添加商品 / Add Product"}
         </button>
         <button
           type="button"
           className="inline-flex rounded-full border border-primary px-7 py-3 font-heading font-bold text-primary transition hover:bg-primary-container/10"
           onClick={() => router.push("/admin/products")}
         >
-          Cancel
+          取消 / Cancel
         </button>
       </div>
     </form>
@@ -1683,9 +1683,9 @@ export function AdminProductForm({ mode, productId }: { mode: ProductFormMode; p
     <AdminGuard>
       {() => (
         <AdminPageFrame
-          title={mode === "edit" ? "Edit Product" : "Add Product"}
-          description={mode === "edit" ? "Update a Supabase product record." : "Create a Supabase product record."}
-          backLink={{ href: "/admin/products", label: "Back to Products" }}
+          title={mode === "edit" ? "编辑商品 / Edit Product" : "添加商品 / Add Product"}
+          description={mode === "edit" ? "更新 Supabase 商品记录 / Update a Supabase product record." : "创建 Supabase 商品记录 / Create a Supabase product record."}
+          backLink={{ href: "/admin/products", label: "返回商品 / Back to Products" }}
         >
           <ProductFormContent mode={mode} productId={productId} />
         </AdminPageFrame>
