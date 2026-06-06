@@ -1,24 +1,27 @@
 import { NextResponse } from "next/server";
 import { requireAdminFromRequest } from "@/lib/admin-auth";
-import { validateAdminProductPayload } from "@/lib/admin-products";
+import { categoryStatuses, validateAdminCategoryPayload } from "@/lib/admin-categories";
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
 
-export type AdminProductRow = {
+export type AdminCategoryRow = {
   id: string;
-  title: string | null;
+  name: string | null;
   slug: string | null;
-  category: string | null;
-  category_slug: string | null;
-  price: number | string | null;
+  description: string | null;
+  image_url: string | null;
   status: string | null;
-  inventory_status: string | null;
-  is_sale: boolean | null;
   sort_order: number | string | null;
-  homepage_section: string | null;
-  badge: string | null;
-  published_at: string | null;
+  show_in_nav: boolean | null;
+  show_on_home: boolean | null;
+  seo_title: string | null;
+  seo_description: string | null;
+  google_product_category: string | null;
   created_at: string | null;
+  updated_at: string | null;
 };
+
+const categorySelect =
+  "id, name, slug, description, image_url, status, sort_order, show_in_nav, show_on_home, seo_title, seo_description, google_product_category, created_at, updated_at";
 
 export async function GET(request: Request) {
   const auth = await requireAdminFromRequest(request);
@@ -36,17 +39,25 @@ export async function GET(request: Request) {
     );
   }
 
-  const { data, error } = await supabase
-    .from("products")
-    .select("id, title, slug, category, category_slug, price, status, inventory_status, is_sale, sort_order, homepage_section, badge, published_at, created_at")
+  const status = new URL(request.url).searchParams.get("status")?.trim() ?? "";
+  let query = supabase
+    .from("product_categories")
+    .select(categorySelect)
+    .order("sort_order", { ascending: true, nullsFirst: false })
     .order("created_at", { ascending: false });
+
+  if (categoryStatuses.includes(status as (typeof categoryStatuses)[number])) {
+    query = query.eq("status", status);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
   return NextResponse.json({
-    products: (data ?? []) as AdminProductRow[]
+    categories: (data ?? []) as AdminCategoryRow[]
   });
 }
 
@@ -66,14 +77,14 @@ export async function POST(request: Request) {
     );
   }
 
-  const validation = validateAdminProductPayload(await request.json().catch(() => null));
+  const validation = validateAdminCategoryPayload(await request.json().catch(() => null));
 
   if (!validation.ok) {
-    return NextResponse.json({ error: "Product validation failed.", errors: validation.errors }, { status: 400 });
+    return NextResponse.json({ error: "Category validation failed.", errors: validation.errors }, { status: 400 });
   }
 
-  const { data: existingProduct, error: existingError } = await supabase
-    .from("products")
+  const { data: existingCategory, error: existingError } = await supabase
+    .from("product_categories")
     .select("id")
     .eq("slug", validation.payload.slug)
     .maybeSingle();
@@ -82,12 +93,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: existingError.message }, { status: 500 });
   }
 
-  if (existingProduct) {
+  if (existingCategory) {
     return NextResponse.json(
       {
-        error: "A product with this slug already exists.",
+        error: "A category with this slug already exists.",
         errors: {
-          slug: "A product with this slug already exists."
+          slug: "A category with this slug already exists."
         }
       },
       { status: 409 }
@@ -95,7 +106,7 @@ export async function POST(request: Request) {
   }
 
   const { data, error } = await supabase
-    .from("products")
+    .from("product_categories")
     .insert(validation.payload)
     .select("id")
     .single();
@@ -104,5 +115,5 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ product: data }, { status: 201 });
+  return NextResponse.json({ category: data }, { status: 201 });
 }

@@ -5,6 +5,7 @@ import { type ChangeEvent, type FormEvent, type ReactNode, useEffect, useState }
 import { AdminGuard, useAdminAuth } from "@/components/admin/AdminGuard";
 import { AdminPageFrame } from "@/components/admin/AdminPageFrame";
 import { type AdminLabelKey, useAdminLanguage } from "@/components/admin/admin-language";
+import { categorySlugFromName } from "@/lib/admin-categories";
 import { defaultProductSortOrder, homepageSections, inventoryStatuses, productStatuses } from "@/lib/admin-products";
 import {
   normalizeProductHighlightIconKey,
@@ -74,6 +75,7 @@ type ProductFormState = {
   title: string;
   slug: string;
   category: string;
+  category_slug: string;
   description: string;
   price: string;
   compare_at_price: string;
@@ -108,6 +110,7 @@ type AdminProductDetailRow = {
   title: string | null;
   slug: string | null;
   category: string | null;
+  category_slug: string | null;
   description: string | null;
   price: number | string | null;
   compare_at_price: number | string | null;
@@ -143,10 +146,17 @@ type ProductResponse = {
   error?: string;
 };
 
+type AdminProductCategoryOption = {
+  id: string;
+  name: string | null;
+  slug: string | null;
+};
+
 const emptyForm: ProductFormState = {
   title: "",
   slug: "",
   category: "",
+  category_slug: "",
   description: "",
   price: "",
   compare_at_price: "",
@@ -424,6 +434,7 @@ function formFromProduct(product: AdminProductDetailRow): ProductFormState {
     title: product.title ?? "",
     slug: product.slug ?? "",
     category: product.category ?? "",
+    category_slug: product.category_slug ?? (product.category ? categorySlugFromName(product.category) : ""),
     description: product.description ?? "",
     price: stringValue(product.price),
     compare_at_price: stringValue(product.compare_at_price),
@@ -501,6 +512,7 @@ function buildPayload(form: ProductFormState) {
     title: form.title,
     slug: form.slug,
     category: form.category,
+    category_slug: form.category_slug || (form.category ? categorySlugFromName(form.category) : ""),
     description: form.description,
     price: form.price,
     compare_at_price: form.compare_at_price,
@@ -1162,6 +1174,42 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
   const [uploadError, setUploadError] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState("");
+  const [categories, setCategories] = useState<AdminProductCategoryOption[]>([]);
+  const [categoryError, setCategoryError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+
+    fetch("/api/admin/categories?status=active", {
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      }
+    })
+      .then(async (response) => {
+        const payload = (await response.json()) as { categories?: AdminProductCategoryOption[]; error?: string };
+
+        if (!response.ok) {
+          throw new Error(payload.error ?? t("unableToLoadCategories"));
+        }
+
+        if (active) {
+          setCategories(
+            (payload.categories ?? []).filter(
+              (category) => Boolean(category.name?.trim()) && Boolean(category.slug?.trim())
+            )
+          );
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setCategoryError(t("categoryLoadWarning"));
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [accessToken, t]);
 
   useEffect(() => {
     if (mode !== "edit" || !productId) {
@@ -1206,6 +1254,54 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
     setForm((currentForm) => ({
       ...currentForm,
       [field]: value
+    }));
+  };
+
+  const selectedCategory = categories.find(
+    (category) =>
+      category.slug === form.category_slug ||
+      category.slug === categorySlugFromName(form.category) ||
+      category.name?.trim() === form.category.trim()
+  );
+  const legacyCategoryValue = form.category ? `legacy:${categorySlugFromName(form.category) || "category"}` : "";
+  const categorySelectValue = selectedCategory?.slug ?? legacyCategoryValue;
+
+  useEffect(() => {
+    if (!selectedCategory?.slug || form.category_slug === selectedCategory.slug) {
+      return;
+    }
+
+    setForm((currentForm) => ({
+      ...currentForm,
+      category: selectedCategory.name ?? currentForm.category,
+      category_slug: selectedCategory.slug ?? currentForm.category_slug
+    }));
+  }, [form.category_slug, selectedCategory?.name, selectedCategory?.slug]);
+
+  const updateCategorySelection = (selectedSlug: string) => {
+    const category = categories.find((categoryOption) => categoryOption.slug === selectedSlug);
+
+    if (!selectedSlug) {
+      setForm((currentForm) => ({
+        ...currentForm,
+        category: "",
+        category_slug: ""
+      }));
+      return;
+    }
+
+    if (!category) {
+      setForm((currentForm) => ({
+        ...currentForm,
+        category_slug: currentForm.category ? categorySlugFromName(currentForm.category) : ""
+      }));
+      return;
+    }
+
+    setForm((currentForm) => ({
+      ...currentForm,
+      category: category.name ?? "",
+      category_slug: category.slug ?? ""
     }));
   };
 
@@ -1421,7 +1517,24 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
 
         <label className="grid gap-2 text-sm font-semibold text-on-surface">
           {t("productCategory")}
-          <input className={inputClass} value={form.category} onChange={(event) => updateField("category", event.target.value)} />
+          <select
+            className={inputClass}
+            value={categorySelectValue}
+            onChange={(event) => updateCategorySelection(event.target.value)}
+          >
+            <option value="">{t("none")}</option>
+            {selectedCategory === undefined && form.category && (
+              <option value={legacyCategoryValue}>
+                {form.category} ({t("legacyCategory")})
+              </option>
+            )}
+            {categories.map((category) => (
+              <option key={category.id} value={category.slug ?? ""}>
+                {category.name}
+              </option>
+            ))}
+          </select>
+          {categoryError && <p className="text-xs font-semibold leading-5 text-on-surface-variant">{categoryError}</p>}
         </label>
 
         <label className="grid gap-2 text-sm font-semibold text-on-surface">

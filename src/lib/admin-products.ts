@@ -1,4 +1,5 @@
 import { normalizeProductHighlightIconKey } from "@/lib/product-highlight-icons";
+import { categorySlugFromName } from "@/lib/admin-categories";
 
 export const productStatuses = ["active", "draft", "archived"] as const;
 export const inventoryStatuses = ["in_stock", "out_of_stock", "preorder"] as const;
@@ -21,6 +22,7 @@ export type AdminProductMutationPayload = {
   title: string;
   slug: string;
   category: string | null;
+  category_slug: string | null;
   description: string | null;
   price: number;
   compare_at_price: number | null;
@@ -370,6 +372,8 @@ export function validateAdminProductPayload(input: unknown): ValidationResult {
 
   const title = cleanString(record.title);
   const slug = cleanString(record.slug);
+  const category = nullableString(record.category);
+  const categorySlug = cleanString(record.category_slug) || (category ? categorySlugFromName(category) : "");
   const price = numberValue(record.price);
   const compareAtPrice = numberValue(record.compare_at_price);
   const stockQuantity = numberValue(record.stock_quantity);
@@ -402,6 +406,10 @@ export function validateAdminProductPayload(input: unknown): ValidationResult {
     errors.price = "Price is required.";
   } else if (price < 0) {
     errors.price = "Price must be greater than or equal to 0.";
+  }
+
+  if (categorySlug && !slugPattern.test(categorySlug)) {
+    errors.category_slug = "Category slug must be URL-safe and use lowercase letters, numbers, and hyphens.";
   }
 
   if (compareAtPrice !== null && compareAtPrice < 0) {
@@ -446,7 +454,8 @@ export function validateAdminProductPayload(input: unknown): ValidationResult {
     payload: {
       title,
       slug,
-      category: nullableString(record.category),
+      category,
+      category_slug: categorySlug || null,
       description: nullableString(record.description),
       price: price ?? 0,
       compare_at_price: compareAtPrice,

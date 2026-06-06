@@ -13,6 +13,7 @@ type AdminProductDetailRow = {
   title: string | null;
   slug: string | null;
   category: string | null;
+  category_slug: string | null;
   description: string | null;
   price: number | string | null;
   compare_at_price: number | string | null;
@@ -519,6 +520,7 @@ function ProductDetailContent({ productId }: { productId: string }) {
           <DetailField label={t("title")} value={displayValue(product.title, t("notProvided"))} />
           <DetailField label={t("slug")} value={displayValue(product.slug, t("notProvided"))} />
           <DetailField label={t("category")} value={displayValue(product.category, t("notProvided"))} />
+          <DetailField label={t("categorySlug")} value={displayValue(product.category_slug, t("notProvided"))} />
           <DetailField label={t("description")} value={displayValue(product.description, t("notProvided"))} />
           <DetailField label={t("price")} value={formatPrice(numberFromValue(product.price))} />
           <DetailField

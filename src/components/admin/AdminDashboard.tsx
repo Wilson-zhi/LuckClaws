@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Box, Package, Users } from "lucide-react";
+import { Box, Package, Tags, Users } from "lucide-react";
 import { AdminGuard } from "@/components/admin/AdminGuard";
 import { AdminPageFrame } from "@/components/admin/AdminPageFrame";
 import { useAdminLanguage } from "@/components/admin/admin-language";
@@ -24,6 +24,12 @@ const adminCards = [
     href: "/admin/products",
     descriptionKey: "manageCatalog",
     Icon: Box
+  },
+  {
+    titleKey: "categories",
+    href: "/admin/categories",
+    descriptionKey: "manageCategories",
+    Icon: Tags
   }
 ] as const;
 
@@ -31,7 +37,7 @@ function AdminDashboardCards() {
   const { t } = useAdminLanguage();
 
   return (
-    <div className="grid gap-5 md:grid-cols-3">
+    <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
       {adminCards.map(({ titleKey, href, descriptionKey, Icon }) => (
         <Link
           key={href}

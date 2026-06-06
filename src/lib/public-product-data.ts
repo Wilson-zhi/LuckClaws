@@ -14,6 +14,7 @@ import {
   type Product
 } from "@/data/products";
 import { collectionConfigs, type CollectionConfig } from "@/data/collections";
+import { categorySlugFromName } from "@/lib/admin-categories";
 import { normalizeProductHighlightIconKey } from "@/lib/product-highlight-icons";
 import { DEFAULT_SHIPPING_RATE, standardShippingSentence } from "@/lib/shipping";
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
@@ -26,6 +27,7 @@ type SupabaseProductRow = {
   title: string | null;
   slug: string | null;
   category: string | null;
+  category_slug: string | null;
   description: string | null;
   price: number | string | null;
   compare_at_price: number | string | null;
@@ -78,11 +80,23 @@ type ProductLookupResult = {
   inactive: boolean;
 };
 
+type SupabaseCategoryMetadataRow = {
+  name: string | null;
+  slug: string | null;
+  google_product_category: string | null;
+};
+
+type CategoryMetadata = {
+  name: string;
+  slug: string;
+  googleProductCategory: string | null;
+};
+
 const productSelectWithOptionalJson =
-  "id, title, slug, category, description, price, compare_at_price, currency, image_url, image_alt, images, variants, status, inventory_status, stock_quantity, is_featured, is_sale, sort_order, homepage_section, badge, published_at, short_description, product_highlights, detail_rows, best_for, care_instructions, product_faqs, accordion_sections, related_product_slugs, seo_title, seo_description, google_product_category, created_at, updated_at";
+  "id, title, slug, category, category_slug, description, price, compare_at_price, currency, image_url, image_alt, images, variants, status, inventory_status, stock_quantity, is_featured, is_sale, sort_order, homepage_section, badge, published_at, short_description, product_highlights, detail_rows, best_for, care_instructions, product_faqs, accordion_sections, related_product_slugs, seo_title, seo_description, google_product_category, created_at, updated_at";
 
 const productSelectBase =
-  "id, title, slug, category, description, price, compare_at_price, currency, image_url, status, inventory_status, stock_quantity, is_featured, is_sale, sort_order, homepage_section, badge, published_at, seo_title, seo_description, google_product_category, created_at, updated_at";
+  "id, title, slug, category, category_slug, description, price, compare_at_price, currency, image_url, status, inventory_status, stock_quantity, is_featured, is_sale, sort_order, homepage_section, badge, published_at, seo_title, seo_description, google_product_category, created_at, updated_at";
 
 const optionalJsonColumns = [
     "images",
@@ -439,7 +453,8 @@ function defaultSafetyNotice(category: string) {
 
 function mapSupabaseProduct(
   row: SupabaseProductRow,
-  imageRows: SupabaseProductImageRow[]
+  imageRows: SupabaseProductImageRow[],
+  categoryMetadata: Map<string, CategoryMetadata> = new Map()
 ): Product | null {
   const slug = nullableString(row.slug);
 
@@ -455,6 +470,17 @@ function mapSupabaseProduct(
   ];
   const title = nullableString(row.title) ?? staticProduct?.name ?? titleFromSlug(slug);
   const category = normalizeCategory(row.category, staticProduct?.category);
+  const categorySlug =
+    nullableString(row.category_slug) ??
+    collectionSlugByCategory[category] ??
+    staticProduct?.collectionSlug ??
+    categorySlugFromName(category);
+  const categoryMetadataBySlug = categoryMetadata.get(categorySlug);
+  const categoryMetadataByName = categoryMetadata.get(category.toLowerCase());
+  const googleProductCategory =
+    nullableString(row.google_product_category) ??
+    categoryMetadataBySlug?.googleProductCategory ??
+    categoryMetadataByName?.googleProductCategory;
   const subcategory = valueFromVariants(variants, "subcategory") ?? staticProduct?.subcategory;
   const description =
     nullableString(row.description) ?? staticProduct?.description ?? `${title} from ${brandName}.`;
@@ -550,16 +576,14 @@ function mapSupabaseProduct(
     condition: "new",
     imageAlt: alt,
     productUrl: `/products/${slug}`,
-    collectionSlug: collectionSlugByCategory[category] ?? staticProduct?.collectionSlug ?? "all",
+    collectionSlug: categorySlug || "all",
     shortDescription,
     productType,
     careGuidance,
     safetyNotice,
     ...(nullableString(row.seo_title) ? { seoTitle: nullableString(row.seo_title)! } : {}),
     ...(seoDescription ? { seoDescription } : {}),
-    ...(nullableString(row.google_product_category)
-      ? { googleProductCategory: nullableString(row.google_product_category)! }
-      : {}),
+    ...(googleProductCategory ? { googleProductCategory } : {}),
     stockQuantity: numberFromValue(row.stock_quantity),
     sortOrder,
     homepageSection,
@@ -652,6 +676,43 @@ async function fetchImageRowsByProductId(productIds: string[]) {
   }, new Map<string, SupabaseProductImageRow[]>());
 }
 
+async function fetchCategoryMetadata() {
+  const supabase = getSupabaseAdminClient();
+
+  if (!supabase) {
+    return new Map<string, CategoryMetadata>();
+  }
+
+  const { data, error } = await supabase
+    .from("product_categories")
+    .select("name, slug, google_product_category");
+
+  if (error) {
+    return new Map<string, CategoryMetadata>();
+  }
+
+  return (data ?? []).reduce((categoryMap, category) => {
+    const row = category as SupabaseCategoryMetadataRow;
+    const name = nullableString(row.name);
+    const slug = nullableString(row.slug);
+
+    if (!name || !slug) {
+      return categoryMap;
+    }
+
+    const metadata: CategoryMetadata = {
+      name,
+      slug,
+      googleProductCategory: nullableString(row.google_product_category)
+    };
+
+    categoryMap.set(slug, metadata);
+    categoryMap.set(name.toLowerCase(), metadata);
+
+    return categoryMap;
+  }, new Map<string, CategoryMetadata>());
+}
+
 function sortProductsForStorefront(products: Product[]) {
   return [...products].sort((first, second) => {
     const sortDifference = sortOrderFromProduct(first) - sortOrderFromProduct(second);
@@ -691,9 +752,10 @@ async function fetchSupabaseActiveProducts() {
   }
 
   const imageRowsByProductId = await fetchImageRowsByProductId(rows.map((row) => row.id));
+  const categoryMetadata = await fetchCategoryMetadata();
   const products = rows
     .filter((row) => row.status === "active")
-    .map((row) => mapSupabaseProduct(row, imageRowsByProductId.get(row.id) ?? []))
+    .map((row) => mapSupabaseProduct(row, imageRowsByProductId.get(row.id) ?? [], categoryMetadata))
     .filter((product): product is Product => Boolean(product));
 
   return products.length > 0 ? sortProductsForStorefront(products) : null;
@@ -729,9 +791,10 @@ async function fetchSupabaseProductBySlug(slug: string): Promise<ProductLookupRe
   }
 
   const imageRowsByProductId = await fetchImageRowsByProductId([row.id]);
+  const categoryMetadata = await fetchCategoryMetadata();
 
   return {
-    product: mapSupabaseProduct(row, imageRowsByProductId.get(row.id) ?? []),
+    product: mapSupabaseProduct(row, imageRowsByProductId.get(row.id) ?? [], categoryMetadata),
     resolved: true,
     inactive: false
   };
@@ -746,15 +809,15 @@ function productsForCollection(slug: string, products: Product[]) {
     case "all":
       return products;
     case "beds-blankets":
-      return products.filter((product) => product.category === "Beds & Blankets");
+      return products.filter((product) => product.collectionSlug === slug || product.category === "Beds & Blankets");
     case "cat-toys":
-      return products.filter((product) => product.category === "Cat Toys");
+      return products.filter((product) => product.collectionSlug === slug || product.category === "Cat Toys");
     case "dog-toys":
-      return products.filter((product) => product.category === "Dog Toys");
+      return products.filter((product) => product.collectionSlug === slug || product.category === "Dog Toys");
     case "pet-apparel":
-      return products.filter((product) => product.category === "Pet Apparel");
+      return products.filter((product) => product.collectionSlug === slug || product.category === "Pet Apparel");
     case "walking-essentials":
-      return products.filter((product) => product.category === "Walking Essentials");
+      return products.filter((product) => product.collectionSlug === slug || product.category === "Walking Essentials");
     case "sale":
       return products.filter(isSaleProduct);
     default:
