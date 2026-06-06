@@ -30,6 +30,7 @@ type SupabaseProductRow = {
   compare_at_price: number | string | null;
   currency: string | null;
   image_url: string | null;
+  image_alt?: string | null;
   images?: unknown;
   variants?: unknown;
   status: string | null;
@@ -67,6 +68,7 @@ type ProductImageEntry = {
   url: string;
   altText?: string;
   position: number;
+  isPrimary: boolean;
 };
 
 type ProductLookupResult = {
@@ -76,13 +78,14 @@ type ProductLookupResult = {
 };
 
 const productSelectWithOptionalJson =
-  "id, title, slug, category, description, price, compare_at_price, currency, image_url, images, variants, status, inventory_status, stock_quantity, is_featured, is_sale, sort_order, homepage_section, badge, published_at, short_description, product_highlights, detail_rows, best_for, care_instructions, product_faqs, accordion_sections, related_product_slugs, seo_title, seo_description, google_product_category, created_at, updated_at";
+  "id, title, slug, category, description, price, compare_at_price, currency, image_url, image_alt, images, variants, status, inventory_status, stock_quantity, is_featured, is_sale, sort_order, homepage_section, badge, published_at, short_description, product_highlights, detail_rows, best_for, care_instructions, product_faqs, accordion_sections, related_product_slugs, seo_title, seo_description, google_product_category, created_at, updated_at";
 
 const productSelectBase =
   "id, title, slug, category, description, price, compare_at_price, currency, image_url, status, inventory_status, stock_quantity, is_featured, is_sale, sort_order, homepage_section, badge, published_at, seo_title, seo_description, google_product_category, created_at, updated_at";
 
 const optionalJsonColumns = [
-  "images",
+    "images",
+    "image_alt",
   "variants",
   "short_description",
   "product_highlights",
@@ -315,7 +318,7 @@ function imageEntryFromUnknown(value: unknown, index: number): ProductImageEntry
   if (typeof value === "string") {
     const url = cleanString(value);
 
-    return url ? { url, position: index + 1 } : null;
+    return url ? { url, position: index + 1, isPrimary: false } : null;
   }
 
   const record = recordFromUnknown(value);
@@ -326,12 +329,17 @@ function imageEntryFromUnknown(value: unknown, index: number): ProductImageEntry
   }
 
   const position = numberFromValue(record.position);
-  const altText = nullableString(record.alt_text) ?? nullableString(record.altText) ?? undefined;
+  const altText =
+    nullableString(record.alt) ??
+    nullableString(record.alt_text) ??
+    nullableString(record.altText) ??
+    undefined;
 
   return {
     url,
     altText,
-    position: position ?? index + 1
+    position: position ?? index + 1,
+    isPrimary: record.is_primary === true || record.isPrimary === true
   };
 }
 
@@ -342,7 +350,14 @@ function imageEntriesFromJson(value: unknown) {
 
   return value
     .map((item, index) => imageEntryFromUnknown(item, index))
-    .filter((item): item is ProductImageEntry => Boolean(item));
+    .filter((item): item is ProductImageEntry => Boolean(item))
+    .sort((first, second) => {
+      if (first.isPrimary !== second.isPrimary) {
+        return first.isPrimary ? -1 : 1;
+      }
+
+      return first.position - second.position;
+    });
 }
 
 function imageEntriesFromRows(rows: SupabaseProductImageRow[]) {
@@ -358,7 +373,8 @@ function imageEntriesFromRows(rows: SupabaseProductImageRow[]) {
     entries.push({
       url,
       altText: nullableString(row.alt_text) ?? undefined,
-      position: numberFromValue(row.position) ?? index + 1
+      position: numberFromValue(row.position) ?? index + 1,
+      isPrimary: false
     });
   });
 
@@ -445,14 +461,17 @@ function mapSupabaseProduct(
   const compareAtPrice = numberFromValue(row.compare_at_price);
   const activeCompareAtPrice =
     compareAtPrice !== null && compareAtPrice > price ? compareAtPrice : undefined;
+  const primaryImageEntry = imageEntries.find((image) => image.isPrimary) ?? imageEntries[0];
   const primaryImage =
-    nullableString(row.image_url) ?? imageEntries[0]?.url ?? staticProduct?.image ?? "/images/hero-dog-running.jpg";
+    primaryImageEntry?.url ?? nullableString(row.image_url) ?? staticProduct?.image ?? "/images/hero-dog-running.jpg";
   const gallery = uniqueImages([
     primaryImage,
     ...imageEntries.map((image) => image.url),
     ...(staticProduct?.gallery ?? [])
   ]);
   const alt =
+    primaryImageEntry?.altText ??
+    nullableString(row.image_alt) ??
     imageEntries.find((image) => image.url === primaryImage)?.altText ??
     staticProduct?.alt ??
     `${brandName} ${title}.`;

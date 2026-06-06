@@ -35,6 +35,10 @@ function priceForFeed(product: Product) {
 }
 
 function productFeedItem(product: Product) {
+  const additionalImageLinks = (product.gallery ?? [])
+    .filter((image) => image && image !== product.image)
+    .slice(0, 10)
+    .map((image) => xmlElement("g:additional_image_link", absoluteUrl(image)));
   const fields = [
     xmlElement("g:id", product.id),
     xmlElement("g:title", product.name),
@@ -46,7 +50,8 @@ function productFeedItem(product: Product) {
     xmlElement("g:brand", product.brand),
     xmlElement("g:condition", conditionForFeed(product)),
     xmlElement("g:product_type", getMerchantProductType(product)),
-    xmlElement("g:google_product_category", getGoogleProductCategory(product))
+    xmlElement("g:google_product_category", getGoogleProductCategory(product)),
+    ...additionalImageLinks
   ];
 
   return `<item>${fields.join("")}</item>`;

@@ -8,6 +8,13 @@ type InventoryStatus = (typeof inventoryStatuses)[number];
 type HomepageSection = (typeof homepageSections)[number];
 type JsonObject = Record<string, unknown>;
 
+type ProductGalleryImage = {
+  url: string;
+  alt?: string;
+  position: number;
+  is_primary: boolean;
+};
+
 export type AdminProductMutationPayload = {
   title: string;
   slug: string;
@@ -17,6 +24,8 @@ export type AdminProductMutationPayload = {
   compare_at_price: number | null;
   currency: string;
   image_url: string | null;
+  image_alt: string | null;
+  images: JsonObject[];
   status: ProductStatus;
   inventory_status: InventoryStatus;
   stock_quantity: number | null;
@@ -283,6 +292,73 @@ function relatedProductSlugsValue(record: Record<string, unknown>, errors: Recor
   return Array.from(new Set(slugs));
 }
 
+function booleanValue(value: unknown) {
+  return value === true || value === "true";
+}
+
+function productImagesValue(record: Record<string, unknown>, errors: Record<string, string>) {
+  const value = jsonArrayValue(record, "images", "Product images", errors);
+
+  if (value.length === 0) {
+    return [];
+  }
+
+  const items = value.map((item, index) => {
+    if (typeof item === "string") {
+      const url = nullableString(item);
+
+      return url
+        ? {
+            url,
+            position: index + 1,
+            is_primary: false
+          }
+        : undefined;
+    }
+
+    const itemRecord = recordFromUnknown(item);
+    const url = nullableString(itemRecord?.url);
+    const alt = nullableString(itemRecord?.alt) ?? nullableString(itemRecord?.alt_text) ?? nullableString(itemRecord?.altText);
+    const position = numberValue(itemRecord?.position);
+
+    if (!itemRecord || (!url && !alt)) {
+      return itemRecord ? undefined : null;
+    }
+
+    return url
+      ? {
+          url,
+          ...(alt ? { alt } : {}),
+          position: position && Number.isInteger(position) && position > 0 ? position : index + 1,
+          is_primary: booleanValue(itemRecord?.is_primary) || booleanValue(itemRecord?.isPrimary)
+        }
+      : null;
+  });
+
+  if (items.some((item) => item === null)) {
+    errors.images = "Each gallery image must include a URL.";
+    return [];
+  }
+
+  const cleanedItems = (items.filter(Boolean) as ProductGalleryImage[]).sort(
+    (first, second) => first.position - second.position
+  );
+
+  if (cleanedItems.length === 0) {
+    return [];
+  }
+
+  const primaryIndex = cleanedItems.findIndex((item) => item.is_primary);
+  const normalizedPrimaryIndex = primaryIndex >= 0 ? primaryIndex : 0;
+
+  return cleanedItems.map((item, index) => ({
+    url: item.url,
+    ...(item.alt ? { alt: item.alt } : {}),
+    position: index + 1,
+    is_primary: index === normalizedPrimaryIndex
+  }));
+}
+
 export function validateAdminProductPayload(input: unknown): ValidationResult {
   const record = typeof input === "object" && input !== null ? (input as Record<string, unknown>) : {};
   const errors: Record<string, string> = {};
@@ -305,6 +381,7 @@ export function validateAdminProductPayload(input: unknown): ValidationResult {
   const productFaqs = productFaqsValue(record, errors);
   const accordionSections = accordionSectionsValue(record, errors);
   const relatedProductSlugs = relatedProductSlugsValue(record, errors);
+  const images = productImagesValue(record, errors);
 
   if (!title) {
     errors.title = "Title is required.";
@@ -370,6 +447,8 @@ export function validateAdminProductPayload(input: unknown): ValidationResult {
       compare_at_price: compareAtPrice,
       currency,
       image_url: nullableString(record.image_url),
+      image_alt: nullableString(record.image_alt),
+      images,
       status: status as ProductStatus,
       inventory_status: inventoryStatus as InventoryStatus,
       stock_quantity: stockQuantity,

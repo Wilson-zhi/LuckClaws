@@ -17,6 +17,8 @@ type AdminProductDetailRow = {
   compare_at_price: number | string | null;
   currency: string | null;
   image_url: string | null;
+  image_alt: string | null;
+  images: unknown;
   status: string | null;
   inventory_status: string | null;
   stock_quantity: number | string | null;
@@ -73,6 +75,13 @@ type ProductFaqDisplayItem = {
 type AccordionSectionDisplayItem = {
   title: string;
   content: string;
+};
+
+type GalleryImageDisplayItem = {
+  url: string;
+  alt: string;
+  position: number;
+  isPrimary: boolean;
 };
 
 function numberFromValue(value: number | string | null) {
@@ -202,6 +211,85 @@ function accordionSectionsFromValue(value: unknown): AccordionSectionDisplayItem
 
 function relatedProductSlugsFromValue(value: unknown): string[] {
   return arrayFromUnknown(value).map((item) => cleanText(item)).filter(Boolean);
+}
+
+function numberFromUnknown(value: unknown) {
+  if (value === null || value === undefined || value === "") {
+    return null;
+  }
+
+  const parsed = typeof value === "number" ? value : Number(value);
+
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function booleanFromUnknown(value: unknown) {
+  return value === true || value === "true";
+}
+
+function galleryImagesFromValue(value: unknown): GalleryImageDisplayItem[] {
+  const images = arrayFromUnknown(value)
+    .map((item, index) => {
+      if (typeof item === "string") {
+        const url = cleanText(item);
+
+        return url
+          ? {
+              url,
+              alt: "",
+              position: index + 1,
+              isPrimary: false
+            }
+          : null;
+      }
+
+      const record = recordFromUnknown(item);
+      const url = cleanText(record?.url);
+      const alt = cleanText(record?.alt) || cleanText(record?.alt_text) || cleanText(record?.altText);
+      const position = numberFromUnknown(record?.position);
+
+      return url
+        ? {
+            url,
+            alt,
+            position: position && Number.isInteger(position) && position > 0 ? position : index + 1,
+            isPrimary: booleanFromUnknown(record?.is_primary) || booleanFromUnknown(record?.isPrimary)
+          }
+        : null;
+    })
+    .filter((item): item is GalleryImageDisplayItem => Boolean(item))
+    .sort((first, second) => first.position - second.position);
+
+  if (images.length === 0) {
+    return [];
+  }
+
+  const primaryIndex = images.findIndex((image) => image.isPrimary);
+  const normalizedPrimaryIndex = primaryIndex >= 0 ? primaryIndex : 0;
+
+  return images.map((image, index) => ({
+    ...image,
+    position: index + 1,
+    isPrimary: index === normalizedPrimaryIndex
+  }));
+}
+
+function galleryImagesFromRows(rows: AdminProductImage[]): GalleryImageDisplayItem[] {
+  return rows
+    .map((row, index) => {
+      const url = cleanText(row.url);
+
+      return url
+        ? {
+            url,
+            alt: cleanText(row.alt_text),
+            position: numberFromUnknown(row.position) ?? index + 1,
+            isPrimary: false
+          }
+        : null;
+    })
+    .filter((item): item is GalleryImageDisplayItem => Boolean(item))
+    .sort((first, second) => first.position - second.position);
 }
 
 function DetailField({ label, value }: { label: string; value: React.ReactNode }) {
@@ -386,6 +474,9 @@ function ProductDetailContent({ productId }: { productId: string }) {
     );
   }
 
+  const galleryImages = galleryImagesFromValue(product.images);
+  const displayedGalleryImages = galleryImages.length > 0 ? galleryImages : galleryImagesFromRows(images);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap gap-3">
@@ -426,6 +517,7 @@ function ProductDetailContent({ productId }: { productId: string }) {
           />
           <DetailField label="Currency" value={product.currency ?? "USD"} />
           <DetailField label="Image URL" value={displayValue(product.image_url)} />
+          <DetailField label="Image alt text" value={displayValue(product.image_alt)} />
           <DetailField label="Status" value={displayValue(product.status)} />
           <DetailField label="Inventory status" value={displayValue(product.inventory_status)} />
           <DetailField label="Stock quantity" value={product.stock_quantity ?? "Not provided"} />
@@ -480,40 +572,38 @@ function ProductDetailContent({ productId }: { productId: string }) {
       </section>
 
       <section className="ambient-card p-6 md:p-8">
-        <h2 className="font-heading text-2xl font-bold">Product Images</h2>
-        {images.length === 0 ? (
-          <p className="mt-5 text-sm leading-6 text-on-surface-variant">No product images yet.</p>
+        <h2 className="font-heading text-2xl font-bold">Product Image Gallery</h2>
+        {displayedGalleryImages.length === 0 ? (
+          <p className="mt-5 text-sm leading-6 text-on-surface-variant">No gallery images yet.</p>
         ) : (
           <div className="mt-6 grid gap-4">
-            {images.map((image) => (
-              <article key={image.id} className="rounded-lg border border-outline-variant bg-white p-5">
+            {displayedGalleryImages.map((image) => (
+              <article key={`${image.url}-${image.position}`} className="rounded-lg border border-outline-variant bg-white p-5">
                 <div className="grid gap-5 md:grid-cols-[140px_1fr] md:items-start">
                   <div className="aspect-square overflow-hidden rounded-md bg-surface-container-low">
-                    {image.url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={image.url}
-                        alt={image.alt_text ?? "LUCK CLAWS product image"}
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <div className="grid h-full place-items-center px-3 text-center text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
-                        No image
-                      </div>
-                    )}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={image.url}
+                      alt={image.alt || "LUCK CLAWS product image"}
+                      className="h-full w-full object-cover"
+                    />
                   </div>
                   <dl className="grid gap-3 text-sm text-on-surface-variant sm:grid-cols-2">
                     <div>
+                      <dt className="font-semibold text-on-surface">Primary</dt>
+                      <dd className="mt-1">{image.isPrimary ? "Yes" : "No"}</dd>
+                    </div>
+                    <div>
                       <dt className="font-semibold text-on-surface">URL</dt>
-                      <dd className="mt-1 break-all">{displayValue(image.url)}</dd>
+                      <dd className="mt-1 break-all">{image.url}</dd>
                     </div>
                     <div>
                       <dt className="font-semibold text-on-surface">Alt text</dt>
-                      <dd className="mt-1">{displayValue(image.alt_text)}</dd>
+                      <dd className="mt-1">{image.alt || "Not provided"}</dd>
                     </div>
                     <div>
                       <dt className="font-semibold text-on-surface">Position</dt>
-                      <dd className="mt-1">{image.position ?? "Not provided"}</dd>
+                      <dd className="mt-1">{image.position}</dd>
                     </div>
                   </dl>
                 </div>
