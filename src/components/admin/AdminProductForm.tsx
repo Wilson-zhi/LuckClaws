@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { type ChangeEvent, type FormEvent, type ReactNode, useEffect, useState } from "react";
 import { AdminGuard, useAdminAuth } from "@/components/admin/AdminGuard";
 import { AdminPageFrame } from "@/components/admin/AdminPageFrame";
+import { type AdminLabelKey, useAdminLanguage } from "@/components/admin/admin-language";
 import { defaultProductSortOrder, homepageSections, inventoryStatuses, productStatuses } from "@/lib/admin-products";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
@@ -510,32 +511,32 @@ function hasContent(...values: string[]) {
   return values.some((value) => value.trim());
 }
 
-function validateForm(form: ProductFormState) {
+function validateForm(form: ProductFormState, t: (key: AdminLabelKey) => string) {
   const errors: Record<string, string> = {};
   const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
   const price = Number(form.price);
 
   if (!form.title.trim()) {
-    errors.title = "标题必填 / Title is required.";
+    errors.title = t("titleRequired");
   }
 
   if (!form.slug.trim()) {
-    errors.slug = "Slug 必填 / Slug is required.";
+    errors.slug = t("slugRequired");
   } else if (!slugPattern.test(form.slug.trim())) {
-    errors.slug = "Slug 只能使用小写字母、数字和连字符 / Slug must use lowercase letters, numbers, and hyphens.";
+    errors.slug = t("slugInvalid");
   }
 
   if (!form.price.trim()) {
-    errors.price = "价格必填 / Price is required.";
+    errors.price = t("priceRequired");
   } else if (!Number.isFinite(price) || price < 0) {
-    errors.price = "价格必须大于或等于 0 / Price must be greater than or equal to 0.";
+    errors.price = t("priceInvalid");
   }
 
   if (form.compare_at_price.trim()) {
     const compareAtPrice = Number(form.compare_at_price);
 
     if (!Number.isFinite(compareAtPrice) || compareAtPrice < 0) {
-      errors.compare_at_price = "对比价必须大于或等于 0 / Compare at price must be greater than or equal to 0.";
+      errors.compare_at_price = t("compareAtInvalid");
     }
   }
 
@@ -543,7 +544,7 @@ function validateForm(form: ProductFormState) {
     const stockQuantity = Number(form.stock_quantity);
 
     if (!Number.isFinite(stockQuantity) || stockQuantity < 0) {
-      errors.stock_quantity = "库存数量必须大于或等于 0 / Stock quantity must be greater than or equal to 0.";
+      errors.stock_quantity = t("stockInvalid");
     }
   }
 
@@ -551,27 +552,27 @@ function validateForm(form: ProductFormState) {
     const sortOrder = Number(form.sort_order);
 
     if (!Number.isFinite(sortOrder) || !Number.isInteger(sortOrder) || sortOrder <= 0) {
-      errors.sort_order = "排序必须是正整数，或留空 / Sort order must be a positive whole number, or leave it blank.";
+      errors.sort_order = t("sortInvalid");
     }
   }
 
   if (!productStatuses.includes(form.status as (typeof productStatuses)[number])) {
-    errors.status = "状态必须是 active、draft 或 archived / Status must be active, draft, or archived.";
+    errors.status = t("statusInvalid");
   }
 
   if (!inventoryStatuses.includes(form.inventory_status as (typeof inventoryStatuses)[number])) {
-    errors.inventory_status = "库存状态必须是 in_stock、out_of_stock 或 preorder / Inventory status must be in stock, out of stock, or preorder.";
+    errors.inventory_status = t("inventoryInvalid");
   }
 
   if (
     form.homepage_section &&
     !homepageSections.includes(form.homepage_section as (typeof homepageSections)[number])
   ) {
-    errors.homepage_section = "首页展示区必须是 featured、best_seller、new_arrivals 或留空 / Homepage section must be featured, best_seller, new_arrivals, or blank.";
+    errors.homepage_section = t("homepageInvalid");
   }
 
   if (form.published_at && Number.isNaN(new Date(form.published_at).getTime())) {
-    errors.published_at = "发布时间必须是有效日期 / Published date must be a valid date.";
+    errors.published_at = t("publishedInvalid");
   }
 
   if (
@@ -579,7 +580,7 @@ function validateForm(form: ProductFormState) {
       (item) => hasContent(item.title, item.text, item.icon) && (!item.title.trim() || !item.text.trim())
     )
   ) {
-    errors.product_highlights = "有内容的商品亮点必须包含标题和文案 / Product highlight rows with content must include title and text.";
+    errors.product_highlights = t("highlightsInvalid");
   }
 
   if (
@@ -587,7 +588,7 @@ function validateForm(form: ProductFormState) {
       (item) => hasContent(item.label, item.value) && (!item.label.trim() || !item.value.trim())
     )
   ) {
-    errors.detail_rows = "有内容的概览行必须包含标签和值 / Detail rows with content must include label and value.";
+    errors.detail_rows = t("detailRowsInvalid");
   }
 
   if (
@@ -595,7 +596,7 @@ function validateForm(form: ProductFormState) {
       (item) => hasContent(item.question, item.answer) && (!item.question.trim() || !item.answer.trim())
     )
   ) {
-    errors.product_faqs = "有内容的 FAQ 必须包含问题和回答 / FAQ rows with content must include question and answer.";
+    errors.product_faqs = t("faqInvalid");
   }
 
   if (
@@ -603,7 +604,7 @@ function validateForm(form: ProductFormState) {
       (item) => hasContent(item.title, item.content) && (!item.title.trim() || !item.content.trim())
     )
   ) {
-    errors.accordion_sections = "有内容的折叠内容区必须包含标题和内容 / Accordion sections with content must include title and content.";
+    errors.accordion_sections = t("accordionInvalid");
   }
 
   return errors;
@@ -674,16 +675,17 @@ function ProductHighlightsEditor({
   error?: string;
   onChange: (items: ProductHighlightFormItem[]) => void;
 }) {
+  const { t } = useAdminLanguage();
   const updateItem = (index: number, field: keyof ProductHighlightFormItem, value: string) => {
     onChange(items.map((item, itemIndex) => (itemIndex === index ? { ...item, [field]: value } : item)));
   };
 
   return (
     <RepeatableSection
-      title="商品亮点 / Product Highlights"
-      description="显示为商品卖点卡片；图标可选 / Shown as product benefit cards. Icon is optional."
-      addLabel="添加亮点 / Add Highlight"
-      emptyMessage="暂无商品亮点。商品页会使用可用的备用内容 / No product highlights. The product page will use fallback content if available."
+      title={t("productHighlights")}
+      description={t("productHighlightsDescription")}
+      addLabel={t("addHighlight")}
+      emptyMessage={t("noProductHighlights")}
       error={error}
       isEmpty={items.length === 0}
       onAdd={() => onChange([...items, { title: "", text: "", icon: "" }])}
@@ -691,26 +693,26 @@ function ProductHighlightsEditor({
       {items.map((item, index) => (
         <div key={index} className="grid gap-4 rounded-md border border-outline-variant bg-white p-4">
           <div className="flex items-center justify-between gap-3">
-            <p className="text-sm font-bold text-on-surface">亮点 / Highlight {index + 1}</p>
+            <p className="text-sm font-bold text-on-surface">{t("highlight")} {index + 1}</p>
             <button
               type="button"
               className="rounded-full border border-outline-variant px-3 py-1 text-xs font-bold text-primary transition hover:border-primary hover:bg-primary-container/10"
               onClick={() => onChange(items.filter((_, itemIndex) => itemIndex !== index))}
             >
-              删除 / Remove
+              {t("remove")}
             </button>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
             <label className="grid gap-2 text-sm font-semibold text-on-surface">
-              标题 / Title
+              {t("title")}
               <input className={inputClass} value={item.title} onChange={(event) => updateItem(index, "title", event.target.value)} />
             </label>
             <label className="grid gap-2 text-sm font-semibold text-on-surface">
-              图标（可选） / Icon optional
+              {t("iconOptional")}
               <input className={inputClass} placeholder="paw" value={item.icon} onChange={(event) => updateItem(index, "icon", event.target.value)} />
             </label>
             <label className="grid gap-2 text-sm font-semibold text-on-surface md:col-span-2">
-              文案 / Text
+              {t("text")}
               <textarea className={textareaClass} value={item.text} onChange={(event) => updateItem(index, "text", event.target.value)} />
             </label>
           </div>
@@ -729,16 +731,17 @@ function DetailRowsEditor({
   error?: string;
   onChange: (items: DetailRowFormItem[]) => void;
 }) {
+  const { t } = useAdminLanguage();
   const updateItem = (index: number, field: keyof DetailRowFormItem, value: string) => {
     onChange(items.map((item, itemIndex) => (itemIndex === index ? { ...item, [field]: value } : item)));
   };
 
   return (
     <RepeatableSection
-      title="商品概览 / Details at a Glance"
-      description="显示为紧凑的标签和值 / Shown as compact label and value rows."
-      addLabel="添加概览行 / Add Detail Row"
-      emptyMessage="暂无概览行。商品页会使用可用的备用内容 / No detail rows. The product page will use fallback content if available."
+      title={t("detailsAtGlance")}
+      description={t("detailsAtGlanceDescription")}
+      addLabel={t("addDetailRow")}
+      emptyMessage={t("noDetailRows")}
       error={error}
       isEmpty={items.length === 0}
       onAdd={() => onChange([...items, { label: "", value: "" }])}
@@ -746,11 +749,11 @@ function DetailRowsEditor({
       {items.map((item, index) => (
         <div key={index} className="grid gap-4 rounded-md border border-outline-variant bg-white p-4 md:grid-cols-[1fr_1fr_auto] md:items-end">
           <label className="grid gap-2 text-sm font-semibold text-on-surface">
-            标签 / Label
+            {t("label")}
             <input className={inputClass} value={item.label} onChange={(event) => updateItem(index, "label", event.target.value)} />
           </label>
           <label className="grid gap-2 text-sm font-semibold text-on-surface">
-            值 / Value
+            {t("value")}
             <input className={inputClass} value={item.value} onChange={(event) => updateItem(index, "value", event.target.value)} />
           </label>
           <button
@@ -758,7 +761,7 @@ function DetailRowsEditor({
             className="h-11 rounded-full border border-outline-variant px-4 font-heading text-xs font-bold text-primary transition hover:border-primary hover:bg-primary-container/10"
             onClick={() => onChange(items.filter((_, itemIndex) => itemIndex !== index))}
           >
-            删除 / Remove
+            {t("remove")}
           </button>
         </div>
       ))}
@@ -781,6 +784,7 @@ function TextItemsEditor({
   items: TextItemFormItem[];
   onChange: (items: TextItemFormItem[]) => void;
 }) {
+  const { t } = useAdminLanguage();
   const updateItem = (index: number, value: string) => {
     onChange(items.map((item, itemIndex) => (itemIndex === index ? { text: value } : item)));
   };
@@ -797,7 +801,7 @@ function TextItemsEditor({
       {items.map((item, index) => (
         <div key={index} className="grid gap-4 rounded-md border border-outline-variant bg-white p-4 md:grid-cols-[1fr_auto] md:items-end">
           <label className="grid gap-2 text-sm font-semibold text-on-surface">
-            文案 / Text
+            {t("text")}
             <input className={inputClass} value={item.text} onChange={(event) => updateItem(index, event.target.value)} />
           </label>
           <button
@@ -805,7 +809,7 @@ function TextItemsEditor({
             className="h-11 rounded-full border border-outline-variant px-4 font-heading text-xs font-bold text-primary transition hover:border-primary hover:bg-primary-container/10"
             onClick={() => onChange(items.filter((_, itemIndex) => itemIndex !== index))}
           >
-            删除 / Remove
+            {t("remove")}
           </button>
         </div>
       ))}
@@ -822,16 +826,17 @@ function ProductFaqsEditor({
   error?: string;
   onChange: (items: ProductFaqFormItem[]) => void;
 }) {
+  const { t } = useAdminLanguage();
   const updateItem = (index: number, field: keyof ProductFaqFormItem, value: string) => {
     onChange(items.map((item, itemIndex) => (itemIndex === index ? { ...item, [field]: value } : item)));
   };
 
   return (
     <RepeatableSection
-      title="商品问答 / Product Questions / FAQ"
-      description="显示在商品问答区域 / Shown in the product questions section."
-      addLabel="添加问答 / Add FAQ"
-      emptyMessage="暂无商品问答。商品页会使用可用的备用问题 / No product FAQs. The product page will use fallback questions if available."
+      title={t("productFaq")}
+      description={t("productFaqDescription")}
+      addLabel={t("addFaq")}
+      emptyMessage={t("noProductFaq")}
       error={error}
       isEmpty={items.length === 0}
       onAdd={() => onChange([...items, { question: "", answer: "" }])}
@@ -839,21 +844,21 @@ function ProductFaqsEditor({
       {items.map((item, index) => (
         <div key={index} className="grid gap-4 rounded-md border border-outline-variant bg-white p-4">
           <div className="flex items-center justify-between gap-3">
-            <p className="text-sm font-bold text-on-surface">问答 / FAQ {index + 1}</p>
+            <p className="text-sm font-bold text-on-surface">{t("faq")} {index + 1}</p>
             <button
               type="button"
               className="rounded-full border border-outline-variant px-3 py-1 text-xs font-bold text-primary transition hover:border-primary hover:bg-primary-container/10"
               onClick={() => onChange(items.filter((_, itemIndex) => itemIndex !== index))}
             >
-              删除 / Remove
+              {t("remove")}
             </button>
           </div>
           <label className="grid gap-2 text-sm font-semibold text-on-surface">
-            问题 / Question
+            {t("question")}
             <input className={inputClass} value={item.question} onChange={(event) => updateItem(index, "question", event.target.value)} />
           </label>
           <label className="grid gap-2 text-sm font-semibold text-on-surface">
-            回答 / Answer
+            {t("answer")}
             <textarea className={textareaClass} value={item.answer} onChange={(event) => updateItem(index, "answer", event.target.value)} />
           </label>
         </div>
@@ -871,16 +876,17 @@ function AccordionSectionsEditor({
   error?: string;
   onChange: (items: AccordionSectionFormItem[]) => void;
 }) {
+  const { t } = useAdminLanguage();
   const updateItem = (index: number, field: keyof AccordionSectionFormItem, value: string) => {
     onChange(items.map((item, itemIndex) => (itemIndex === index ? { ...item, [field]: value } : item)));
   };
 
   return (
     <RepeatableSection
-      title="折叠内容区 / Accordion Sections"
-      description="显示在可展开的商品信息区域 / Shown in the expandable product information area."
-      addLabel="添加折叠内容 / Add Accordion Section"
-      emptyMessage="暂无折叠内容。商品页会使用可用的备用内容 / No accordion sections. The product page will use fallback sections if available."
+      title={t("accordionSections")}
+      description={t("accordionSectionsDescription")}
+      addLabel={t("addAccordionSection")}
+      emptyMessage={t("noAccordionSections")}
       error={error}
       isEmpty={items.length === 0}
       onAdd={() => onChange([...items, { title: "", content: "" }])}
@@ -888,21 +894,21 @@ function AccordionSectionsEditor({
       {items.map((item, index) => (
         <div key={index} className="grid gap-4 rounded-md border border-outline-variant bg-white p-4">
           <div className="flex items-center justify-between gap-3">
-            <p className="text-sm font-bold text-on-surface">内容区 / Section {index + 1}</p>
+            <p className="text-sm font-bold text-on-surface">{t("section")} {index + 1}</p>
             <button
               type="button"
               className="rounded-full border border-outline-variant px-3 py-1 text-xs font-bold text-primary transition hover:border-primary hover:bg-primary-container/10"
               onClick={() => onChange(items.filter((_, itemIndex) => itemIndex !== index))}
             >
-              删除 / Remove
+              {t("remove")}
             </button>
           </div>
           <label className="grid gap-2 text-sm font-semibold text-on-surface">
-            标题 / Title
+            {t("title")}
             <input className={inputClass} value={item.title} onChange={(event) => updateItem(index, "title", event.target.value)} />
           </label>
           <label className="grid gap-2 text-sm font-semibold text-on-surface">
-            内容 / Content
+            {t("content")}
             <textarea className={textareaClass} value={item.content} onChange={(event) => updateItem(index, "content", event.target.value)} />
           </label>
         </div>
@@ -918,23 +924,24 @@ function RelatedProductSlugsEditor({
   items: RelatedProductSlugFormItem[];
   onChange: (items: RelatedProductSlugFormItem[]) => void;
 }) {
+  const { t } = useAdminLanguage();
   const updateItem = (index: number, value: string) => {
     onChange(items.map((item, itemIndex) => (itemIndex === index ? { slug: value } : item)));
   };
 
   return (
     <RepeatableSection
-      title="相关商品 Slug / Related Product Slugs"
-      description="输入商品 slug 来控制相关商品；空白会被忽略 / Enter product slugs to control related products. Blank entries are ignored."
-      addLabel="添加相关商品 / Add Related Product"
-      emptyMessage="暂无相关商品 slug。商品页会自动选择相关商品 / No related product slugs. The product page will choose related products automatically."
+      title={t("relatedProductSlugs")}
+      description={t("relatedProductSlugsDescription")}
+      addLabel={t("addRelatedProduct")}
+      emptyMessage={t("noRelatedProductSlugs")}
       isEmpty={items.length === 0}
       onAdd={() => onChange([...items, { slug: "" }])}
     >
       {items.map((item, index) => (
         <div key={index} className="grid gap-4 rounded-md border border-outline-variant bg-white p-4 md:grid-cols-[1fr_auto] md:items-end">
           <label className="grid gap-2 text-sm font-semibold text-on-surface">
-            商品 Slug / Product slug
+            {t("productSlug")}
             <input
               className={inputClass}
               placeholder="plush-foraging-toy"
@@ -947,7 +954,7 @@ function RelatedProductSlugsEditor({
             className="h-11 rounded-full border border-outline-variant px-4 font-heading text-xs font-bold text-primary transition hover:border-primary hover:bg-primary-container/10"
             onClick={() => onChange(items.filter((_, itemIndex) => itemIndex !== index))}
           >
-            删除 / Remove
+            {t("remove")}
           </button>
         </div>
       ))}
@@ -972,6 +979,7 @@ function ProductImageGalleryEditor({
   onChange: (images: ProductGalleryImageFormItem[]) => void;
   onAddImageUrl: () => void;
 }) {
+  const { t } = useAdminLanguage();
   const updateImage = (index: number, updates: Partial<ProductGalleryImageFormItem>) => {
     onChange(
       normalizeGalleryImages(
@@ -996,9 +1004,9 @@ function ProductImageGalleryEditor({
     <section className="grid gap-4 rounded-md bg-surface-container-low p-4 md:col-span-2">
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div>
-          <h2 className="font-heading text-lg font-bold text-on-surface">商品图片库 / Product Image Gallery</h2>
+          <h2 className="font-heading text-lg font-bold text-on-surface">{t("productImageGallery")}</h2>
           <p className="mt-1 text-sm leading-6 text-on-surface-variant">
-            上传商品图片、选择主图并编辑 alt 文案 / Upload product gallery images, choose one primary image, and edit alt text.
+            {t("productGalleryDescription")}
           </p>
         </div>
         <button
@@ -1006,12 +1014,12 @@ function ProductImageGalleryEditor({
           className="inline-flex w-fit rounded-full border border-primary px-4 py-2 font-heading text-xs font-bold text-primary transition hover:bg-primary-container/10"
           onClick={onAddImageUrl}
         >
-          添加图片 URL 到图库 / Add Image URL to Gallery
+          {t("addImageUrlToGallery")}
         </button>
       </div>
 
       <label className="grid gap-2 text-sm font-semibold text-on-surface">
-        上传图库图片 / Upload gallery images
+        {t("uploadGalleryImages")}
         <input
           multiple
           accept="image/jpeg,image/png,image/webp"
@@ -1021,7 +1029,7 @@ function ProductImageGalleryEditor({
           onChange={onUpload}
         />
       </label>
-      {uploading && <p className="text-sm font-semibold text-on-surface-variant">正在上传图片 / Uploading image...</p>}
+      {uploading && <p className="text-sm font-semibold text-on-surface-variant">{t("uploadingImage")}</p>}
       {uploadMessage && <p className="text-sm font-semibold text-primary">{uploadMessage}</p>}
       {uploadError && (
         <p className="text-sm font-semibold text-error" role="alert">
@@ -1031,7 +1039,7 @@ function ProductImageGalleryEditor({
 
       {images.length === 0 ? (
         <p className="rounded-md bg-white p-4 text-sm font-semibold text-on-surface-variant">
-          暂无图库图片 / No gallery images yet.
+          {t("noGalleryImages")}
         </p>
       ) : (
         <div className="grid gap-4">
@@ -1050,7 +1058,7 @@ function ProductImageGalleryEditor({
                   <div className="flex flex-wrap items-center gap-2">
                     {image.is_primary ? (
                       <span className="rounded-full bg-primary-container/30 px-3 py-1 text-xs font-bold text-primary">
-                        主图 / Primary image
+                        {t("primaryImage")}
                       </span>
                     ) : null}
                     <button
@@ -1058,7 +1066,7 @@ function ProductImageGalleryEditor({
                       className="rounded-full border border-outline-variant px-3 py-1 text-xs font-bold text-primary transition hover:border-primary hover:bg-primary-container/10"
                       onClick={() => onChange(setPrimaryGalleryImage(images, index))}
                     >
-                      设为主图 / Set as Primary
+                      {t("setAsPrimary")}
                     </button>
                     <button
                       type="button"
@@ -1066,7 +1074,7 @@ function ProductImageGalleryEditor({
                       disabled={index === 0}
                       onClick={() => moveImage(index, -1)}
                     >
-                      上移 / Move Up
+                      {t("moveUp")}
                     </button>
                     <button
                       type="button"
@@ -1074,18 +1082,18 @@ function ProductImageGalleryEditor({
                       disabled={index === images.length - 1}
                       onClick={() => moveImage(index, 1)}
                     >
-                      下移 / Move Down
+                      {t("moveDown")}
                     </button>
                     <button
                       type="button"
                       className="rounded-full border border-error/50 px-3 py-1 text-xs font-bold text-error transition hover:bg-error/10"
                       onClick={() => onChange(normalizeGalleryImages(images.filter((_, imageIndex) => imageIndex !== index)))}
                     >
-                      删除 / Remove
+                      {t("remove")}
                     </button>
                   </div>
                   <label className="grid gap-2 text-sm font-semibold text-on-surface">
-                    Alt 文案 / Alt text
+                    {t("altText")}
                     <input
                       className={inputClass}
                       value={image.alt}
@@ -1093,7 +1101,7 @@ function ProductImageGalleryEditor({
                     />
                   </label>
                   <div>
-                    <p className="text-xs font-bold uppercase tracking-wide text-on-surface-variant">图片 URL / Image URL</p>
+                    <p className="text-xs font-bold uppercase tracking-wide text-on-surface-variant">{t("imageUrl")}</p>
                     <p className="mt-1 break-all text-sm leading-6 text-on-surface-variant">{image.url}</p>
                   </div>
                 </div>
@@ -1109,6 +1117,7 @@ function ProductImageGalleryEditor({
 function ProductFormContent({ mode, productId }: { mode: ProductFormMode; productId?: string }) {
   const router = useRouter();
   const { accessToken } = useAdminAuth();
+  const { t } = useAdminLanguage();
   const supabase = getSupabaseBrowserClient();
   const [form, setForm] = useState<ProductFormState>(emptyForm);
   const [loading, setLoading] = useState(mode === "edit");
@@ -1135,7 +1144,7 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
         const payload = (await response.json()) as ProductResponse;
 
         if (!response.ok || !payload.product) {
-          throw new Error(payload.error ?? "无法加载商品 / Unable to load product.");
+          throw new Error(payload.error ?? t("unableToLoadProduct"));
         }
 
         if (active) {
@@ -1144,7 +1153,7 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
       })
       .catch((loadError: unknown) => {
         if (active) {
-          setFormError(loadError instanceof Error ? loadError.message : "无法加载商品 / Unable to load product.");
+          setFormError(loadError instanceof Error ? loadError.message : t("unableToLoadProduct"));
         }
       })
       .finally(() => {
@@ -1156,7 +1165,7 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
     return () => {
       active = false;
     };
-  }, [accessToken, mode, productId]);
+  }, [accessToken, mode, productId, t]);
 
   const updateField = <Field extends keyof ProductFormState>(field: Field, value: ProductFormState[Field]) => {
     setForm((currentForm) => ({
@@ -1167,19 +1176,19 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
 
   const uploadProductImage = async (file: File) => {
     if (!file) {
-      throw new Error("请选择一张图片 / Please choose an image.");
+      throw new Error(t("chooseImage"));
     }
 
     if (!acceptedImageTypes.has(file.type)) {
-      throw new Error("请选择 JPEG、PNG 或 WebP 图片 / Please choose a JPEG, PNG, or WebP image.");
+      throw new Error(t("chooseValidImage"));
     }
 
     if (file.size > MAX_IMAGE_SIZE_BYTES) {
-      throw new Error("图片必须小于或等于 5MB / Image must be 5MB or smaller.");
+      throw new Error(t("imageSizeLimit"));
     }
 
     if (!supabase) {
-      throw new Error("当前构建未配置 Supabase 上传 / Supabase is not configured for uploads in this build.");
+      throw new Error(t("uploadConfigMissing"));
     }
 
     const folderSlug = sanitizePathSegment(form.slug) || "uploads";
@@ -1262,11 +1271,11 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
       });
       setUploadMessage(
         uploadedImages.length === 1
-          ? "图库图片已上传 / Gallery image uploaded."
-          : `已上传 ${uploadedImages.length} 张图库图片 / ${uploadedImages.length} gallery images uploaded.`
+          ? t("galleryImageUploaded")
+          : `${uploadedImages.length} ${t("galleryImagesUploaded")}`
       );
     } catch (uploadErrorResult: unknown) {
-      setUploadError(uploadErrorResult instanceof Error ? uploadErrorResult.message : "无法上传图库图片 / Unable to upload gallery images.");
+      setUploadError(uploadErrorResult instanceof Error ? uploadErrorResult.message : t("unableToUploadGallery"));
     } finally {
       setUploading(false);
     }
@@ -1276,12 +1285,12 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
     const imageUrl = form.image_url.trim();
 
     if (!imageUrl) {
-      setUploadError("请先有主图 URL，再添加到图库 / Add an Image URL before adding it to the gallery.");
+      setUploadError(t("addImageUrlFirst"));
       return;
     }
 
     if (form.images.some((image) => image.url === imageUrl)) {
-      setUploadError("此图片 URL 已在图库中 / This Image URL is already in the gallery.");
+      setUploadError(t("duplicateImageUrl"));
       return;
     }
 
@@ -1294,7 +1303,7 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
         is_primary: form.images.length === 0
       }
     ]);
-    setUploadMessage("图片 URL 已添加到图库 / Image URL added to gallery.");
+    setUploadMessage(t("imageUrlAdded"));
     setUploadError("");
   };
 
@@ -1302,7 +1311,7 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
     event.preventDefault();
     setFormError("");
 
-    const nextErrors = validateForm(form);
+    const nextErrors = validateForm(form, t);
     setErrors(nextErrors);
 
     if (Object.keys(nextErrors).length > 0) {
@@ -1324,7 +1333,7 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
 
     if (!response.ok) {
       setErrors(payload.errors ?? {});
-      setFormError(payload.error ?? "无法保存商品 / Unable to save product.");
+      setFormError(payload.error ?? t("unableToSaveProduct"));
       setSaving(false);
       return;
     }
@@ -1336,7 +1345,7 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
   if (loading) {
     return (
       <div className="ambient-card p-6 text-sm leading-6 text-on-surface-variant">
-        正在加载商品 / Loading product...
+        {t("loadingProduct")}
       </div>
     );
   }
@@ -1359,7 +1368,7 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
 
       <div className="grid gap-5 md:grid-cols-2">
         <label className="grid gap-2 text-sm font-semibold text-on-surface">
-          标题 / Title
+          {t("productTitle")}
           <input className={inputClass} value={form.title} onChange={(event) => updateField("title", event.target.value)} />
           <FieldError message={errors.title} />
         </label>
@@ -1369,19 +1378,19 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
           <input className={inputClass} value={form.slug} onChange={(event) => updateField("slug", event.target.value)} />
           {mode === "edit" && (
             <p className="text-xs font-semibold leading-5 text-on-surface-variant">
-              修改 Slug 可能会改变前台商品链接 / Changing slug may change the public product URL.
+              {t("slugChangeWarning")}
             </p>
           )}
           <FieldError message={errors.slug} />
         </label>
 
         <label className="grid gap-2 text-sm font-semibold text-on-surface">
-          分类 / Category
+          {t("productCategory")}
           <input className={inputClass} value={form.category} onChange={(event) => updateField("category", event.target.value)} />
         </label>
 
         <label className="grid gap-2 text-sm font-semibold text-on-surface">
-          价格 / Price
+          {t("price")}
           <input
             className={inputClass}
             min="0"
@@ -1394,7 +1403,7 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
         </label>
 
         <label className="grid gap-2 text-sm font-semibold text-on-surface">
-          对比价 / Compare at price
+          {t("compareAtPrice")}
           <input
             className={inputClass}
             min="0"
@@ -1407,29 +1416,29 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
         </label>
 
         <label className="grid gap-2 text-sm font-semibold text-on-surface">
-          币种 / Currency
+          {t("currency")}
           <input className={inputClass} value={form.currency} onChange={(event) => updateField("currency", event.target.value)} />
         </label>
 
         <div className="grid gap-4 rounded-md bg-surface-container-low p-4 md:col-span-2">
           <label className="grid gap-2 text-sm font-semibold text-on-surface">
-            主图 URL（由图库主图自动更新） / Main Image URL (auto-updated from gallery primary image)
+            {t("mainImageUrlFull")}
             <input className={inputClass} value={form.image_url} readOnly />
           </label>
           <p className="text-sm leading-6 text-on-surface-variant">
-            使用下方商品图片库上传和管理图片 / Use Product Image Gallery below to upload and manage product images.
+            {t("useGalleryHelper")}
           </p>
           {form.image_url ? (
             <div className="grid gap-3 sm:grid-cols-[120px_1fr] sm:items-center">
               <div className="aspect-square overflow-hidden rounded-md bg-surface-container-lowest">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={form.image_url} alt="商品图片预览 / Product image preview" className="h-full w-full object-cover" />
+                <img src={form.image_url} alt={t("productImagePreview")} className="h-full w-full object-cover" />
               </div>
               <p className="break-all text-sm leading-6 text-on-surface-variant">{form.image_url}</p>
             </div>
           ) : (
             <p className="rounded-md bg-white p-4 text-sm font-semibold text-on-surface-variant">
-              暂无主图 URL / No main image URL yet.
+              {t("noMainImageUrl")}
             </p>
           )}
         </div>
@@ -1445,34 +1454,34 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
         />
 
         <label className="grid gap-2 text-sm font-semibold text-on-surface">
-          状态 / Status
+          {t("status")}
           <select className={inputClass} value={form.status} onChange={(event) => updateField("status", event.target.value)}>
-            <option value="active">上架 / Active</option>
-            <option value="draft">草稿 / Draft</option>
-            <option value="archived">已归档 / Archived</option>
+            <option value="active">{t("active")}</option>
+            <option value="draft">{t("draft")}</option>
+            <option value="archived">{t("archived")}</option>
           </select>
           <p className="text-xs font-semibold leading-5 text-on-surface-variant">
-            上架 = 前台公开显示；草稿 = 前台隐藏；已归档 = 前台隐藏并保留记录 / Active = visible publicly; Draft = hidden from public storefront; Archived = hidden and kept for record.
+            {t("statusHelper")}
           </p>
           <FieldError message={errors.status} />
         </label>
 
         <label className="grid gap-2 text-sm font-semibold text-on-surface">
-          库存状态 / Inventory status
+          {t("inventoryStatus")}
           <select
             className={inputClass}
             value={form.inventory_status}
             onChange={(event) => updateField("inventory_status", event.target.value)}
           >
-            <option value="in_stock">有库存 / In stock</option>
-            <option value="out_of_stock">缺货 / Out of stock</option>
-            <option value="preorder">预售 / Preorder</option>
+            <option value="in_stock">{t("inStock")}</option>
+            <option value="out_of_stock">{t("outOfStock")}</option>
+            <option value="preorder">{t("preorder")}</option>
           </select>
           <FieldError message={errors.inventory_status} />
         </label>
 
         <label className="grid gap-2 text-sm font-semibold text-on-surface">
-          库存数量 / Stock quantity
+          {t("stockQuantity")}
           <input
             className={inputClass}
             min="0"
@@ -1492,7 +1501,7 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
               type="checkbox"
               onChange={(event) => updateField("is_featured", event.target.checked)}
             />
-            推荐 / Featured
+            {t("featured")}
           </label>
           <label className="flex items-center gap-3 text-sm font-semibold text-on-surface">
             <input
@@ -1501,52 +1510,52 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
               type="checkbox"
               onChange={(event) => updateField("is_sale", event.target.checked)}
             />
-            促销 / Sale
+            {t("sale")}
           </label>
         </div>
 
         <div className="grid gap-5 rounded-md bg-surface-container-low p-4 md:col-span-2 md:grid-cols-2">
           <div className="md:col-span-2">
-            <h2 className="font-heading text-lg font-bold text-on-surface">前台展示 / Storefront display</h2>
+            <h2 className="font-heading text-lg font-bold text-on-surface">{t("storefrontDisplay")}</h2>
             <p className="mt-1 text-sm leading-6 text-on-surface-variant">
-              控制商品排序、首页展示位置和卡片标签 / Control product ordering, homepage placement, and card badges.
+              {t("storefrontDisplayHelper")}
             </p>
           </div>
 
           <label className="grid gap-2 text-sm font-semibold text-on-surface">
-            排序 / Sort order
+            {t("sortOrder")}
             <input
               className={inputClass}
               min="1"
-              placeholder="默认 / Default"
+              placeholder={t("default")}
               step="1"
               type="number"
               value={form.sort_order}
               onChange={(event) => updateField("sort_order", event.target.value)}
             />
             <p className="text-xs font-semibold leading-5 text-on-surface-variant">
-              数字越小越靠前；留空使用默认排序 / Lower numbers appear first. Leave blank/default for normal ordering.
+              {t("sortOrderHelper")}
             </p>
             <FieldError message={errors.sort_order} />
           </label>
 
           <label className="grid gap-2 text-sm font-semibold text-on-surface">
-            首页展示区 / Homepage section
+            {t("homepageSection")}
             <select
               className={inputClass}
               value={form.homepage_section}
               onChange={(event) => updateField("homepage_section", event.target.value)}
             >
-              <option value="">无 / None</option>
-              <option value="featured">featured</option>
-              <option value="best_seller">best_seller</option>
-              <option value="new_arrivals">new_arrivals</option>
+              <option value="">{t("none")}</option>
+              <option value="featured">{t("homepageFeatured")}</option>
+              <option value="best_seller">{t("homepageBestSeller")}</option>
+              <option value="new_arrivals">{t("homepageNewArrivals")}</option>
             </select>
             <FieldError message={errors.homepage_section} />
           </label>
 
           <label className="grid gap-2 text-sm font-semibold text-on-surface">
-            标签 / Badge
+            {t("badge")}
             <input
               className={inputClass}
               placeholder="Best Seller, New, Sale, Featured"
@@ -1556,7 +1565,7 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
           </label>
 
           <label className="grid gap-2 text-sm font-semibold text-on-surface">
-            发布时间 / Published at
+            {t("publishedAt")}
             <input
               className={inputClass}
               type="datetime-local"
@@ -1568,27 +1577,27 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
         </div>
 
         <label className="grid gap-2 text-sm font-semibold text-on-surface md:col-span-2">
-          描述 / Description
+          {t("description")}
           <textarea className={textareaClass} value={form.description} onChange={(event) => updateField("description", event.target.value)} />
         </label>
 
         <div className="grid gap-5 rounded-md bg-surface-container-low p-4 md:col-span-2">
           <div>
-            <h2 className="font-heading text-lg font-bold text-on-surface">商品详情内容 / Product detail content</h2>
+            <h2 className="font-heading text-lg font-bold text-on-surface">{t("productDetailContent")}</h2>
             <p className="mt-1 text-sm leading-6 text-on-surface-variant">
-              这些字段控制前台商品详情页；留空会使用当前备用内容 / These fields control the public product detail page. Leave any field blank to keep the current fallback content.
+              {t("productDetailContentHelper")}
             </p>
           </div>
 
           <label className="grid gap-2 text-sm font-semibold text-on-surface">
-            短描述 / Short description
+            {t("shortDescription")}
             <textarea
               className={textareaClass}
               value={form.short_description}
               onChange={(event) => updateField("short_description", event.target.value)}
             />
             <p className="text-xs font-semibold leading-5 text-on-surface-variant">
-              显示在商品页顶部附近；留空则使用 Description / Used near the top of the product page. Leave blank to use Description.
+              {t("shortDescriptionHelper")}
             </p>
           </label>
 
@@ -1605,18 +1614,18 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
             />
             <div className="grid gap-5 xl:grid-cols-2">
               <TextItemsEditor
-                title="适用场景 / Best For"
-                description="商品页使用场景短要点 / Short use-case bullets for the product page."
-                addLabel="添加适用场景 / Add Best For Item"
-                emptyMessage="暂无适用场景。商品页会使用可用的备用内容 / No Best For items. The product page will use fallback content if available."
+                title={t("bestFor")}
+                description={t("bestForDescription")}
+                addLabel={t("addBestForItem")}
+                emptyMessage={t("noBestFor")}
                 items={form.best_for}
                 onChange={(items) => updateField("best_for", items)}
               />
               <TextItemsEditor
-                title="护理说明 / Care Instructions"
-                description="商品页护理短要点 / Short care bullets for the product page."
-                addLabel="添加护理说明 / Add Care Instruction"
-                emptyMessage="暂无护理说明。商品页会使用可用的备用内容 / No care instructions. The product page will use fallback content if available."
+                title={t("careInstructions")}
+                description={t("careInstructionsDescription")}
+                addLabel={t("addCareInstruction")}
+                emptyMessage={t("noCareInstructions")}
                 items={form.care_instructions}
                 onChange={(items) => updateField("care_instructions", items)}
               />
@@ -1639,17 +1648,17 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
         </div>
 
         <label className="grid gap-2 text-sm font-semibold text-on-surface md:col-span-2">
-          SEO 标题 / SEO title
+          {t("seoTitle")}
           <input className={inputClass} value={form.seo_title} onChange={(event) => updateField("seo_title", event.target.value)} />
         </label>
 
         <label className="grid gap-2 text-sm font-semibold text-on-surface md:col-span-2">
-          SEO 描述 / SEO description
+          {t("seoDescription")}
           <textarea className={textareaClass} value={form.seo_description} onChange={(event) => updateField("seo_description", event.target.value)} />
         </label>
 
         <label className="grid gap-2 text-sm font-semibold text-on-surface md:col-span-2">
-          Google 商品分类 / Google product category
+          {t("googleProductCategory")}
           <input
             className={inputClass}
             value={form.google_product_category}
@@ -1664,14 +1673,14 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
           disabled={saving}
           className="inline-flex rounded-full bg-primary px-7 py-3 font-heading font-bold text-white transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {saving ? "正在保存 / Saving..." : mode === "edit" ? "保存商品 / Save Product" : "添加商品 / Add Product"}
+          {saving ? t("saving") : mode === "edit" ? t("saveProduct") : t("addProduct")}
         </button>
         <button
           type="button"
           className="inline-flex rounded-full border border-primary px-7 py-3 font-heading font-bold text-primary transition hover:bg-primary-container/10"
           onClick={() => router.push("/admin/products")}
         >
-          取消 / Cancel
+          {t("cancel")}
         </button>
       </div>
     </form>
@@ -1683,9 +1692,9 @@ export function AdminProductForm({ mode, productId }: { mode: ProductFormMode; p
     <AdminGuard>
       {() => (
         <AdminPageFrame
-          title={mode === "edit" ? "编辑商品 / Edit Product" : "添加商品 / Add Product"}
-          description={mode === "edit" ? "更新 Supabase 商品记录 / Update a Supabase product record." : "创建 Supabase 商品记录 / Create a Supabase product record."}
-          backLink={{ href: "/admin/products", label: "返回商品 / Back to Products" }}
+          title={mode === "edit" ? { zh: "编辑商品", en: "Edit Product" } : { zh: "添加商品", en: "Add Product" }}
+          description={mode === "edit" ? { zh: "更新 Supabase 商品记录", en: "Update a Supabase product record." } : { zh: "创建 Supabase 商品记录", en: "Create a Supabase product record." }}
+          backLink={{ href: "/admin/products", label: { zh: "返回商品列表", en: "Back to Products" } }}
         >
           <ProductFormContent mode={mode} productId={productId} />
         </AdminPageFrame>

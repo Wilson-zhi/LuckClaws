@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { AdminGuard, useAdminAuth } from "@/components/admin/AdminGuard";
 import { AdminPageFrame } from "@/components/admin/AdminPageFrame";
+import { formatAdminStatus, useAdminLanguage } from "@/components/admin/admin-language";
 import { formatPrice } from "@/lib/utils";
 
 type AdminOrderDetailRow = {
@@ -57,15 +58,15 @@ function numberFromValue(value: number | string | null) {
   return Number.isFinite(numberValue) ? numberValue : 0;
 }
 
-function formatDate(value: string | null) {
+function formatDate(value: string | null, unavailableLabel: string) {
   if (!value) {
-    return "不可用 / Unavailable";
+    return unavailableLabel;
   }
 
   const date = new Date(value);
 
   if (Number.isNaN(date.getTime())) {
-    return "不可用 / Unavailable";
+    return unavailableLabel;
   }
 
   return new Intl.DateTimeFormat("en-US", {
@@ -75,27 +76,11 @@ function formatDate(value: string | null) {
   }).format(date);
 }
 
-function displayValue(value: string | null) {
-  return value?.trim() || "未填写 / Not provided";
+function displayValue(value: string | null, fallback: string) {
+  return value?.trim() || fallback;
 }
 
-function displayStatus(value: string | null) {
-  const normalizedValue = value?.trim() ?? "";
-  const statusLabels: Record<string, string> = {
-    pending: "待处理 / pending",
-    paid: "已付款 / paid",
-    captured: "已收款 / captured",
-    failed: "失败 / failed",
-    unfulfilled: "未发货 / unfulfilled",
-    fulfilled: "已发货 / fulfilled",
-    canceled: "已取消 / canceled",
-    paypal: "PayPal"
-  };
-
-  return statusLabels[normalizedValue] ?? (normalizedValue ? normalizedValue.replaceAll("_", " ") : "待处理 / pending");
-}
-
-function SummaryField({ label, value }: { label: string; value: React.ReactNode }) {
+function SummaryField({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div className="rounded-md bg-surface-container-low p-4">
       <dt className="text-xs font-bold uppercase tracking-wide text-on-surface-variant">{label}</dt>
@@ -106,11 +91,14 @@ function SummaryField({ label, value }: { label: string; value: React.ReactNode 
 
 function OrderDetailContent({ orderId }: { orderId: string }) {
   const { accessToken } = useAdminAuth();
+  const { t } = useAdminLanguage();
   const [order, setOrder] = useState<AdminOrderDetailRow | null>(null);
   const [shippingAddress, setShippingAddress] = useState<AdminOrderShippingAddress | null>(null);
   const [items, setItems] = useState<AdminOrderItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const unavailableLabel = t("unavailable");
+  const notProvidedLabel = t("notProvided");
 
   useEffect(() => {
     let active = true;
@@ -124,7 +112,7 @@ function OrderDetailContent({ orderId }: { orderId: string }) {
         const payload = (await response.json()) as AdminOrderDetailPayload;
 
         if (!response.ok) {
-          throw new Error(payload.error ?? "无法加载订单 / Unable to load order.");
+          throw new Error(payload.error ?? t("unableToLoadOrder"));
         }
 
         if (active) {
@@ -135,7 +123,7 @@ function OrderDetailContent({ orderId }: { orderId: string }) {
       })
       .catch((loadError: unknown) => {
         if (active) {
-          setError(loadError instanceof Error ? loadError.message : "无法加载订单 / Unable to load order.");
+          setError(loadError instanceof Error ? loadError.message : t("unableToLoadOrder"));
         }
       })
       .finally(() => {
@@ -147,12 +135,12 @@ function OrderDetailContent({ orderId }: { orderId: string }) {
     return () => {
       active = false;
     };
-  }, [accessToken, orderId]);
+  }, [accessToken, orderId, t]);
 
   if (loading) {
     return (
       <div className="ambient-card p-6 text-sm leading-6 text-on-surface-variant">
-        正在加载订单 / Loading order...
+        {t("loadingOrder")}
       </div>
     );
   }
@@ -168,7 +156,7 @@ function OrderDetailContent({ orderId }: { orderId: string }) {
   if (!order) {
     return (
       <div className="ambient-card p-6 text-sm leading-6 text-on-surface-variant">
-        未找到订单 / Order not found.
+        {t("orderNotFound")}
       </div>
     );
   }
@@ -180,79 +168,93 @@ function OrderDetailContent({ orderId }: { orderId: string }) {
           href="/admin"
           className="inline-flex rounded-full border border-primary px-5 py-2 font-heading text-sm font-bold text-primary transition hover:bg-primary-container/10"
         >
-          返回后台 / Back to Admin
+          {t("backToAdmin")}
         </Link>
       </div>
 
       <section className="ambient-card p-6 md:p-8">
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-wide text-primary">订单概览 / Order Summary</p>
+            <p className="text-xs font-bold uppercase tracking-wide text-primary">{t("orderSummary")}</p>
             <h2 className="mt-2 font-heading text-2xl font-bold">
-              {order.order_number ?? "订单号不可用 / Order number unavailable"}
+              {order.order_number ?? t("orderNumberUnavailable")}
             </h2>
           </div>
           <span className="inline-flex w-fit rounded-full bg-primary-container/20 px-4 py-2 text-xs font-bold uppercase tracking-wide text-primary">
-            {displayStatus(order.payment_status)}
+            {formatAdminStatus(order.payment_status, t)}
           </span>
         </div>
 
         <dl className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          <SummaryField label="订单号 / Order number" value={order.order_number ?? "不可用 / Unavailable"} />
-          <SummaryField label="客户邮箱 / Customer email" value={displayValue(order.customer_email)} />
-          <SummaryField label="客户姓名 / Customer name" value={displayValue(order.customer_name)} />
-          <SummaryField label="客户电话 / Customer phone" value={displayValue(order.customer_phone)} />
-          <SummaryField label="付款状态 / Payment status" value={displayStatus(order.payment_status)} />
-          <SummaryField label="发货状态 / Fulfillment status" value={displayStatus(order.fulfillment_status)} />
-          <SummaryField label="币种 / Currency" value={order.currency ?? "USD"} />
-          <SummaryField label="小计 / Subtotal" value={formatPrice(numberFromValue(order.subtotal))} />
-          <SummaryField label="运费 / Shipping" value={formatPrice(numberFromValue(order.shipping_amount))} />
-          <SummaryField label="合计 / Total" value={formatPrice(numberFromValue(order.total_amount))} />
-          <SummaryField label="来源 / Source" value={displayStatus(order.source)} />
-          <SummaryField label="PayPal order ID" value={displayValue(order.paypal_order_id)} />
-          <SummaryField label="PayPal capture ID" value={displayValue(order.paypal_capture_id)} />
-          <SummaryField label="创建 / Created" value={formatDate(order.created_at)} />
+          <SummaryField label={t("orderNumber")} value={order.order_number ?? unavailableLabel} />
+          <SummaryField label={t("customerEmail")} value={displayValue(order.customer_email, notProvidedLabel)} />
+          <SummaryField label={t("customerName")} value={displayValue(order.customer_name, notProvidedLabel)} />
+          <SummaryField label={t("customerPhone")} value={displayValue(order.customer_phone, notProvidedLabel)} />
+          <SummaryField label={t("paymentStatus")} value={formatAdminStatus(order.payment_status, t)} />
+          <SummaryField label={t("fulfillmentStatus")} value={formatAdminStatus(order.fulfillment_status, t)} />
+          <SummaryField label={t("currency")} value={order.currency ?? "USD"} />
+          <SummaryField label={t("subtotal")} value={formatPrice(numberFromValue(order.subtotal))} />
+          <SummaryField label={t("shipping")} value={formatPrice(numberFromValue(order.shipping_amount))} />
+          <SummaryField label={t("total")} value={formatPrice(numberFromValue(order.total_amount))} />
+          <SummaryField label={t("source")} value={displayValue(order.source, notProvidedLabel)} />
+          <SummaryField label="PayPal order ID" value={displayValue(order.paypal_order_id, notProvidedLabel)} />
+          <SummaryField label="PayPal capture ID" value={displayValue(order.paypal_capture_id, notProvidedLabel)} />
+          <SummaryField label={t("created")} value={formatDate(order.created_at, unavailableLabel)} />
         </dl>
       </section>
 
       <section className="ambient-card p-6 md:p-8">
-        <h2 className="font-heading text-2xl font-bold">收货地址 / Shipping Address</h2>
+        <h2 className="font-heading text-2xl font-bold">{t("shippingAddress")}</h2>
         <dl className="mt-6 grid gap-4 sm:grid-cols-2">
-          <SummaryField label="姓名 / Name" value={displayValue(shippingAddress?.name ?? null)} />
-          <SummaryField label="电话 / Phone" value={displayValue(shippingAddress?.phone ?? null)} />
-          <SummaryField label="地址行 1 / Address line 1" value={displayValue(shippingAddress?.address_line1 ?? null)} />
-          <SummaryField label="地址行 2 / Address line 2" value={displayValue(shippingAddress?.address_line2 ?? null)} />
-          <SummaryField label="城市 / City" value={displayValue(shippingAddress?.city ?? null)} />
-          <SummaryField label="州 / State" value={displayValue(shippingAddress?.state ?? null)} />
-          <SummaryField label="邮编 / Postal code" value={displayValue(shippingAddress?.postal_code ?? null)} />
-          <SummaryField label="国家 / Country" value={displayValue(shippingAddress?.country ?? null)} />
+          <SummaryField label={t("name")} value={displayValue(shippingAddress?.name ?? null, notProvidedLabel)} />
+          <SummaryField label={t("phone")} value={displayValue(shippingAddress?.phone ?? null, notProvidedLabel)} />
+          <SummaryField
+            label={t("addressLine1")}
+            value={displayValue(shippingAddress?.address_line1 ?? null, notProvidedLabel)}
+          />
+          <SummaryField
+            label={t("addressLine2")}
+            value={displayValue(shippingAddress?.address_line2 ?? null, notProvidedLabel)}
+          />
+          <SummaryField label={t("city")} value={displayValue(shippingAddress?.city ?? null, notProvidedLabel)} />
+          <SummaryField label={t("state")} value={displayValue(shippingAddress?.state ?? null, notProvidedLabel)} />
+          <SummaryField
+            label={t("postalCode")}
+            value={displayValue(shippingAddress?.postal_code ?? null, notProvidedLabel)}
+          />
+          <SummaryField
+            label={t("country")}
+            value={displayValue(shippingAddress?.country ?? null, notProvidedLabel)}
+          />
         </dl>
       </section>
 
       <section className="ambient-card p-6 md:p-8">
-        <h2 className="font-heading text-2xl font-bold">订单商品 / Order Items</h2>
+        <h2 className="font-heading text-2xl font-bold">{t("orderItems")}</h2>
         {items.length === 0 ? (
-          <p className="mt-5 text-sm leading-6 text-on-surface-variant">未找到订单商品 / No order items found.</p>
+          <p className="mt-5 text-sm leading-6 text-on-surface-variant">{t("noOrderItems")}</p>
         ) : (
           <div className="mt-6 overflow-hidden rounded-lg bg-surface-container-lowest shadow-soft">
             <div className="overflow-x-auto">
               <table className="w-full min-w-[760px] text-left text-sm">
                 <thead className="bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant">
                   <tr>
-                    <th className="px-4 py-3">商品 / Product</th>
+                    <th className="px-4 py-3">{t("product")}</th>
                     <th className="px-4 py-3">Slug</th>
-                    <th className="px-4 py-3">数量 / Quantity</th>
-                    <th className="px-4 py-3">单价 / Unit Price</th>
-                    <th className="px-4 py-3">行合计 / Line Total</th>
+                    <th className="px-4 py-3">{t("quantity")}</th>
+                    <th className="px-4 py-3">{t("unitPrice")}</th>
+                    <th className="px-4 py-3">{t("lineTotal")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-outline-variant/70">
                   {items.map((item) => (
                     <tr key={item.id}>
                       <td className="px-4 py-4 font-semibold text-on-surface">
-                        {displayValue(item.product_title)}
+                        {displayValue(item.product_title, notProvidedLabel)}
                       </td>
-                      <td className="px-4 py-4 text-on-surface-variant">{displayValue(item.product_slug)}</td>
+                      <td className="px-4 py-4 text-on-surface-variant">
+                        {displayValue(item.product_slug, notProvidedLabel)}
+                      </td>
                       <td className="px-4 py-4 text-on-surface-variant">{item.quantity ?? 0}</td>
                       <td className="px-4 py-4 font-semibold">{formatPrice(numberFromValue(item.unit_price))}</td>
                       <td className="px-4 py-4 font-semibold">{formatPrice(numberFromValue(item.line_total))}</td>
@@ -273,9 +275,12 @@ export function AdminOrderDetail({ orderId }: { orderId: string }) {
     <AdminGuard>
       {() => (
         <AdminPageFrame
-          title="订单详情 / Order Detail"
-          description="查看订单付款、收货地址和商品明细 / Review order payment, shipping, and item details."
-          backLink={{ href: "/admin/orders", label: "返回订单 / Back to Orders" }}
+          title={{ zh: "订单详情", en: "Order Detail" }}
+          description={{
+            zh: "查看订单付款、收货地址和商品明细",
+            en: "Review order payment, shipping, and item details."
+          }}
+          backLink={{ href: "/admin/orders", label: { zh: "返回订单", en: "Back to Orders" } }}
         >
           <OrderDetailContent orderId={orderId} />
         </AdminPageFrame>

@@ -2,26 +2,31 @@
 
 import Link from "next/link";
 import { Box, LayoutDashboard, Package, Users } from "lucide-react";
+import {
+  AdminLanguageProvider,
+  type AdminLabel,
+  useAdminLanguagePreference
+} from "@/components/admin/admin-language";
 
 type AdminPageFrameProps = {
-  title: string;
-  description?: string;
+  title: AdminLabel;
+  description?: AdminLabel;
   layout?: "default" | "wide";
   backLink?:
     | boolean
     | {
         href: string;
-        label: string;
+        label: AdminLabel;
       };
   children: React.ReactNode;
 };
 
 const adminNavItems = [
-  { label: "仪表盘 / Dashboard", href: "/admin", Icon: LayoutDashboard },
-  { label: "订单 / Orders", href: "/admin/orders", Icon: Package },
-  { label: "客户 / Customers", href: "/admin/customers", Icon: Users },
-  { label: "商品 / Products", href: "/admin/products", Icon: Box }
-];
+  { labelKey: "dashboard", href: "/admin", Icon: LayoutDashboard },
+  { labelKey: "orders", href: "/admin/orders", Icon: Package },
+  { labelKey: "customers", href: "/admin/customers", Icon: Users },
+  { labelKey: "products", href: "/admin/products", Icon: Box }
+] as const;
 
 export function AdminPageFrame({
   title,
@@ -30,11 +35,13 @@ export function AdminPageFrame({
   backLink = false,
   children
 }: AdminPageFrameProps) {
+  const languageContext = useAdminLanguagePreference();
+  const { language, setLanguage, t, text } = languageContext;
   const normalizedBackLink =
     typeof backLink === "object"
       ? backLink
       : backLink
-        ? { href: "/admin", label: "返回后台 / Back to Admin" }
+        ? { href: "/admin", label: { zh: "返回后台", en: "Back to Admin" } }
         : null;
   const shellClass =
     layout === "wide"
@@ -46,27 +53,55 @@ export function AdminPageFrame({
       : "grid gap-8 lg:grid-cols-[260px_1fr] lg:items-start";
 
   return (
-    <>
+    <AdminLanguageProvider value={languageContext}>
       <section className={`${shellClass} py-10 md:py-14`}>
-        <div className="max-w-4xl">
-          {normalizedBackLink && (
-            <Link
-              href={normalizedBackLink.href}
-              className="mb-8 inline-flex text-sm font-semibold text-primary transition hover:text-on-surface"
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+          <div className="max-w-4xl">
+            {normalizedBackLink && (
+              <Link
+                href={normalizedBackLink.href}
+                className="mb-8 inline-flex text-sm font-semibold text-primary transition hover:text-on-surface"
+              >
+                <span aria-hidden>&larr;</span>
+                <span className="ml-2">{text(normalizedBackLink.label)}</span>
+              </Link>
+            )}
+            <span className="inline-flex rounded-full bg-primary-container/20 px-4 py-2 text-xs font-bold uppercase tracking-wide text-primary">
+              {t("admin")}
+            </span>
+            <h1 className="mt-6 font-heading text-4xl font-extrabold leading-tight md:text-6xl">{text(title)}</h1>
+            {description && (
+              <p className="mt-5 max-w-2xl text-base leading-8 text-on-surface-variant md:text-lg">
+                {text(description)}
+              </p>
+            )}
+          </div>
+
+          <div
+            className="inline-flex w-fit rounded-full border border-outline-variant bg-surface-container-lowest p-1 shadow-soft"
+            aria-label="Admin language"
+          >
+            <button
+              type="button"
+              className={`rounded-full px-4 py-2 text-sm font-bold transition ${
+                language === "zh" ? "bg-primary text-white" : "text-on-surface-variant hover:text-primary"
+              }`}
+              aria-pressed={language === "zh"}
+              onClick={() => setLanguage("zh")}
             >
-              <span aria-hidden>&larr;</span>
-              <span className="ml-2">{normalizedBackLink.label}</span>
-            </Link>
-          )}
-          <span className="inline-flex rounded-full bg-primary-container/20 px-4 py-2 text-xs font-bold uppercase tracking-wide text-primary">
-            后台 / Admin
-          </span>
-          <h1 className="mt-6 font-heading text-4xl font-extrabold leading-tight md:text-6xl">{title}</h1>
-          {description && (
-            <p className="mt-5 max-w-2xl text-base leading-8 text-on-surface-variant md:text-lg">
-              {description}
-            </p>
-          )}
+              中文
+            </button>
+            <button
+              type="button"
+              className={`rounded-full px-4 py-2 text-sm font-bold transition ${
+                language === "en" ? "bg-primary text-white" : "text-on-surface-variant hover:text-primary"
+              }`}
+              aria-pressed={language === "en"}
+              onClick={() => setLanguage("en")}
+            >
+              English
+            </button>
+          </div>
         </div>
       </section>
 
@@ -74,14 +109,14 @@ export function AdminPageFrame({
         <div className={bodyGridClass}>
           <nav className="rounded-lg bg-surface-container-lowest p-4 shadow-soft" aria-label="Admin navigation">
             <div className="grid gap-2">
-              {adminNavItems.map(({ label, href, Icon }) => (
+              {adminNavItems.map(({ labelKey, href, Icon }) => (
                 <Link
                   key={href}
                   href={href}
                   className="flex items-center gap-3 rounded-md px-4 py-3 text-sm font-semibold text-on-surface-variant transition hover:bg-primary-container/10 hover:text-primary"
                 >
                   <Icon aria-hidden className="h-4 w-4 shrink-0" />
-                  {label}
+                  {t(labelKey)}
                 </Link>
               ))}
             </div>
@@ -89,6 +124,6 @@ export function AdminPageFrame({
           <div className="min-w-0">{children}</div>
         </div>
       </section>
-    </>
+    </AdminLanguageProvider>
   );
 }

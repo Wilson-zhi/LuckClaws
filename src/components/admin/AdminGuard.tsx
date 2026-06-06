@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState } from "react";
 import { ShieldAlert } from "lucide-react";
+import { type AdminLabelKey, useAdminLanguagePreference } from "@/components/admin/admin-language";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 type AdminContextValue = {
@@ -40,8 +41,9 @@ type AdminGuardProps = {
 export function AdminGuard({ children }: AdminGuardProps) {
   const router = useRouter();
   const supabase = getSupabaseBrowserClient();
+  const { t } = useAdminLanguagePreference();
   const [status, setStatus] = useState<AdminStatus>("checking");
-  const [message, setMessage] = useState("");
+  const [messageKey, setMessageKey] = useState<AdminLabelKey | null>(null);
   const [adminContext, setAdminContext] = useState<AdminContextValue | null>(null);
 
   useEffect(() => {
@@ -80,7 +82,7 @@ export function AdminGuard({ children }: AdminGuardProps) {
       }
 
       if (!response.ok) {
-        setMessage(response.status === 403 ? "此账号没有后台权限 / This account does not have admin access." : "无法验证后台权限 / Admin access could not be verified.");
+        setMessageKey(response.status === 403 ? "noAdminAccess" : "adminAccessUnverified");
         setStatus("denied");
         return;
       }
@@ -103,7 +105,7 @@ export function AdminGuard({ children }: AdminGuardProps) {
     return (
       <AdminStatusShell>
         <div className="ambient-card p-6 text-sm leading-6 text-on-surface-variant">
-          当前构建未配置 Supabase 公开环境变量 / Supabase public environment variables are not configured for this build.
+          {t("supabaseMissing")}
         </div>
       </AdminStatusShell>
     );
@@ -113,7 +115,7 @@ export function AdminGuard({ children }: AdminGuardProps) {
     return (
       <AdminStatusShell>
         <div className="ambient-card p-6 text-sm leading-6 text-on-surface-variant">
-          正在验证后台权限 / Checking admin access...
+          {t("checkingAdminAccess")}
         </div>
       </AdminStatusShell>
     );
@@ -126,15 +128,15 @@ export function AdminGuard({ children }: AdminGuardProps) {
           <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-error/10 text-error">
             <ShieldAlert aria-hidden className="h-6 w-6" />
           </div>
-          <h1 className="mt-5 font-heading text-3xl font-bold">拒绝访问 / Access Denied</h1>
+          <h1 className="mt-5 font-heading text-3xl font-bold">{t("accessDenied")}</h1>
           <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-on-surface-variant">
-            {message || "此账号没有后台权限 / This account does not have admin access."}
+            {messageKey ? t(messageKey) : t("noAdminAccess")}
           </p>
           <Link
             href="/account"
             className="mt-6 inline-flex rounded-full border border-primary px-7 py-3 font-heading font-bold text-primary transition hover:bg-primary-container/10"
           >
-            返回我的账户 / Back to My Account
+            {t("backToMyAccount")}
           </Link>
         </section>
       </AdminStatusShell>
