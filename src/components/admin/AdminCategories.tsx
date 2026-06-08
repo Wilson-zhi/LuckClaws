@@ -6,11 +6,17 @@ import { AdminGuard, useAdminAuth } from "@/components/admin/AdminGuard";
 import { AdminPageFrame } from "@/components/admin/AdminPageFrame";
 import { formatAdminStatus, useAdminLanguage } from "@/components/admin/admin-language";
 import { defaultCategorySortOrder } from "@/lib/admin-categories";
+import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 type AdminCategoryRow = {
   id: string;
   name: string | null;
   slug: string | null;
+  description: string | null;
+  image_url: string | null;
+  seo_title: string | null;
+  seo_description: string | null;
+  google_product_category: string | null;
   status: string | null;
   sort_order: number | string | null;
   show_in_nav: boolean | null;
@@ -44,27 +50,10 @@ function displaySortOrder(category: AdminCategoryRow, defaultLabel: string) {
   return value === defaultCategorySortOrder ? defaultLabel : String(value);
 }
 
-function createdTimeFromRow(category: AdminCategoryRow) {
-  const time = category.created_at ? new Date(category.created_at).getTime() : 0;
-
-  return Number.isFinite(time) ? time : 0;
-}
-
-function sortCategoriesForAdmin(categories: AdminCategoryRow[]) {
-  return [...categories].sort((first, second) => {
-    const sortDifference = sortOrderFromRow(first) - sortOrderFromRow(second);
-
-    if (sortDifference !== 0) {
-      return sortDifference;
-    }
-
-    return createdTimeFromRow(second) - createdTimeFromRow(first);
-  });
-}
-
 function CategoriesTable() {
   const { accessToken } = useAdminAuth();
   const { t } = useAdminLanguage();
+  const supabase = getSupabaseBrowserClient();
   const [categories, setCategories] = useState<AdminCategoryRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -72,39 +61,48 @@ function CategoriesTable() {
   const [archivingId, setArchivingId] = useState("");
 
   useEffect(() => {
+    if (!supabase) {
+      setError(t("supabaseMissing"));
+      setLoading(false);
+      return;
+    }
+
     let active = true;
+    const browserSupabase = supabase;
 
-    fetch("/api/admin/categories", {
-      headers: {
-        Authorization: `Bearer ${accessToken}`
-      }
-    })
-      .then(async (response) => {
-        const payload = (await response.json()) as { categories?: AdminCategoryRow[]; error?: string };
+    async function loadCategories() {
+      try {
+        const { data, error } = await browserSupabase
+          .from("product_categories")
+          .select(
+            "id, name, slug, description, image_url, seo_title, seo_description, google_product_category, status, sort_order, show_in_nav, show_on_home, created_at, updated_at"
+          )
+          .order("sort_order", { ascending: true, nullsFirst: false });
 
-        if (!response.ok) {
-          throw new Error(payload.error ?? t("unableToLoadCategories"));
+        if (error) {
+          throw error;
         }
 
         if (active) {
-          setCategories(sortCategoriesForAdmin(payload.categories ?? []));
+          setCategories((data ?? []) as AdminCategoryRow[]);
         }
-      })
-      .catch((loadError: unknown) => {
+      } catch (loadError: unknown) {
         if (active) {
           setError(loadError instanceof Error ? loadError.message : t("unableToLoadCategories"));
         }
-      })
-      .finally(() => {
+      } finally {
         if (active) {
           setLoading(false);
         }
-      });
+      }
+    }
+
+    void loadCategories();
 
     return () => {
       active = false;
     };
-  }, [accessToken, t]);
+  }, [supabase, t]);
 
   const hasCategories = useMemo(() => categories.length > 0, [categories]);
 
