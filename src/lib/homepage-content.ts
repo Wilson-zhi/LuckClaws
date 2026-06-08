@@ -129,7 +129,7 @@ export function homepageHeroFromValue(value: unknown): HomepageHeroContent {
     ),
     primaryButtonLink: stringFromRecord(
       record,
-      ["primaryButtonLink", "primary_button_link"],
+      ["primaryButtonHref", "primary_button_href", "primaryButtonLink", "primary_button_link"],
       defaultHomepageHero.primaryButtonLink
     ),
     secondaryButtonText: stringFromRecord(
@@ -139,7 +139,7 @@ export function homepageHeroFromValue(value: unknown): HomepageHeroContent {
     ),
     secondaryButtonLink: stringFromRecord(
       record,
-      ["secondaryButtonLink", "secondary_button_link"],
+      ["secondaryButtonHref", "secondary_button_href", "secondaryButtonLink", "secondary_button_link"],
       defaultHomepageHero.secondaryButtonLink
     ),
     imageUrl: stringFromRecord(record, ["imageUrl", "image_url", "heroImageUrl", "hero_image_url"], defaultHomepageHero.imageUrl),
@@ -186,8 +186,10 @@ export function buildHomepageHeroValue(hero: HomepageHeroContent) {
     title: hero.title.trim(),
     subtitle: hero.subtitle.trim(),
     primaryButtonText: hero.primaryButtonText.trim(),
+    primaryButtonHref: hero.primaryButtonLink.trim(),
     primaryButtonLink: hero.primaryButtonLink.trim(),
     secondaryButtonText: hero.secondaryButtonText.trim(),
+    secondaryButtonHref: hero.secondaryButtonLink.trim(),
     secondaryButtonLink: hero.secondaryButtonLink.trim(),
     imageUrl: hero.imageUrl.trim(),
     imageAlt: hero.imageAlt.trim(),

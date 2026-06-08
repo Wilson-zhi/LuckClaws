@@ -1,15 +1,15 @@
 import "server-only";
 
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+
 import {
   homepageHeroFromValue,
   homepageHeroSettingKey,
-  homepageSettingValueIsActive,
   homepageTrustBadgesFromValue,
   homepageTrustBadgesSettingKey,
   type HomepageHeroContent,
   type HomepageTrustBadge
 } from "@/lib/homepage-content";
-import { getSupabaseAdminClient } from "@/lib/supabase/server";
 
 type HomepageSettingRow = {
   key: string | null;
@@ -22,16 +22,39 @@ export type PublicHomepageSettings = {
   trustBadges: HomepageTrustBadge[];
 };
 
-function rowIsActive(row: HomepageSettingRow) {
-  if (typeof row.status === "string" && row.status.trim().toLowerCase() !== "active") {
-    return false;
+let homepagePublicClient: SupabaseClient | null = null;
+
+function getHomepagePublicClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey =
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseKey) {
+    return null;
   }
 
-  return homepageSettingValueIsActive(row.value);
+  if (!homepagePublicClient) {
+    homepagePublicClient = createClient(supabaseUrl, supabaseKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    });
+  }
+
+  return homepagePublicClient;
+}
+
+function rowIsActive(row: HomepageSettingRow) {
+  if (typeof row.status === "string") {
+    return row.status.trim().toLowerCase() === "active";
+  }
+
+  return true;
 }
 
 async function fetchRowsWithSelect(selectColumns: string, activeOnly = false) {
-  const supabase = getSupabaseAdminClient();
+  const supabase = getHomepagePublicClient();
 
   if (!supabase) {
     return { rows: [] as HomepageSettingRow[], error: null };
@@ -57,8 +80,14 @@ async function fetchRowsWithSelect(selectColumns: string, activeOnly = false) {
 async function fetchHomepageSettingRows() {
   const withStatus = await fetchRowsWithSelect("key, value, status", true);
 
-  if (!withStatus.error) {
+  if (!withStatus.error && withStatus.rows.length > 0) {
     return withStatus.rows;
+  }
+
+  const withStatusNoFilter = await fetchRowsWithSelect("key, value, status");
+
+  if (!withStatusNoFilter.error && withStatusNoFilter.rows.length > 0) {
+    return withStatusNoFilter.rows.filter(rowIsActive);
   }
 
   const base = await fetchRowsWithSelect("key, value");
