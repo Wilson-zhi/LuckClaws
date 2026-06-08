@@ -29,10 +29,10 @@ export function ProductCard({
 
   if (featured) {
     return (
-      <article className="group overflow-hidden rounded-lg bg-surface-container-lowest shadow-ambient">
+      <article className="group overflow-hidden rounded-lg bg-surface-container-lowest shadow-ambient transition duration-300 hover:-translate-y-1 hover:shadow-lift focus-within:shadow-lift motion-reduce:hover:translate-y-0">
         <Link
           href={href}
-          className="relative block aspect-[1.35] overflow-hidden bg-surface-container"
+          className="relative block aspect-[1.35] overflow-hidden bg-surface-container focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           onClick={() => trackSelectItem(product, itemListName)}
         >
           {displayBadge && (
@@ -52,7 +52,7 @@ export function ProductCard({
             fill
             loading="eager"
             sizes="(min-width: 1024px) 520px, 100vw"
-            className="object-cover transition duration-500 group-hover:scale-105"
+            className="object-cover transition duration-500 group-hover:scale-[1.06]"
           />
         </Link>
         <div className="p-6 md:p-7">
@@ -63,7 +63,7 @@ export function ProductCard({
               </p>
               <Link
                 href={href}
-                className="mt-2 block font-heading text-2xl font-bold hover:text-primary"
+                className="mt-2 block font-heading text-2xl font-bold transition hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                 onClick={() => trackSelectItem(product, itemListName)}
               >
                 {product.name}
@@ -94,13 +94,13 @@ export function ProductCard({
   return (
     <article
       className={cn(
-        "group overflow-hidden rounded-lg bg-surface-container-lowest shadow-ambient transition hover:-translate-y-1 hover:shadow-lift",
+        "group overflow-hidden rounded-lg bg-surface-container-lowest shadow-ambient transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_22px_58px_rgba(25,28,30,0.12)] focus-within:shadow-lift motion-reduce:hover:translate-y-0",
         compact && "rounded-md"
       )}
     >
       <Link
         href={href}
-        className="relative block aspect-square overflow-hidden bg-surface-container"
+        className="relative block aspect-square overflow-hidden bg-surface-container focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
         onClick={() => trackSelectItem(product, itemListName)}
       >
         {(product.badge || product.isNew) && (
@@ -120,7 +120,7 @@ export function ProductCard({
           fill
           loading="eager"
           sizes="(min-width: 1024px) 280px, 45vw"
-          className="object-cover transition duration-500 group-hover:scale-105"
+          className="object-cover transition duration-500 group-hover:scale-[1.06]"
         />
       </Link>
       <div className="p-4 md:p-5">
@@ -130,7 +130,7 @@ export function ProductCard({
           </p>
           <Link
             href={href}
-            className="mt-1 line-clamp-2 font-heading text-base font-bold hover:text-primary md:text-lg"
+            className="mt-1 line-clamp-2 font-heading text-base font-bold transition hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary md:text-lg"
             onClick={() => trackSelectItem(product, itemListName)}
           >
             {product.name}

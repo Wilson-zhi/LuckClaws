@@ -36,13 +36,13 @@ export function AddToCartButton({
     <button
       type="button"
       className={cn(
-        "inline-flex items-center justify-center gap-2 rounded-full font-semibold transition",
+        "inline-flex items-center justify-center gap-2 rounded-full font-semibold transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary active:scale-[0.98] motion-reduce:active:scale-100",
         variant === "primary" &&
-          "bg-primary-container px-6 py-3 text-on-primary-container hover:bg-[#e08f00]",
+          "bg-primary-container px-6 py-3 text-on-primary-container hover:-translate-y-0.5 hover:bg-[#e08f00] hover:shadow-soft motion-reduce:hover:translate-y-0",
         variant === "outline" &&
-          "border border-primary px-6 py-3 text-primary hover:bg-primary-container/10",
+          "border border-primary px-6 py-3 text-primary hover:-translate-y-0.5 hover:bg-primary-container/10 hover:shadow-soft motion-reduce:hover:translate-y-0",
         variant === "icon" &&
-          "grid h-11 w-11 place-items-center bg-primary-container text-on-primary-container hover:bg-[#e08f00]",
+          "grid h-11 w-11 place-items-center bg-primary-container text-on-primary-container hover:-translate-y-0.5 hover:bg-[#e08f00] hover:shadow-soft motion-reduce:hover:translate-y-0",
         className
       )}
       onClick={() => {

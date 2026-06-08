@@ -51,12 +51,40 @@ img {
   @apply rounded-lg bg-surface-container-lowest shadow-ambient;
 }
 
+.homepage-enter {
+  animation: homepage-rise-in 480ms ease-out both;
+}
+
+.homepage-enter-delay-1 {
+  animation-delay: 90ms;
+}
+
+.homepage-enter-delay-2 {
+  animation-delay: 160ms;
+}
+
+.homepage-enter-delay-3 {
+  animation-delay: 230ms;
+}
+
 .hide-scrollbar {
   scrollbar-width: none;
 }
 
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
+}
+
+@keyframes homepage-rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -67,5 +95,9 @@ img {
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
+  }
+
+  .homepage-enter {
+    animation: none !important;
   }
 }

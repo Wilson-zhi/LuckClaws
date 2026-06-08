@@ -115,7 +115,7 @@ export default async function HomePage() {
       <ViewItemListTracker products={bestSellers} itemListName="Homepage Best Sellers" />
       <ViewItemListTracker products={newArrivals} itemListName="Homepage New Arrivals" />
       <section className="section-shell grid min-h-[620px] items-center gap-10 py-10 md:grid-cols-2 md:py-16">
-        <div>
+        <div className="homepage-enter">
           <span className="inline-flex rounded-full bg-primary-container/20 px-4 py-2 text-xs font-bold uppercase tracking-wide text-primary">
             {hero.eyebrow}
           </span>
@@ -128,22 +128,22 @@ export default async function HomePage() {
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
               href={primaryButtonLink}
-              className="rounded-full bg-primary-container px-6 py-3 text-sm font-bold text-on-primary-container transition hover:bg-[#e08f00]"
+              className="rounded-full bg-primary-container px-6 py-3 text-sm font-bold text-on-primary-container transition duration-200 hover:-translate-y-0.5 hover:bg-[#e08f00] hover:shadow-soft focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:hover:translate-y-0"
             >
               {hero.primaryButtonText}
             </Link>
             <Link
               href={secondaryButtonLink}
-              className="rounded-full border border-outline-variant bg-white px-6 py-3 text-sm font-bold text-on-surface transition hover:border-primary hover:text-primary"
+              className="rounded-full border border-outline-variant bg-white px-6 py-3 text-sm font-bold text-on-surface transition duration-200 hover:-translate-y-0.5 hover:border-primary hover:text-primary hover:shadow-soft focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:hover:translate-y-0"
             >
               {hero.secondaryButtonText}
             </Link>
           </div>
         </div>
 
-        <div className="relative">
+        <div className="homepage-enter homepage-enter-delay-2 relative">
           <div className="absolute inset-0 rounded-xl bg-[#F9E7D0] md:-inset-5" />
-          <div className="relative overflow-hidden rounded-xl bg-surface-container shadow-lift">
+          <div className="relative overflow-hidden rounded-xl bg-surface-container shadow-lift transition duration-300 hover:-translate-y-1 hover:scale-[1.01] hover:shadow-[0_24px_70px_rgba(25,28,30,0.14)] motion-reduce:hover:translate-y-0 motion-reduce:hover:scale-100">
             <Image
               src={hero.imageUrl}
               alt={hero.imageAlt}
@@ -153,7 +153,7 @@ export default async function HomePage() {
               className="h-[420px] w-full object-cover md:h-[560px]"
             />
           </div>
-          <div className="absolute bottom-8 left-0 flex -translate-x-4 items-center gap-3 rounded-md bg-white px-4 py-3 shadow-ambient">
+          <div className="absolute bottom-8 left-0 flex -translate-x-4 items-center gap-3 rounded-md bg-white px-4 py-3 shadow-ambient transition duration-300 hover:-translate-x-4 hover:-translate-y-1 hover:shadow-lift motion-reduce:hover:translate-y-0">
             <span className="grid h-10 w-10 place-items-center rounded-full bg-[#EAF1FF] text-tertiary">
               <Award aria-hidden className="h-5 w-5" />
             </span>
