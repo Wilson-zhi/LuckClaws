@@ -14,8 +14,6 @@ import { getSupabaseAdminClient } from "@/lib/supabase/server";
 type HomepageSettingRow = {
   key: string | null;
   value: unknown;
-  active?: boolean | null;
-  is_active?: boolean | null;
   status?: string | null;
 };
 
@@ -25,10 +23,6 @@ export type PublicHomepageSettings = {
 };
 
 function rowIsActive(row: HomepageSettingRow) {
-  if (row.active === false || row.is_active === false) {
-    return false;
-  }
-
   if (typeof row.status === "string" && row.status.trim().toLowerCase() !== "active") {
     return false;
   }
@@ -36,17 +30,23 @@ function rowIsActive(row: HomepageSettingRow) {
   return homepageSettingValueIsActive(row.value);
 }
 
-async function fetchRowsWithSelect(selectColumns: string) {
+async function fetchRowsWithSelect(selectColumns: string, activeOnly = false) {
   const supabase = getSupabaseAdminClient();
 
   if (!supabase) {
     return { rows: [] as HomepageSettingRow[], error: null };
   }
 
-  const { data, error } = await supabase
+  let query = supabase
     .from("homepage_settings")
     .select(selectColumns)
     .in("key", [homepageHeroSettingKey, homepageTrustBadgesSettingKey]);
+
+  if (activeOnly) {
+    query = query.eq("status", "active");
+  }
+
+  const { data, error } = await query;
 
   return {
     rows: (data ?? []) as unknown as HomepageSettingRow[],
@@ -55,7 +55,7 @@ async function fetchRowsWithSelect(selectColumns: string) {
 }
 
 async function fetchHomepageSettingRows() {
-  const withStatus = await fetchRowsWithSelect("key, value, status, is_active, active");
+  const withStatus = await fetchRowsWithSelect("key, value, status", true);
 
   if (!withStatus.error) {
     return withStatus.rows;

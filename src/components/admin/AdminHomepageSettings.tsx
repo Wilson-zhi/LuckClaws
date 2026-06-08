@@ -35,6 +35,10 @@ const inputClass =
 const textareaClass =
   "min-h-32 w-full rounded-md border border-outline-variant bg-white px-4 py-3 text-base outline-none transition focus:border-primary focus:ring-2 focus:ring-primary-container/30";
 
+const HOMEPAGE_IMAGE_BUCKET = "homepage-images";
+const MAX_HOMEPAGE_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
+const acceptedHomepageImageTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
+
 const iconLabelKeys = {
   truck: "iconTruck",
   shield: "iconShield",
@@ -67,6 +71,20 @@ function settingRowsByKey(rows: HomepageSettingRow[]) {
   return new Map(rows.map((row) => [row.key, row.value]));
 }
 
+function sanitizePathSegment(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9._-]/g, "")
+    .replace(/-+/g, "-")
+    .replace(/^[._-]+|[._-]+$/g, "");
+}
+
+function safeFileName(fileName: string) {
+  return sanitizePathSegment(fileName) || "homepage-image";
+}
+
 function HeroField({
   label,
   value,
@@ -97,6 +115,9 @@ function AdminHomepageFormContent() {
   const [badges, setBadges] = useState<EditableTrustBadge[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingHeroImage, setUploadingHeroImage] = useState(false);
+  const [uploadMessage, setUploadMessage] = useState("");
+  const [uploadError, setUploadError] = useState("");
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
@@ -215,6 +236,61 @@ function AdminHomepageFormContent() {
     });
   };
 
+  const uploadHomepageImage = async (file: File) => {
+    if (!supabase) {
+      throw new Error(t("uploadConfigMissing"));
+    }
+
+    if (!acceptedHomepageImageTypes.has(file.type)) {
+      throw new Error(t("chooseValidImage"));
+    }
+
+    if (file.size > MAX_HOMEPAGE_IMAGE_SIZE_BYTES) {
+      throw new Error(t("imageSizeLimit"));
+    }
+
+    const storagePath = `homepage/${Date.now()}-${safeFileName(file.name)}`;
+    const { error: uploadErrorResult } = await supabase.storage.from(HOMEPAGE_IMAGE_BUCKET).upload(storagePath, file, {
+      cacheControl: "31536000",
+      contentType: file.type,
+      upsert: false
+    });
+
+    if (uploadErrorResult) {
+      throw uploadErrorResult;
+    }
+
+    const { data } = supabase.storage.from(HOMEPAGE_IMAGE_BUCKET).getPublicUrl(storagePath);
+
+    return data.publicUrl;
+  };
+
+  const handleHeroImageUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] ?? null;
+    event.target.value = "";
+    setUploadMessage("");
+    setUploadError("");
+
+    if (!file) {
+      return;
+    }
+
+    setUploadingHeroImage(true);
+
+    try {
+      const publicUrl = await uploadHomepageImage(file);
+
+      updateHeroField("imageUrl", publicUrl);
+      setUploadMessage(t("homepageImageUploaded"));
+    } catch (uploadErrorResult: unknown) {
+      setUploadError(
+        uploadErrorResult instanceof Error ? uploadErrorResult.message : t("unableToUploadHomepageImage")
+      );
+    } finally {
+      setUploadingHeroImage(false);
+    }
+  };
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -231,10 +307,12 @@ function AdminHomepageFormContent() {
       [
         {
           key: homepageHeroSettingKey,
+          status: "active",
           value: buildHomepageHeroValue(hero)
         },
         {
           key: homepageTrustBadgesSettingKey,
+          status: "active",
           value: buildHomepageTrustBadgesValue(savedBadges)
         }
       ],
@@ -314,11 +392,59 @@ function AdminHomepageFormContent() {
             value={hero.secondaryButtonLink}
             onChange={(value) => updateHeroField("secondaryButtonLink", value)}
           />
-          <HeroField
-            label={t("heroImageUrl")}
-            value={hero.imageUrl}
-            onChange={(value) => updateHeroField("imageUrl", value)}
-          />
+          <div className="grid gap-4 rounded-md bg-surface-container-low p-4 md:col-span-2">
+            <label className="grid gap-2 text-sm font-semibold text-on-surface">
+              {t("heroImageUrl")}
+              <input
+                className={inputClass}
+                value={hero.imageUrl}
+                onChange={(event) => updateHeroField("imageUrl", event.target.value)}
+              />
+            </label>
+
+            <div className="grid gap-3">
+              <label className="grid gap-2 text-sm font-semibold text-on-surface">
+                {t("uploadHomepageImage")}
+                <input
+                  accept="image/jpeg,image/png,image/webp"
+                  className="block w-full rounded-md border border-outline-variant bg-white px-4 py-3 text-sm text-on-surface file:mr-4 file:rounded-full file:border-0 file:bg-primary file:px-4 file:py-2 file:font-heading file:text-sm file:font-bold file:text-white hover:file:bg-primary/90"
+                  disabled={uploadingHeroImage}
+                  type="file"
+                  onChange={handleHeroImageUpload}
+                />
+              </label>
+              <p className="text-xs font-semibold leading-5 text-on-surface-variant">
+                {t("homepageImageUploadHelper")}
+              </p>
+              {uploadingHeroImage && (
+                <p className="text-sm font-semibold text-on-surface-variant">{t("uploadingImage")}</p>
+              )}
+              {uploadMessage && (
+                <p className="text-sm font-semibold text-primary" role="status">
+                  {uploadMessage}
+                </p>
+              )}
+              {uploadError && (
+                <p className="text-sm font-semibold text-error" role="alert">
+                  {uploadError}
+                </p>
+              )}
+            </div>
+
+            {hero.imageUrl ? (
+              <div className="grid gap-3 sm:grid-cols-[160px_1fr] sm:items-center">
+                <div className="aspect-[4/3] overflow-hidden rounded-md bg-surface-container-lowest">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={hero.imageUrl} alt={hero.imageAlt || t("heroImagePreview")} className="h-full w-full object-cover" />
+                </div>
+                <p className="break-all text-sm leading-6 text-on-surface-variant">{hero.imageUrl}</p>
+              </div>
+            ) : (
+              <p className="rounded-md bg-white p-4 text-sm font-semibold text-on-surface-variant">
+                {t("noHomepageImage")}
+              </p>
+            )}
+          </div>
           <HeroField
             label={t("heroImageAltText")}
             value={hero.imageAlt}

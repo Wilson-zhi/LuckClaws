@@ -203,6 +203,14 @@ export const adminLabels = {
   secondaryButtonLink: { zh: "次按钮链接", en: "Secondary button link" },
   heroImageUrl: { zh: "主视觉图片链接", en: "Hero image URL" },
   heroImageAltText: { zh: "主视觉图片 Alt 文本", en: "Hero image alt text" },
+  heroImagePreview: { zh: "主视觉图片预览", en: "Hero image preview" },
+  noHomepageImage: { zh: "暂无首页图片", en: "No homepage image yet." },
+  uploadHomepageImage: { zh: "上传首页图片", en: "Upload homepage image" },
+  homepageImageUploadHelper: {
+    zh: "支持 JPEG、PNG、WebP，最大 5MB。上传成功后会自动填入图片链接。",
+    en: "Supports JPEG, PNG, and WebP up to 5MB. A successful upload automatically fills the image URL."
+  },
+  homepageImageUploaded: { zh: "首页图片已上传。", en: "Homepage image uploaded." },
   featuredLabel: { zh: "精选标签", en: "Featured label" },
   featuredText: { zh: "精选文字", en: "Featured text" },
   trustBadges: { zh: "信任标识", en: "Trust badges" },
@@ -405,6 +413,7 @@ export const adminLabels = {
   imageSizeLimit: { zh: "图片必须小于或等于 5MB", en: "Image must be 5MB or smaller." },
   uploadConfigMissing: { zh: "当前构建未配置 Supabase 上传", en: "Supabase is not configured for uploads in this build." },
   unableToUploadGallery: { zh: "无法上传图库图片", en: "Unable to upload gallery images." },
+  unableToUploadHomepageImage: { zh: "无法上传首页图片", en: "Unable to upload homepage image." },
   addImageUrlFirst: { zh: "请先有主图链接，再添加到图库", en: "Add an Image URL before adding it to the gallery." },
   duplicateImageUrl: { zh: "此图片链接已在图库中", en: "This Image URL is already in the gallery." },
   imageUrlAdded: { zh: "图片链接已添加到图库", en: "Image URL added to gallery." },
