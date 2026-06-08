@@ -1,5 +1,6 @@
 import "server-only";
 
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import {
   bestSellers as staticBestSellers,
   brandName,
@@ -164,6 +165,32 @@ const staticCategoryBySlug = new Map(
   ])
 );
 const DEFAULT_SORT_ORDER = 9999;
+let publicCategoryClient: SupabaseClient | null = null;
+
+function getSupabasePublicCategoryClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey =
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseKey) {
+    return null;
+  }
+
+  if (!publicCategoryClient) {
+    publicCategoryClient = createClient(supabaseUrl, supabaseKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    });
+  }
+
+  return publicCategoryClient;
+}
+
+function getCategoryReadClient() {
+  return getSupabasePublicCategoryClient() ?? getSupabaseAdminClient();
+}
 
 function cleanString(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
@@ -750,7 +777,7 @@ function categoryMetadataFromRow(row: SupabaseCategoryMetadataRow): CategoryMeta
 }
 
 async function fetchCategoryMetadata() {
-  const supabase = getSupabaseAdminClient();
+  const supabase = getCategoryReadClient();
 
   if (!supabase) {
     return new Map<string, CategoryMetadata>();
@@ -781,7 +808,7 @@ async function fetchCategoryMetadata() {
 }
 
 async function fetchActiveCategoryMetadataBySlug(slug: string) {
-  const supabase = getSupabaseAdminClient();
+  const supabase = getCategoryReadClient();
 
   if (!supabase) {
     return null;

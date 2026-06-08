@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Heart, Menu, Search, ShoppingBag, User, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CartDrawer } from "@/components/cart/CartDrawer";
 import { topLevelNavigation, type NavigationItem } from "@/data/navigation";
 import { brandName } from "@/data/products";
@@ -22,8 +22,10 @@ export function Header({ initialNavigationItems }: { initialNavigationItems?: Na
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountHref, setAccountHref] = useState("/account/login");
-  const fallbackNavigationItems =
-    initialNavigationItems && initialNavigationItems.length > 0 ? initialNavigationItems : topLevelNavigation;
+  const fallbackNavigationItems = useMemo(
+    () => (initialNavigationItems && initialNavigationItems.length > 0 ? initialNavigationItems : topLevelNavigation),
+    [initialNavigationItems]
+  );
   const [navigationItems, setNavigationItems] = useState<NavigationItem[]>(fallbackNavigationItems);
   const items = useCartStore((state) => state.items);
   const totals = getCartTotals(items);
