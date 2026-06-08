@@ -283,7 +283,7 @@ export function CollectionPage({ config }: CollectionPageProps) {
   };
 
   return (
-    <SiteShell>
+    <SiteShell navigationItems={config.headerNavigationItems}>
       <ViewItemListTracker products={filteredProducts} itemListName={itemListName} />
       <section className="section-shell py-10 md:py-14">
         <nav className="text-sm font-semibold text-on-surface-variant" aria-label="Breadcrumb">

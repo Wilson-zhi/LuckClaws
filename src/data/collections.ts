@@ -1,4 +1,5 @@
 import { brandName, getProduct, products, type Product } from "@/data/products";
+import { type NavigationItem } from "@/data/navigation";
 
 export type CollectionConfig = {
   slug: string;
@@ -21,6 +22,7 @@ export type CollectionConfig = {
     label: string;
     href: string;
   }>;
+  headerNavigationItems?: NavigationItem[];
   products: Product[];
 };
 

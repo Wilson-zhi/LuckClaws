@@ -5,30 +5,26 @@ import { usePathname } from "next/navigation";
 import { Heart, Menu, Search, ShoppingBag, User, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { CartDrawer } from "@/components/cart/CartDrawer";
-import { topLevelNavigation } from "@/data/navigation";
+import { topLevelNavigation, type NavigationItem } from "@/data/navigation";
 import { brandName } from "@/data/products";
 import { cn } from "@/lib/utils";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { getCartTotals, useCartStore } from "@/store/cart-store";
 import { trackViewCart } from "@/lib/ga4-ecommerce";
 
-type HeaderNavItem = {
-  label: string;
-  href: string;
-  sale?: boolean;
-};
-
 type PublicCategoryNavRow = {
   name: string | null;
   slug: string | null;
 };
 
-export function Header() {
+export function Header({ initialNavigationItems }: { initialNavigationItems?: NavigationItem[] }) {
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountHref, setAccountHref] = useState("/account/login");
-  const [navigationItems, setNavigationItems] = useState<HeaderNavItem[]>(topLevelNavigation);
+  const fallbackNavigationItems =
+    initialNavigationItems && initialNavigationItems.length > 0 ? initialNavigationItems : topLevelNavigation;
+  const [navigationItems, setNavigationItems] = useState<NavigationItem[]>(fallbackNavigationItems);
   const items = useCartStore((state) => state.items);
   const totals = getCartTotals(items);
 
@@ -74,7 +70,7 @@ export function Header() {
     const supabase = getSupabaseBrowserClient();
 
     if (!supabase) {
-      setNavigationItems(topLevelNavigation);
+      setNavigationItems(fallbackNavigationItems);
       return;
     }
 
@@ -94,7 +90,7 @@ export function Header() {
       }
 
       if (error || !data || data.length === 0) {
-        setNavigationItems(topLevelNavigation);
+        setNavigationItems(fallbackNavigationItems);
         return;
       }
 
@@ -105,7 +101,7 @@ export function Header() {
 
           return name && slug ? { label: name, href: `/collections/${slug}` } : null;
         })
-        .filter((item): item is HeaderNavItem => Boolean(item));
+        .filter((item): item is NavigationItem => Boolean(item));
 
       setNavigationItems(
         categoryItems.length > 0
@@ -115,7 +111,7 @@ export function Header() {
               { label: "About Us", href: "/about" },
               { label: "Sale", href: "/sale", sale: true }
             ]
-          : topLevelNavigation
+          : fallbackNavigationItems
       );
     }
 
@@ -124,7 +120,7 @@ export function Header() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [fallbackNavigationItems]);
 
   return (
     <>

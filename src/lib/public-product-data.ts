@@ -15,6 +15,7 @@ import {
   type Product
 } from "@/data/products";
 import { collectionConfigs, type CollectionConfig } from "@/data/collections";
+import { topLevelNavigation, type NavigationItem } from "@/data/navigation";
 import { categorySlugFromName } from "@/lib/admin-categories";
 import { normalizeProductHighlightIconKey } from "@/lib/product-highlight-icons";
 import { DEFAULT_SHIPPING_RATE, standardShippingSentence } from "@/lib/shipping";
@@ -861,6 +862,28 @@ function categoryFilterOptionsFromCategories(categories: CategoryMetadata[], all
   ];
 }
 
+function headerNavigationFromCategories(categories: CategoryMetadata[]): NavigationItem[] {
+  const categoryItems = categories
+    .filter((category) => category.showInNav)
+    .map((category) => ({
+      label: category.name,
+      href: `/collections/${category.slug}`
+    }));
+
+  return categoryItems.length > 0
+    ? [
+        { label: "Shop All", href: "/collections" },
+        ...categoryItems,
+        { label: "About Us", href: "/about" },
+        { label: "Sale", href: "/sale", sale: true }
+      ]
+    : topLevelNavigation;
+}
+
+export async function getPublicHeaderNavigationItems() {
+  return headerNavigationFromCategories(await fetchActiveCategoryMetadata());
+}
+
 function collectionCategoryFilterOptions(
   config: CollectionConfig,
   activeCategories: CategoryMetadata[]
@@ -1050,6 +1073,7 @@ function collectionConfigWithCategory(
 ): CollectionConfig {
   const categoryFilterOptions = collectionCategoryFilterOptions(config, activeCategories);
   const exploreLinks = exploreLinksFromCategories(activeCategories);
+  const headerNavigationItems = headerNavigationFromCategories(activeCategories);
   const labeledProducts = productsWithCategoryLabels(products, activeCategories);
 
   if (!category) {
@@ -1058,6 +1082,7 @@ function collectionConfigWithCategory(
       mobileFilters: collectionMobileFilters(config, null),
       ...(categoryFilterOptions ? { categoryFilterOptions } : {}),
       exploreLinks,
+      headerNavigationItems,
       productCountLabel: productCountLabel(labeledProducts, config.slug),
       products: labeledProducts
     };
@@ -1076,6 +1101,7 @@ function collectionConfigWithCategory(
     mobileFilters: collectionMobileFilters(config, category),
     ...(categoryFilterOptions ? { categoryFilterOptions } : {}),
     exploreLinks,
+    headerNavigationItems,
     productCountLabel: productCountLabel(labeledProducts, category.slug),
     products: labeledProducts
   };

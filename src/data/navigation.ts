@@ -1,3 +1,9 @@
+export type NavigationItem = {
+  label: string;
+  href: string;
+  sale?: boolean;
+};
+
 export const topLevelNavigation = [
   { label: "Shop All", href: "/collections" },
   { label: "Dog Toys", href: "/collections/dog-toys" },
@@ -7,7 +13,7 @@ export const topLevelNavigation = [
   { label: "Beds & Blankets", href: "/collections/beds-blankets" },
   { label: "About Us", href: "/about" },
   { label: "Sale", href: "/sale", sale: true }
-];
+] satisfies NavigationItem[];
 
 export const shopFooterLinks = [
   { label: "Dog Toys", href: "/collections/dog-toys" },
