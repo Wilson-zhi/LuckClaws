@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { CollectionPage } from "@/components/collection/CollectionPage";
-import { getPublicCollectionConfig } from "@/lib/public-product-data";
+import { getPublicCollectionConfigForSlug } from "@/lib/public-product-data";
 import { createSeoMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const config = await getPublicCollectionConfig("catToys");
+  const config = await getPublicCollectionConfigForSlug("cat-toys", "catToys");
 
   return createSeoMetadata({
     title: config.seoTitle,
@@ -16,5 +16,5 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function CatToysCollectionPage() {
-  return <CollectionPage config={await getPublicCollectionConfig("catToys")} />;
+  return <CollectionPage config={await getPublicCollectionConfigForSlug("cat-toys", "catToys")} />;
 }

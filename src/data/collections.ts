@@ -56,7 +56,7 @@ export const collectionConfigs = {
     primaryCtaHref: "/products/interactive-snuffle-mat",
     featuredProductId: "interactive-snuffle-mat",
     featuredLabel: "Best Seller",
-    mobileFilters: ["All Dog Toys", "Interactive", "Chew Toys", "Plush & Squeaky", "Fetch & Toss"],
+    mobileFilters: ["All Collection", "Interactive", "Chew Toys", "Plush & Squeaky", "Fetch & Toss"],
     products: productList([
       "interactive-snuffle-mat",
       "durable-rubber-bone",
@@ -73,7 +73,7 @@ export const collectionConfigs = {
     seoTitle: `Cat Toys | ${brandName}`,
     seoDescription: "Shop cat toys and enrichment favorites designed for curious cats and playful homes.",
     productCountLabel: "4 products",
-    mobileFilters: ["All Cat Toys", "Chase", "Catnip", "Plush", "Enrichment"],
+    mobileFilters: ["All Collection", "Chase", "Catnip", "Plush", "Enrichment"],
     products: productList([
       "organic-catnip-mouse",
       "natural-feather-teaser",

@@ -127,6 +127,9 @@ const productSelectWithOptionalJson =
 const productSelectBase =
   "id, title, slug, category, category_slug, description, price, compare_at_price, currency, image_url, status, inventory_status, stock_quantity, is_featured, is_sale, sort_order, homepage_section, badge, published_at, seo_title, seo_description, google_product_category, created_at, updated_at";
 
+const categoryMetadataSelect =
+  "id, name, slug, description, image_url, seo_title, seo_description, google_product_category, status, sort_order, show_in_nav, show_on_home, created_at, updated_at";
+
 const optionalJsonColumns = [
     "images",
     "image_alt",
@@ -720,6 +723,31 @@ async function fetchImageRowsByProductId(productIds: string[]) {
   }, new Map<string, SupabaseProductImageRow[]>());
 }
 
+function categoryMetadataFromRow(row: SupabaseCategoryMetadataRow): CategoryMetadata | null {
+  const name = nullableString(row.name);
+  const slug = nullableString(row.slug);
+
+  if (!name || !slug) {
+    return null;
+  }
+
+  return {
+    name,
+    slug,
+    description: nullableString(row.description),
+    imageUrl: nullableString(row.image_url),
+    seoTitle: nullableString(row.seo_title),
+    seoDescription: nullableString(row.seo_description),
+    googleProductCategory: nullableString(row.google_product_category),
+    status: nullableString(row.status),
+    sortOrder: numberFromValue(row.sort_order),
+    showInNav: row.show_in_nav === true,
+    showOnHome: row.show_on_home === true,
+    createdAt: nullableString(row.created_at),
+    updatedAt: nullableString(row.updated_at)
+  };
+}
+
 async function fetchCategoryMetadata() {
   const supabase = getSupabaseAdminClient();
 
@@ -729,9 +757,7 @@ async function fetchCategoryMetadata() {
 
   const { data, error } = await supabase
     .from("product_categories")
-    .select(
-      "id, name, slug, description, image_url, seo_title, seo_description, google_product_category, status, sort_order, show_in_nav, show_on_home, created_at, updated_at"
-    )
+    .select(categoryMetadataSelect)
     .order("sort_order", { ascending: true, nullsFirst: false });
 
   if (error) {
@@ -740,34 +766,38 @@ async function fetchCategoryMetadata() {
 
   return (data ?? []).reduce((categoryMap, category) => {
     const row = category as SupabaseCategoryMetadataRow;
-    const name = nullableString(row.name);
-    const slug = nullableString(row.slug);
+    const metadata = categoryMetadataFromRow(row);
 
-    if (!name || !slug) {
+    if (!metadata) {
       return categoryMap;
     }
 
-    const metadata: CategoryMetadata = {
-      name,
-      slug,
-      description: nullableString(row.description),
-      imageUrl: nullableString(row.image_url),
-      seoTitle: nullableString(row.seo_title),
-      seoDescription: nullableString(row.seo_description),
-      googleProductCategory: nullableString(row.google_product_category),
-      status: nullableString(row.status),
-      sortOrder: numberFromValue(row.sort_order),
-      showInNav: row.show_in_nav === true,
-      showOnHome: row.show_on_home === true,
-      createdAt: nullableString(row.created_at),
-      updatedAt: nullableString(row.updated_at)
-    };
-
-    categoryMap.set(slug, metadata);
-    categoryMap.set(name.toLowerCase(), metadata);
+    categoryMap.set(metadata.slug, metadata);
+    categoryMap.set(metadata.name.toLowerCase(), metadata);
 
     return categoryMap;
   }, new Map<string, CategoryMetadata>());
+}
+
+async function fetchActiveCategoryMetadataBySlug(slug: string) {
+  const supabase = getSupabaseAdminClient();
+
+  if (!supabase) {
+    return null;
+  }
+
+  const { data, error } = await supabase
+    .from("product_categories")
+    .select(categoryMetadataSelect)
+    .eq("slug", slug)
+    .eq("status", "active")
+    .maybeSingle();
+
+  if (error || !data) {
+    return null;
+  }
+
+  return categoryMetadataFromRow(data as SupabaseCategoryMetadataRow);
 }
 
 async function fetchActiveCategoryMetadata() {
@@ -847,11 +877,30 @@ function collectionCategoryFilterOptions(
 }
 
 function collectionMobileFilters(config: CollectionConfig, category: CategoryMetadata | null) {
-  if (!category) {
+  if (config.slug === "all" || config.slug === "sale") {
     return config.mobileFilters;
   }
 
-  return [`All ${category.name}`, ...config.mobileFilters.slice(1)];
+  return [`All ${category?.name ?? config.title}`, ...config.mobileFilters.slice(1)];
+}
+
+function productsWithCategoryLabels(products: Product[], categories: CategoryMetadata[]) {
+  if (categories.length === 0) {
+    return products;
+  }
+
+  const categoryBySlug = new Map(categories.map((category) => [category.slug, category]));
+
+  return products.map((product) => {
+    const category = categoryBySlug.get(product.collectionSlug);
+
+    return category && product.category !== category.name
+      ? {
+          ...product,
+          category: category.name
+        }
+      : product;
+  });
 }
 
 function sortProductsForStorefront(products: Product[]) {
@@ -1001,14 +1050,16 @@ function collectionConfigWithCategory(
 ): CollectionConfig {
   const categoryFilterOptions = collectionCategoryFilterOptions(config, activeCategories);
   const exploreLinks = exploreLinksFromCategories(activeCategories);
+  const labeledProducts = productsWithCategoryLabels(products, activeCategories);
 
   if (!category) {
     return {
       ...config,
+      mobileFilters: collectionMobileFilters(config, null),
       ...(categoryFilterOptions ? { categoryFilterOptions } : {}),
       exploreLinks,
-      productCountLabel: productCountLabel(products, config.slug),
-      products
+      productCountLabel: productCountLabel(labeledProducts, config.slug),
+      products: labeledProducts
     };
   }
 
@@ -1025,8 +1076,8 @@ function collectionConfigWithCategory(
     mobileFilters: collectionMobileFilters(config, category),
     ...(categoryFilterOptions ? { categoryFilterOptions } : {}),
     exploreLinks,
-    productCountLabel: productCountLabel(products, category.slug),
-    products
+    productCountLabel: productCountLabel(labeledProducts, category.slug),
+    products: labeledProducts
   };
 }
 
@@ -1086,11 +1137,13 @@ export async function getPublicCollectionConfig(
 }
 
 export async function getPublicCollectionConfigBySlug(slug: string) {
-  const categoryMap = await fetchCategoryMetadata();
-  const category = categoryMap.get(slug) ?? null;
+  const [category, categoryMap] = await Promise.all([
+    fetchActiveCategoryMetadataBySlug(slug),
+    fetchCategoryMetadata()
+  ]);
   const activeCategories = activeCategoriesFromMap(categoryMap);
 
-  if (!category || category.status !== "active") {
+  if (!category) {
     return null;
   }
 
@@ -1107,6 +1160,13 @@ export async function getPublicCollectionConfigBySlug(slug: string) {
   const products = productsForCollection(category.slug, await getPublicProducts());
 
   return collectionConfigWithCategory(baseConfig, category, products, activeCategories);
+}
+
+export async function getPublicCollectionConfigForSlug(
+  slug: string,
+  fallbackKey: keyof typeof collectionConfigs
+): Promise<CollectionConfig> {
+  return (await getPublicCollectionConfigBySlug(slug)) ?? getPublicCollectionConfig(fallbackKey);
 }
 
 export async function getPublicHomepageCategories(): Promise<PublicCategoryCard[]> {
