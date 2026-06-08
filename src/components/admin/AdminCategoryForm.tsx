@@ -6,6 +6,7 @@ import { AdminGuard, useAdminAuth } from "@/components/admin/AdminGuard";
 import { AdminPageFrame } from "@/components/admin/AdminPageFrame";
 import { type AdminLabelKey, useAdminLanguage } from "@/components/admin/admin-language";
 import { categoryStatuses, slugifyCategoryName } from "@/lib/admin-categories";
+import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 type CategoryFormMode = "create" | "edit";
 
@@ -40,12 +41,6 @@ type AdminCategoryDetailRow = {
   updated_at: string | null;
 };
 
-type CategoryResponse = {
-  category?: AdminCategoryDetailRow;
-  errors?: Record<string, string>;
-  error?: string;
-};
-
 const emptyForm: CategoryFormState = {
   name: "",
   slug: "",
@@ -67,10 +62,8 @@ const textareaClass =
   "min-h-32 w-full rounded-md border border-outline-variant bg-white px-4 py-3 text-base outline-none transition focus:border-primary focus:ring-2 focus:ring-primary-container/30";
 
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-
-function cleanText(value: unknown) {
-  return typeof value === "string" ? value.trim() : "";
-}
+const categorySelectColumns =
+  "id, name, slug, description, image_url, seo_title, seo_description, google_product_category, status, sort_order, show_in_nav, show_on_home, created_at, updated_at";
 
 function formFromCategory(category: AdminCategoryDetailRow): CategoryFormState {
   return {
@@ -116,19 +109,28 @@ function validateForm(form: CategoryFormState, t: (key: AdminLabelKey) => string
   return errors;
 }
 
-function buildPayload(form: CategoryFormState) {
+function nullableFormValue(value: string) {
+  const cleaned = value.trim();
+
+  return cleaned || null;
+}
+
+function buildPayload(form: CategoryFormState, includeUpdatedAt = false) {
+  const sortOrder = form.sort_order.trim() ? Number(form.sort_order) : null;
+
   return {
     name: form.name.trim(),
     slug: form.slug.trim() || slugifyCategoryName(form.name),
-    description: cleanText(form.description),
-    image_url: cleanText(form.image_url),
+    description: nullableFormValue(form.description),
+    image_url: nullableFormValue(form.image_url),
     status: form.status,
-    sort_order: form.sort_order.trim(),
+    sort_order: Number.isFinite(sortOrder) ? sortOrder : null,
     show_in_nav: form.show_in_nav,
     show_on_home: form.show_on_home,
-    seo_title: cleanText(form.seo_title),
-    seo_description: cleanText(form.seo_description),
-    google_product_category: cleanText(form.google_product_category)
+    seo_title: nullableFormValue(form.seo_title),
+    seo_description: nullableFormValue(form.seo_description),
+    google_product_category: nullableFormValue(form.google_product_category),
+    ...(includeUpdatedAt ? { updated_at: new Date().toISOString() } : {})
   };
 }
 
@@ -142,52 +144,69 @@ function FieldError({ message }: { message?: string }) {
 
 function CategoryFormContent({ mode, categoryId }: { mode: CategoryFormMode; categoryId?: string }) {
   const router = useRouter();
-  const { accessToken } = useAdminAuth();
+  useAdminAuth();
   const { t } = useAdminLanguage();
+  const supabase = getSupabaseBrowserClient();
   const [form, setForm] = useState<CategoryFormState>(emptyForm);
   const [loading, setLoading] = useState(mode === "edit");
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState("");
+  const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
     if (mode !== "edit" || !categoryId) {
       return;
     }
 
+    if (!supabase) {
+      setFormError(t("supabaseMissing"));
+      setLoading(false);
+      return;
+    }
+
     let active = true;
+    const browserSupabase = supabase;
 
-    fetch(`/api/admin/categories/${encodeURIComponent(categoryId)}`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`
-      }
-    })
-      .then(async (response) => {
-        const payload = (await response.json()) as CategoryResponse;
+    async function loadCategory() {
+      try {
+        const { data, error } = await browserSupabase
+          .from("product_categories")
+          .select(categorySelectColumns)
+          .eq("id", categoryId)
+          .maybeSingle();
 
-        if (!response.ok || !payload.category) {
-          throw new Error(payload.error ?? t("unableToLoadCategory"));
+        if (error) {
+          throw error;
+        }
+
+        if (!data) {
+          if (active) {
+            setNotFound(true);
+          }
+          return;
         }
 
         if (active) {
-          setForm(formFromCategory(payload.category));
+          setForm(formFromCategory(data as AdminCategoryDetailRow));
         }
-      })
-      .catch((loadError: unknown) => {
+      } catch (loadError: unknown) {
         if (active) {
           setFormError(loadError instanceof Error ? loadError.message : t("unableToLoadCategory"));
         }
-      })
-      .finally(() => {
+      } finally {
         if (active) {
           setLoading(false);
         }
-      });
+      }
+    }
+
+    void loadCategory();
 
     return () => {
       active = false;
     };
-  }, [accessToken, categoryId, mode, t]);
+  }, [categoryId, mode, supabase, t]);
 
   const updateField = <Field extends keyof CategoryFormState>(field: Field, value: CategoryFormState[Field]) => {
     setForm((currentForm) => ({
@@ -215,27 +234,37 @@ function CategoryFormContent({ mode, categoryId }: { mode: CategoryFormMode; cat
       return;
     }
 
+    if (!supabase) {
+      setFormError(t("supabaseMissing"));
+      return;
+    }
+
     setSaving(true);
 
-    const response = await fetch(
-      mode === "edit" ? `/api/admin/categories/${encodeURIComponent(categoryId ?? "")}` : "/api/admin/categories",
-      {
-        method: mode === "edit" ? "PATCH" : "POST",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(buildPayload(form))
-      }
-    );
-
-    const payload = (await response.json().catch(() => ({}))) as CategoryResponse;
+    const payload = buildPayload(form, mode === "edit");
+    const result =
+      mode === "edit"
+        ? await supabase
+            .from("product_categories")
+            .update(payload)
+            .eq("id", categoryId ?? "")
+            .select("id")
+            .maybeSingle()
+        : await supabase
+            .from("product_categories")
+            .insert(payload)
+            .select("id")
+            .single();
 
     setSaving(false);
 
-    if (!response.ok) {
-      setErrors(payload.errors ?? {});
-      setFormError(payload.error ?? t("unableToSaveCategory"));
+    if (result.error) {
+      setFormError(result.error.message || t("unableToSaveCategory"));
+      return;
+    }
+
+    if (mode === "edit" && !result.data) {
+      setNotFound(true);
       return;
     }
 
@@ -246,6 +275,14 @@ function CategoryFormContent({ mode, categoryId }: { mode: CategoryFormMode; cat
     return (
       <div className="ambient-card p-6 text-sm leading-6 text-on-surface-variant">
         {t("loadingCategories")}
+      </div>
+    );
+  }
+
+  if (notFound) {
+    return (
+      <div className="ambient-card p-6 text-sm leading-6 text-on-surface-variant">
+        {t("categoryNotFound")}
       </div>
     );
   }

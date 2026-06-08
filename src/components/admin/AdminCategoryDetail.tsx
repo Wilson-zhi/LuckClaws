@@ -6,6 +6,7 @@ import { AdminGuard, useAdminAuth } from "@/components/admin/AdminGuard";
 import { AdminPageFrame } from "@/components/admin/AdminPageFrame";
 import { formatAdminStatus, useAdminLanguage } from "@/components/admin/admin-language";
 import { defaultCategorySortOrder } from "@/lib/admin-categories";
+import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 type AdminCategoryDetailRow = {
   id: string;
@@ -24,10 +25,8 @@ type AdminCategoryDetailRow = {
   updated_at: string | null;
 };
 
-type CategoryDetailPayload = {
-  category?: AdminCategoryDetailRow;
-  error?: string;
-};
+const categorySelectColumns =
+  "id, name, slug, description, image_url, seo_title, seo_description, google_product_category, status, sort_order, show_in_nav, show_on_home, created_at, updated_at";
 
 function displayValue(value: string | null, fallback: string) {
   return value?.trim() || fallback;
@@ -75,8 +74,9 @@ function DetailField({ label, value }: { label: string; value: ReactNode }) {
 }
 
 function CategoryDetailContent({ categoryId }: { categoryId: string }) {
-  const { accessToken } = useAdminAuth();
+  useAdminAuth();
   const { t } = useAdminLanguage();
+  const supabase = getSupabaseBrowserClient();
   const [category, setCategory] = useState<AdminCategoryDetailRow | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -84,39 +84,47 @@ function CategoryDetailContent({ categoryId }: { categoryId: string }) {
   const notProvidedLabel = t("notProvided");
 
   useEffect(() => {
+    if (!supabase) {
+      setError(t("supabaseMissing"));
+      setLoading(false);
+      return;
+    }
+
     let active = true;
+    const browserSupabase = supabase;
 
-    fetch(`/api/admin/categories/${encodeURIComponent(categoryId)}`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`
-      }
-    })
-      .then(async (response) => {
-        const payload = (await response.json()) as CategoryDetailPayload;
+    async function loadCategory() {
+      try {
+        const { data, error } = await browserSupabase
+          .from("product_categories")
+          .select(categorySelectColumns)
+          .eq("id", categoryId)
+          .maybeSingle();
 
-        if (!response.ok || !payload.category) {
-          throw new Error(payload.error ?? t("unableToLoadCategory"));
+        if (error) {
+          throw error;
         }
 
         if (active) {
-          setCategory(payload.category);
+          setCategory((data ?? null) as AdminCategoryDetailRow | null);
         }
-      })
-      .catch((loadError: unknown) => {
+      } catch (loadError: unknown) {
         if (active) {
           setError(loadError instanceof Error ? loadError.message : t("unableToLoadCategory"));
         }
-      })
-      .finally(() => {
+      } finally {
         if (active) {
           setLoading(false);
         }
-      });
+      }
+    }
+
+    void loadCategory();
 
     return () => {
       active = false;
     };
-  }, [accessToken, categoryId, t]);
+  }, [categoryId, supabase, t]);
 
   if (loading) {
     return (
