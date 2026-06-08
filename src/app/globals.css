@@ -51,6 +51,26 @@ img {
   @apply rounded-lg bg-surface-container-lowest shadow-ambient;
 }
 
+.newsletter-input[aria-invalid="true"] {
+  border-color: #ba1a1a;
+}
+
+.newsletter-input[aria-invalid="true"]:focus {
+  border-color: #ba1a1a;
+  box-shadow: 0 0 0 3px rgba(186, 26, 26, 0.14);
+}
+
+.newsletter-input:-webkit-autofill,
+.newsletter-input:-webkit-autofill:hover,
+.newsletter-input:-webkit-autofill:focus,
+.newsletter-input:-webkit-autofill:active {
+  border-color: #d8c3ad;
+  box-shadow: 0 0 0 1000px #ffffff inset;
+  caret-color: #191c1e;
+  -webkit-text-fill-color: #191c1e;
+  transition: background-color 9999s ease-in-out 0s;
+}
+
 .homepage-enter {
   animation: homepage-rise-in 480ms ease-out both;
 }
