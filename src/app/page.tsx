@@ -24,10 +24,10 @@ import { NewsletterSignup } from "@/components/sections/NewsletterSignup";
 import { CompactTrustBar, type CompactTrustItem } from "@/components/sections/CompactTrustBar";
 import { TrustBadges } from "@/components/sections/TrustBadges";
 import { SiteShell } from "@/components/layout/SiteShell";
-import { brandName, categories } from "@/data/products";
+import { brandName } from "@/data/products";
 import { type HomepageTrustBadgeIconKey } from "@/lib/homepage-content";
 import { getPublicHomepageSettings } from "@/lib/homepage-settings";
-import { getPublicHomepageProducts } from "@/lib/public-product-data";
+import { getPublicHomepageCategories, getPublicHomepageProducts } from "@/lib/public-product-data";
 import { absoluteUrl, createSeoMetadata, iconPath } from "@/lib/seo";
 import { freeShippingLabel } from "@/lib/shipping";
 
@@ -83,9 +83,10 @@ const valueHighlights = [
 ];
 
 export default async function HomePage() {
-  const [{ featuredProduct, featuredProducts, bestSellers, newArrivals }, homepageSettings] = await Promise.all([
+  const [{ featuredProduct, featuredProducts, bestSellers, newArrivals }, homepageSettings, homepageCategories] = await Promise.all([
     getPublicHomepageProducts(),
-    getPublicHomepageSettings()
+    getPublicHomepageSettings(),
+    getPublicHomepageCategories()
   ]);
   const { hero } = homepageSettings;
   const topTrustItems: CompactTrustItem[] = homepageSettings.trustBadges.map((badge) => ({
@@ -177,7 +178,7 @@ export default async function HomePage() {
           </Link>
         </div>
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
-          {categories.map((category) => (
+          {homepageCategories.map((category) => (
             <CategoryCard key={category.name} {...category} />
           ))}
         </div>

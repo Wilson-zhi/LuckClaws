@@ -3,6 +3,7 @@ import "server-only";
 import {
   bestSellers as staticBestSellers,
   brandName,
+  categories as staticCategories,
   getProductBySlug,
   mainProduct as staticMainProduct,
   newArrivals as staticNewArrivals,
@@ -81,15 +82,43 @@ type ProductLookupResult = {
 };
 
 type SupabaseCategoryMetadataRow = {
+  id?: string | null;
   name: string | null;
   slug: string | null;
+  description?: string | null;
+  image_url?: string | null;
+  seo_title?: string | null;
+  seo_description?: string | null;
   google_product_category: string | null;
+  status?: string | null;
+  sort_order?: number | string | null;
+  show_in_nav?: boolean | null;
+  show_on_home?: boolean | null;
+  created_at?: string | null;
+  updated_at?: string | null;
 };
 
 type CategoryMetadata = {
   name: string;
   slug: string;
+  description: string | null;
+  imageUrl: string | null;
+  seoTitle: string | null;
+  seoDescription: string | null;
   googleProductCategory: string | null;
+  status: string | null;
+  sortOrder: number | null;
+  showInNav: boolean;
+  showOnHome: boolean;
+  createdAt: string | null;
+  updatedAt: string | null;
+};
+
+export type PublicCategoryCard = {
+  name: string;
+  href: string;
+  image: string;
+  alt: string;
 };
 
 const productSelectWithOptionalJson =
@@ -124,6 +153,12 @@ const collectionSlugByCategory: Record<string, string> = {
 };
 
 const staticIndexBySlug = new Map(staticProducts.map((product, index) => [product.slug, index]));
+const staticCategoryBySlug = new Map(
+  staticCategories.map((category) => [
+    category.href.replace("/collections/", ""),
+    category
+  ])
+);
 const DEFAULT_SORT_ORDER = 9999;
 
 function cleanString(value: unknown) {
@@ -234,6 +269,14 @@ function sortOrderFromProduct(product: Product) {
   }
 
   return product.sortOrder;
+}
+
+function sortOrderFromCategory(category: CategoryMetadata) {
+  if (typeof category.sortOrder !== "number" || category.sortOrder <= 0) {
+    return DEFAULT_SORT_ORDER;
+  }
+
+  return category.sortOrder;
 }
 
 function recordFromUnknown(value: unknown): Record<string, unknown> | null {
@@ -685,7 +728,10 @@ async function fetchCategoryMetadata() {
 
   const { data, error } = await supabase
     .from("product_categories")
-    .select("name, slug, google_product_category");
+    .select(
+      "id, name, slug, description, image_url, seo_title, seo_description, google_product_category, status, sort_order, show_in_nav, show_on_home, created_at, updated_at"
+    )
+    .order("sort_order", { ascending: true, nullsFirst: false });
 
   if (error) {
     return new Map<string, CategoryMetadata>();
@@ -703,7 +749,17 @@ async function fetchCategoryMetadata() {
     const metadata: CategoryMetadata = {
       name,
       slug,
-      googleProductCategory: nullableString(row.google_product_category)
+      description: nullableString(row.description),
+      imageUrl: nullableString(row.image_url),
+      seoTitle: nullableString(row.seo_title),
+      seoDescription: nullableString(row.seo_description),
+      googleProductCategory: nullableString(row.google_product_category),
+      status: nullableString(row.status),
+      sortOrder: numberFromValue(row.sort_order),
+      showInNav: row.show_in_nav === true,
+      showOnHome: row.show_on_home === true,
+      createdAt: nullableString(row.created_at),
+      updatedAt: nullableString(row.updated_at)
     };
 
     categoryMap.set(slug, metadata);
@@ -711,6 +767,23 @@ async function fetchCategoryMetadata() {
 
     return categoryMap;
   }, new Map<string, CategoryMetadata>());
+}
+
+async function fetchActiveCategoryMetadata() {
+  const categoryMap = await fetchCategoryMetadata();
+  const uniqueCategories = new Map(Array.from(categoryMap.values()).map((category) => [category.slug, category]));
+
+  return Array.from(uniqueCategories.values())
+    .filter((category) => category.status === "active")
+    .sort((first, second) => {
+      const sortDifference = sortOrderFromCategory(first) - sortOrderFromCategory(second);
+
+      if (sortDifference !== 0) {
+        return sortDifference;
+      }
+
+      return first.name.localeCompare(second.name);
+    });
 }
 
 function sortProductsForStorefront(products: Product[]) {
@@ -833,6 +906,53 @@ function productCountLabel(products: Product[], collectionSlug: string) {
   return `${products.length} ${products.length === 1 ? "product" : "products"}`;
 }
 
+function fallbackCategoryCard(slug: string) {
+  return staticCategoryBySlug.get(slug);
+}
+
+function categoryCardFromMetadata(category: CategoryMetadata): PublicCategoryCard {
+  const fallback = fallbackCategoryCard(category.slug);
+
+  return {
+    name: category.name,
+    href: `/collections/${category.slug}`,
+    image: category.imageUrl ?? fallback?.image ?? "/images/category-dog-toys.jpg",
+    alt: fallback?.alt ?? `${brandName} ${category.name} category.`
+  };
+}
+
+function collectionConfigBySlug(slug: string) {
+  return Object.values(collectionConfigs).find((config) => config.slug === slug);
+}
+
+function collectionConfigWithCategory(
+  config: CollectionConfig,
+  category: CategoryMetadata | null,
+  products: Product[]
+): CollectionConfig {
+  if (!category) {
+    return {
+      ...config,
+      productCountLabel: productCountLabel(products, config.slug),
+      products
+    };
+  }
+
+  const description = category.description ?? config.description;
+
+  return {
+    ...config,
+    slug: category.slug,
+    href: `/collections/${category.slug}`,
+    title: category.name,
+    description,
+    seoTitle: category.seoTitle ?? `${category.name} | ${brandName}`,
+    seoDescription: category.seoDescription ?? description,
+    productCountLabel: productCountLabel(products, category.slug),
+    products
+  };
+}
+
 function fillSelection(selectedProducts: Product[], catalogProducts: Product[], limit: number) {
   const selectedSlugs = new Set(selectedProducts.map((product) => product.slug));
   const fillProducts = catalogProducts.filter((product) => !selectedSlugs.has(product.slug));
@@ -874,13 +994,53 @@ export async function getPublicCollectionConfig(
   key: keyof typeof collectionConfigs
 ): Promise<CollectionConfig> {
   const config = collectionConfigs[key];
-  const products = productsForCollection(config.slug, await getPublicProducts());
+  const categoryMap = await fetchCategoryMetadata();
+  const category = categoryMap.get(config.slug) ?? null;
+  const collectionSlug = category?.status === "active" ? category.slug : config.slug;
+  const products = productsForCollection(collectionSlug, await getPublicProducts());
 
-  return {
-    ...config,
-    productCountLabel: productCountLabel(products, config.slug),
-    products
+  return collectionConfigWithCategory(config, category?.status === "active" ? category : null, products);
+}
+
+export async function getPublicCollectionConfigBySlug(slug: string) {
+  const categoryMap = await fetchCategoryMetadata();
+  const category = categoryMap.get(slug) ?? null;
+
+  if (!category || category.status !== "active") {
+    return null;
+  }
+
+  const baseConfig = collectionConfigBySlug(slug) ?? {
+    slug,
+    href: `/collections/${slug}`,
+    title: category.name,
+    description: category.description ?? `Shop ${category.name} from ${brandName}.`,
+    seoTitle: category.seoTitle ?? `${category.name} | ${brandName}`,
+    seoDescription: category.seoDescription ?? category.description ?? `Shop ${category.name} from ${brandName}.`,
+    mobileFilters: [`All ${category.name}`],
+    products: []
   };
+  const products = productsForCollection(category.slug, await getPublicProducts());
+
+  return collectionConfigWithCategory(baseConfig, category, products);
+}
+
+export async function getPublicHomepageCategories(): Promise<PublicCategoryCard[]> {
+  const categories = (await fetchActiveCategoryMetadata())
+    .filter((category) => category.showOnHome)
+    .map(categoryCardFromMetadata);
+
+  return categories.length > 0 ? categories : staticCategories;
+}
+
+export async function getPublicCategoryCollectionRoutes() {
+  const categories = (await fetchActiveCategoryMetadata()).filter(
+    (category) => category.showInNav || category.showOnHome
+  );
+
+  return categories.length > 0
+    ? categories.map((category) => `/collections/${category.slug}`)
+    : staticCategories.map((category) => category.href);
 }
 
 export function pickPublicProductsByStaticProducts(

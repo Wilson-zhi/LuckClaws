@@ -12,11 +12,23 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { getCartTotals, useCartStore } from "@/store/cart-store";
 import { trackViewCart } from "@/lib/ga4-ecommerce";
 
+type HeaderNavItem = {
+  label: string;
+  href: string;
+  sale?: boolean;
+};
+
+type PublicCategoryNavRow = {
+  name: string | null;
+  slug: string | null;
+};
+
 export function Header() {
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountHref, setAccountHref] = useState("/account/login");
+  const [navigationItems, setNavigationItems] = useState<HeaderNavItem[]>(topLevelNavigation);
   const items = useCartStore((state) => state.items);
   const totals = getCartTotals(items);
 
@@ -58,6 +70,62 @@ export function Header() {
     };
   }, []);
 
+  useEffect(() => {
+    const supabase = getSupabaseBrowserClient();
+
+    if (!supabase) {
+      setNavigationItems(topLevelNavigation);
+      return;
+    }
+
+    let active = true;
+    const browserSupabase = supabase;
+
+    async function loadPublicNavigation() {
+      const { data, error } = await browserSupabase
+        .from("product_categories")
+        .select("name, slug")
+        .eq("status", "active")
+        .eq("show_in_nav", true)
+        .order("sort_order", { ascending: true, nullsFirst: false });
+
+      if (!active) {
+        return;
+      }
+
+      if (error || !data || data.length === 0) {
+        setNavigationItems(topLevelNavigation);
+        return;
+      }
+
+      const categoryItems = (data as PublicCategoryNavRow[])
+        .map((category) => {
+          const name = category.name?.trim();
+          const slug = category.slug?.trim();
+
+          return name && slug ? { label: name, href: `/collections/${slug}` } : null;
+        })
+        .filter((item): item is HeaderNavItem => Boolean(item));
+
+      setNavigationItems(
+        categoryItems.length > 0
+          ? [
+              { label: "Shop All", href: "/collections" },
+              ...categoryItems,
+              { label: "About Us", href: "/about" },
+              { label: "Sale", href: "/sale", sale: true }
+            ]
+          : topLevelNavigation
+      );
+    }
+
+    void loadPublicNavigation();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
   return (
     <>
       <header className="sticky top-0 z-40 border-b border-outline-variant/50 bg-surface-container-lowest/95 backdrop-blur">
@@ -67,7 +135,7 @@ export function Header() {
           </Link>
           <nav className="min-w-0 flex-1" aria-label="Primary navigation">
             <ul className="flex items-center gap-6 text-sm font-semibold text-on-surface-variant">
-              {topLevelNavigation.map((item) => (
+              {navigationItems.map((item) => (
                 <li key={item.label}>
                   <Link
                     href={item.href}
@@ -145,7 +213,7 @@ export function Header() {
         {menuOpen && (
           <nav className="border-t border-outline-variant/50 bg-surface-container-lowest px-4 py-4 lg:hidden" aria-label="Mobile navigation">
             <ul className="grid gap-2">
-              {topLevelNavigation.map((item) => (
+              {navigationItems.map((item) => (
                 <li key={item.label}>
                   <Link
                     href={item.href}

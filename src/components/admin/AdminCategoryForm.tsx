@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { type FormEvent, useEffect, useState } from "react";
+import { type ChangeEvent, type FormEvent, useEffect, useState } from "react";
 import { AdminGuard, useAdminAuth } from "@/components/admin/AdminGuard";
 import { AdminPageFrame } from "@/components/admin/AdminPageFrame";
 import { type AdminLabelKey, useAdminLanguage } from "@/components/admin/admin-language";
@@ -61,6 +61,10 @@ const inputClass =
 const textareaClass =
   "min-h-32 w-full rounded-md border border-outline-variant bg-white px-4 py-3 text-base outline-none transition focus:border-primary focus:ring-2 focus:ring-primary-container/30";
 
+const CATEGORY_IMAGE_BUCKET = "category-images";
+const MAX_CATEGORY_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
+const acceptedCategoryImageTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
+
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const categorySelectColumns =
   "id, name, slug, description, image_url, seo_title, seo_description, google_product_category, status, sort_order, show_in_nav, show_on_home, created_at, updated_at";
@@ -115,6 +119,20 @@ function nullableFormValue(value: string) {
   return cleaned || null;
 }
 
+function sanitizePathSegment(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9._-]/g, "")
+    .replace(/-+/g, "-")
+    .replace(/^[._-]+|[._-]+$/g, "");
+}
+
+function safeFileName(fileName: string) {
+  return sanitizePathSegment(fileName) || "category-image";
+}
+
 function buildPayload(form: CategoryFormState, includeUpdatedAt = false) {
   const sortOrder = form.sort_order.trim() ? Number(form.sort_order) : null;
 
@@ -150,6 +168,9 @@ function CategoryFormContent({ mode, categoryId }: { mode: CategoryFormMode; cat
   const [form, setForm] = useState<CategoryFormState>(emptyForm);
   const [loading, setLoading] = useState(mode === "edit");
   const [saving, setSaving] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadMessage, setUploadMessage] = useState("");
+  const [uploadError, setUploadError] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState("");
   const [notFound, setNotFound] = useState(false);
@@ -221,6 +242,60 @@ function CategoryFormContent({ mode, categoryId }: { mode: CategoryFormMode; cat
       name,
       slug: currentForm.slug ? currentForm.slug : slugifyCategoryName(name)
     }));
+  };
+
+  const uploadCategoryImage = async (file: File) => {
+    if (!supabase) {
+      throw new Error(t("uploadConfigMissing"));
+    }
+
+    if (!acceptedCategoryImageTypes.has(file.type)) {
+      throw new Error(t("chooseValidImage"));
+    }
+
+    if (file.size > MAX_CATEGORY_IMAGE_SIZE_BYTES) {
+      throw new Error(t("imageSizeLimit"));
+    }
+
+    const folder = sanitizePathSegment(form.slug || categoryId || "uploads") || "uploads";
+    const storagePath = `categories/${folder}/${Date.now()}-${safeFileName(file.name)}`;
+    const { error } = await supabase.storage.from(CATEGORY_IMAGE_BUCKET).upload(storagePath, file, {
+      cacheControl: "31536000",
+      contentType: file.type,
+      upsert: false
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    const { data } = supabase.storage.from(CATEGORY_IMAGE_BUCKET).getPublicUrl(storagePath);
+
+    return data.publicUrl;
+  };
+
+  const handleCategoryImageUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] ?? null;
+    event.target.value = "";
+    setUploadMessage("");
+    setUploadError("");
+
+    if (!file) {
+      return;
+    }
+
+    setUploadingImage(true);
+
+    try {
+      const publicUrl = await uploadCategoryImage(file);
+
+      updateField("image_url", publicUrl);
+      setUploadMessage(t("categoryImageUploaded"));
+    } catch (uploadErrorResult: unknown) {
+      setUploadError(uploadErrorResult instanceof Error ? uploadErrorResult.message : t("unableToUploadCategoryImage"));
+    } finally {
+      setUploadingImage(false);
+    }
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -305,6 +380,11 @@ function CategoryFormContent({ mode, categoryId }: { mode: CategoryFormMode; cat
         <label className="grid gap-2 text-sm font-semibold text-on-surface">
           {t("categorySlug")}
           <input className={inputClass} value={form.slug} onChange={(event) => updateField("slug", event.target.value)} />
+          {mode === "edit" && (
+            <p className="text-xs font-semibold leading-5 text-on-surface-variant">
+              {t("categorySlugChangeWarning")}
+            </p>
+          )}
           <FieldError message={errors.slug} />
         </label>
 
@@ -317,13 +397,45 @@ function CategoryFormContent({ mode, categoryId }: { mode: CategoryFormMode; cat
           />
         </label>
 
-        <label className="grid gap-2 text-sm font-semibold text-on-surface md:col-span-2">
-          {t("imageUrl")}
-          <input
-            className={inputClass}
-            value={form.image_url}
-            onChange={(event) => updateField("image_url", event.target.value)}
-          />
+        <div className="grid gap-4 rounded-md bg-surface-container-low p-4 md:col-span-2">
+          <label className="grid gap-2 text-sm font-semibold text-on-surface">
+            {t("imageUrl")}
+            <input
+              className={inputClass}
+              value={form.image_url}
+              onChange={(event) => updateField("image_url", event.target.value)}
+            />
+          </label>
+
+          <div className="grid gap-3">
+            <label className="grid gap-2 text-sm font-semibold text-on-surface">
+              {t("uploadCategoryImage")}
+              <input
+                accept="image/jpeg,image/png,image/webp"
+                className="block w-full rounded-md border border-outline-variant bg-white px-4 py-3 text-sm text-on-surface file:mr-4 file:rounded-full file:border-0 file:bg-primary file:px-4 file:py-2 file:font-heading file:text-sm file:font-bold file:text-white hover:file:bg-primary/90"
+                disabled={uploadingImage}
+                type="file"
+                onChange={handleCategoryImageUpload}
+              />
+            </label>
+            <p className="text-xs font-semibold leading-5 text-on-surface-variant">
+              {t("categoryImageUploadHelper")}
+            </p>
+            {uploadingImage && (
+              <p className="text-sm font-semibold text-on-surface-variant">{t("uploadingImage")}</p>
+            )}
+            {uploadMessage && (
+              <p className="text-sm font-semibold text-primary" role="status">
+                {uploadMessage}
+              </p>
+            )}
+            {uploadError && (
+              <p className="text-sm font-semibold text-error" role="alert">
+                {uploadError}
+              </p>
+            )}
+          </div>
+
           {form.image_url ? (
             <div className="relative mt-2 h-40 w-40 overflow-hidden rounded-md bg-surface-container">
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -332,7 +444,7 @@ function CategoryFormContent({ mode, categoryId }: { mode: CategoryFormMode; cat
           ) : (
             <p className="text-sm leading-6 text-on-surface-variant">{t("noCategoryImage")}</p>
           )}
-        </label>
+        </div>
 
         <label className="grid gap-2 text-sm font-semibold text-on-surface">
           {t("status")}

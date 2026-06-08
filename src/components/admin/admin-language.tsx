@@ -149,6 +149,12 @@ export const adminLabels = {
   categoryImage: { zh: "分类图片", en: "Category image" },
   categoryImagePreview: { zh: "分类图片预览", en: "Category image preview" },
   noCategoryImage: { zh: "暂无分类图片", en: "No category image yet." },
+  uploadCategoryImage: { zh: "上传分类图片", en: "Upload category image" },
+  categoryImageUploadHelper: {
+    zh: "支持 JPEG、PNG、WebP，最大 5MB。上传成功后会自动填入图片链接。",
+    en: "Supports JPEG, PNG, and WebP up to 5MB. A successful upload automatically fills the image URL."
+  },
+  categoryImageUploaded: { zh: "分类图片已上传。", en: "Category image uploaded." },
   status: { zh: "状态", en: "Status" },
   active: { zh: "上架", en: "Active" },
   draft: { zh: "草稿", en: "Draft" },
@@ -414,6 +420,7 @@ export const adminLabels = {
   uploadConfigMissing: { zh: "当前构建未配置 Supabase 上传", en: "Supabase is not configured for uploads in this build." },
   unableToUploadGallery: { zh: "无法上传图库图片", en: "Unable to upload gallery images." },
   unableToUploadHomepageImage: { zh: "无法上传首页图片", en: "Unable to upload homepage image." },
+  unableToUploadCategoryImage: { zh: "无法上传分类图片", en: "Unable to upload category image." },
   addImageUrlFirst: { zh: "请先有主图链接，再添加到图库", en: "Add an Image URL before adding it to the gallery." },
   duplicateImageUrl: { zh: "此图片链接已在图库中", en: "This Image URL is already in the gallery." },
   imageUrlAdded: { zh: "图片链接已添加到图库", en: "Image URL added to gallery." },
@@ -447,7 +454,11 @@ export const adminLabels = {
     zh: "有内容的折叠内容区必须包含标题和内容",
     en: "Accordion sections with content must include title and content."
   },
-  slugChangeWarning: { zh: "修改 Slug 可能会改变前台商品链接", en: "Changing slug may change the public product URL." }
+  slugChangeWarning: { zh: "修改 Slug 可能会改变前台商品链接", en: "Changing slug may change the public product URL." },
+  categorySlugChangeWarning: {
+    zh: "修改 Slug 会改变公开分类链接。除非已计划重定向，否则请保持现有 Slug 稳定。",
+    en: "Changing slug changes the public collection URL. Keep existing slugs stable unless you plan redirects."
+  }
 } as const;
 
 export type AdminLabelKey = keyof typeof adminLabels;
