@@ -512,14 +512,15 @@ function mapSupabaseProduct(
     ...imageEntriesFromJson(row.images)
   ];
   const title = nullableString(row.title) ?? staticProduct?.name ?? titleFromSlug(slug);
-  const category = normalizeCategory(row.category, staticProduct?.category);
+  const canonicalCategory = normalizeCategory(row.category, staticProduct?.category);
   const categorySlug =
     nullableString(row.category_slug) ??
-    collectionSlugByCategory[category] ??
+    collectionSlugByCategory[canonicalCategory] ??
     staticProduct?.collectionSlug ??
-    categorySlugFromName(category);
+    categorySlugFromName(canonicalCategory);
   const categoryMetadataBySlug = categoryMetadata.get(categorySlug);
-  const categoryMetadataByName = categoryMetadata.get(category.toLowerCase());
+  const categoryMetadataByName = categoryMetadata.get(canonicalCategory.toLowerCase());
+  const category = categoryMetadataBySlug?.name ?? categoryMetadataByName?.name ?? canonicalCategory;
   const googleProductCategory =
     nullableString(row.google_product_category) ??
     categoryMetadataBySlug?.googleProductCategory ??
@@ -560,15 +561,15 @@ function mapSupabaseProduct(
   const productType =
     valueFromVariants(variants, "productType") ??
     staticProduct?.productType ??
-    defaultProductType(category, subcategory);
+    defaultProductType(canonicalCategory, subcategory);
   const careGuidance =
     valueFromVariants(variants, "careGuidance") ??
     staticProduct?.careGuidance ??
-    defaultCareGuidance(category);
+    defaultCareGuidance(canonicalCategory);
   const safetyNotice =
     valueFromVariants(variants, "safetyNotice") ??
     staticProduct?.safetyNotice ??
-    defaultSafetyNotice(category);
+    defaultSafetyNotice(canonicalCategory);
   const seoDescription = nullableString(row.seo_description);
   const shortDescription =
     nullableString(row.short_description) ?? seoDescription ?? staticProduct?.shortDescription ?? description;
@@ -771,6 +772,11 @@ async function fetchCategoryMetadata() {
 
 async function fetchActiveCategoryMetadata() {
   const categoryMap = await fetchCategoryMetadata();
+
+  return activeCategoriesFromMap(categoryMap);
+}
+
+function activeCategoriesFromMap(categoryMap: Map<string, CategoryMetadata>) {
   const uniqueCategories = new Map(Array.from(categoryMap.values()).map((category) => [category.slug, category]));
 
   return Array.from(uniqueCategories.values())
@@ -784,6 +790,68 @@ async function fetchActiveCategoryMetadata() {
 
       return first.name.localeCompare(second.name);
     });
+}
+
+function fallbackExploreLinks() {
+  return [
+    { label: "Dog Toys", href: "/collections/dog-toys" },
+    { label: "Cat Toys", href: "/collections/cat-toys" },
+    { label: "Pet Apparel", href: "/collections/pet-apparel" },
+    { label: "Walking Essentials", href: "/collections/walking-essentials" },
+    { label: "Beds & Blankets", href: "/collections/beds-blankets" },
+    { label: "Sale", href: "/sale" }
+  ];
+}
+
+function exploreLinksFromCategories(categories: CategoryMetadata[]) {
+  if (categories.length === 0) {
+    return fallbackExploreLinks();
+  }
+
+  return [
+    ...categories.map((category) => ({
+      label: category.name,
+      href: `/collections/${category.slug}`
+    })),
+    { label: "Sale", href: "/sale" }
+  ];
+}
+
+function categoryFilterOptionsFromCategories(categories: CategoryMetadata[], allLabel: string) {
+  if (categories.length === 0) {
+    return undefined;
+  }
+
+  return [
+    { label: allLabel, value: "__all__" },
+    ...categories.map((category) => ({
+      label: category.name,
+      value: category.slug
+    }))
+  ];
+}
+
+function collectionCategoryFilterOptions(
+  config: CollectionConfig,
+  activeCategories: CategoryMetadata[]
+): CollectionConfig["categoryFilterOptions"] {
+  if (config.slug === "all") {
+    return categoryFilterOptionsFromCategories(activeCategories, "All Products");
+  }
+
+  if (config.slug === "sale") {
+    return categoryFilterOptionsFromCategories(activeCategories, "All Sale");
+  }
+
+  return undefined;
+}
+
+function collectionMobileFilters(config: CollectionConfig, category: CategoryMetadata | null) {
+  if (!category) {
+    return config.mobileFilters;
+  }
+
+  return [`All ${category.name}`, ...config.mobileFilters.slice(1)];
 }
 
 function sortProductsForStorefront(products: Product[]) {
@@ -928,11 +996,17 @@ function collectionConfigBySlug(slug: string) {
 function collectionConfigWithCategory(
   config: CollectionConfig,
   category: CategoryMetadata | null,
-  products: Product[]
+  products: Product[],
+  activeCategories: CategoryMetadata[] = []
 ): CollectionConfig {
+  const categoryFilterOptions = collectionCategoryFilterOptions(config, activeCategories);
+  const exploreLinks = exploreLinksFromCategories(activeCategories);
+
   if (!category) {
     return {
       ...config,
+      ...(categoryFilterOptions ? { categoryFilterOptions } : {}),
+      exploreLinks,
       productCountLabel: productCountLabel(products, config.slug),
       products
     };
@@ -948,6 +1022,9 @@ function collectionConfigWithCategory(
     description,
     seoTitle: category.seoTitle ?? `${category.name} | ${brandName}`,
     seoDescription: category.seoDescription ?? description,
+    mobileFilters: collectionMobileFilters(config, category),
+    ...(categoryFilterOptions ? { categoryFilterOptions } : {}),
+    exploreLinks,
     productCountLabel: productCountLabel(products, category.slug),
     products
   };
@@ -996,15 +1073,22 @@ export async function getPublicCollectionConfig(
   const config = collectionConfigs[key];
   const categoryMap = await fetchCategoryMetadata();
   const category = categoryMap.get(config.slug) ?? null;
+  const activeCategories = activeCategoriesFromMap(categoryMap);
   const collectionSlug = category?.status === "active" ? category.slug : config.slug;
   const products = productsForCollection(collectionSlug, await getPublicProducts());
 
-  return collectionConfigWithCategory(config, category?.status === "active" ? category : null, products);
+  return collectionConfigWithCategory(
+    config,
+    category?.status === "active" ? category : null,
+    products,
+    activeCategories
+  );
 }
 
 export async function getPublicCollectionConfigBySlug(slug: string) {
   const categoryMap = await fetchCategoryMetadata();
   const category = categoryMap.get(slug) ?? null;
+  const activeCategories = activeCategoriesFromMap(categoryMap);
 
   if (!category || category.status !== "active") {
     return null;
@@ -1022,7 +1106,7 @@ export async function getPublicCollectionConfigBySlug(slug: string) {
   };
   const products = productsForCollection(category.slug, await getPublicProducts());
 
-  return collectionConfigWithCategory(baseConfig, category, products);
+  return collectionConfigWithCategory(baseConfig, category, products, activeCategories);
 }
 
 export async function getPublicHomepageCategories(): Promise<PublicCategoryCard[]> {

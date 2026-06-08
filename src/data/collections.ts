@@ -13,6 +13,14 @@ export type CollectionConfig = {
   featuredProductId?: string;
   featuredLabel?: string;
   mobileFilters: string[];
+  categoryFilterOptions?: Array<{
+    label: string;
+    value: string;
+  }>;
+  exploreLinks?: Array<{
+    label: string;
+    href: string;
+  }>;
   products: Product[];
 };
 
