@@ -32,15 +32,6 @@ const trustItems: CompactTrustItem[] = [
   { key: "materials", label: "Pet-conscious materials", Icon: Heart }
 ];
 
-const fallbackCollectionLinks = [
-  { label: "Dog Toys", href: "/collections/dog-toys" },
-  { label: "Cat Toys", href: "/collections/cat-toys" },
-  { label: "Pet Apparel", href: "/collections/pet-apparel" },
-  { label: "Walking Essentials", href: "/collections/walking-essentials" },
-  { label: "Beds & Blankets", href: "/collections/beds-blankets" },
-  { label: "Sale", href: "/sale" }
-];
-
 function normalizeFilterValue(value: string) {
   return value
     .toLowerCase()
@@ -69,12 +60,16 @@ function productMaterials(product: Product) {
     .filter(Boolean);
 }
 
+function productMatchesCollection(product: Product, collectionSlug: string) {
+  return product.collectionSlug === collectionSlug || normalizeFilterValue(product.category) === collectionSlug;
+}
+
 function matchesCategoryFilter(product: Product, selectedCategory: string) {
   if (selectedCategory === allFilterValue) {
     return true;
   }
 
-  if (product.collectionSlug === selectedCategory) {
+  if (productMatchesCollection(product, selectedCategory)) {
     return true;
   }
 
@@ -82,19 +77,18 @@ function matchesCategoryFilter(product: Product, selectedCategory: string) {
 
   switch (selectedCategory) {
     case "dog-toys":
-      return product.category === "Dog Toys";
     case "cat-toys":
-      return product.category === "Cat Toys";
+      return productMatchesCollection(product, selectedCategory);
     case "pet-apparel":
     case "apparel":
-      return product.category === "Pet Apparel";
+      return productMatchesCollection(product, "pet-apparel");
     case "walking":
     case "walking-essentials":
-      return product.category === "Walking Essentials";
+      return productMatchesCollection(product, "walking-essentials");
     case "beds":
     case "beds-blankets":
     case "comfort":
-      return product.category === "Beds & Blankets";
+      return productMatchesCollection(product, "beds-blankets");
     case "interactive":
     case "interactive-puzzles":
       return product.subcategory === "Enrichment Toys" || text.includes("puzzle");
@@ -105,35 +99,35 @@ function matchesCategoryFilter(product: Product, selectedCategory: string) {
     case "fetch-toss":
       return product.subcategory === "Fetch & Toss" || text.includes("fetch") || text.includes("tug");
     case "chase":
-      return (product.collectionSlug === "cat-toys" || product.category === "Cat Toys") && (text.includes("chase") || text.includes("feather") || text.includes("wand"));
+      return productMatchesCollection(product, "cat-toys") && (text.includes("chase") || text.includes("feather") || text.includes("wand"));
     case "catnip":
-      return (product.collectionSlug === "cat-toys" || product.category === "Cat Toys") && text.includes("catnip");
+      return productMatchesCollection(product, "cat-toys") && text.includes("catnip");
     case "plush":
-      return (product.collectionSlug === "cat-toys" || product.category === "Cat Toys") && (text.includes("plush") || text.includes("mouse"));
+      return productMatchesCollection(product, "cat-toys") && (text.includes("plush") || text.includes("mouse"));
     case "enrichment":
       return text.includes("enrichment");
     case "sweaters":
-      return (product.collectionSlug === "pet-apparel" || product.category === "Pet Apparel") && text.includes("sweater");
+      return productMatchesCollection(product, "pet-apparel") && text.includes("sweater");
     case "tees":
-      return (product.collectionSlug === "pet-apparel" || product.category === "Pet Apparel") && (text.includes("tee") || text.includes("t-shirt"));
+      return productMatchesCollection(product, "pet-apparel") && (text.includes("tee") || text.includes("t-shirt"));
     case "cozy-layers":
-      return (product.collectionSlug === "pet-apparel" || product.category === "Pet Apparel") && (text.includes("cozy") || text.includes("layer") || text.includes("sweater"));
+      return productMatchesCollection(product, "pet-apparel") && (text.includes("cozy") || text.includes("layer") || text.includes("sweater"));
     case "everyday":
-      return (product.collectionSlug === "pet-apparel" || product.category === "Pet Apparel") && text.includes("everyday");
+      return productMatchesCollection(product, "pet-apparel") && text.includes("everyday");
     case "leashes":
-      return (product.collectionSlug === "walking-essentials" || product.category === "Walking Essentials") && text.includes("leash");
+      return productMatchesCollection(product, "walking-essentials") && text.includes("leash");
     case "harnesses":
-      return (product.collectionSlug === "walking-essentials" || product.category === "Walking Essentials") && text.includes("harness");
+      return productMatchesCollection(product, "walking-essentials") && text.includes("harness");
     case "collars":
-      return (product.collectionSlug === "walking-essentials" || product.category === "Walking Essentials") && text.includes("collar");
+      return productMatchesCollection(product, "walking-essentials") && text.includes("collar");
     case "accessories":
-      return (product.collectionSlug === "walking-essentials" || product.category === "Walking Essentials") && (text.includes("accessory") || text.includes("pouch"));
+      return productMatchesCollection(product, "walking-essentials") && (text.includes("accessory") || text.includes("pouch"));
     case "blankets":
-      return (product.collectionSlug === "beds-blankets" || product.category === "Beds & Blankets") && text.includes("blanket");
+      return productMatchesCollection(product, "beds-blankets") && text.includes("blanket");
     case "rest-mats":
-      return (product.collectionSlug === "beds-blankets" || product.category === "Beds & Blankets") && text.includes("mat");
+      return productMatchesCollection(product, "beds-blankets") && text.includes("mat");
     case "cozy-favorites":
-      return (product.collectionSlug === "beds-blankets" || product.category === "Beds & Blankets") && (text.includes("cozy") || text.includes("comfort"));
+      return productMatchesCollection(product, "beds-blankets") && (text.includes("cozy") || text.includes("comfort"));
     default:
       return text.includes(selectedCategory.replace(/-/g, " "));
   }
@@ -180,7 +174,7 @@ export function CollectionPage({ config }: CollectionPageProps) {
 
   const totalCount = config.products.length;
   const itemListName = `${config.title} Collection`;
-  const collectionLinks = config.exploreLinks ?? fallbackCollectionLinks;
+  const collectionLinks = config.exploreLinks ?? [];
 
   const categoryOptions = useMemo<FilterOption[]>(
     () => {

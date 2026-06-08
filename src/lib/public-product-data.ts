@@ -825,12 +825,13 @@ function activeCategoriesFromMap(categoryMap: Map<string, CategoryMetadata>) {
 
 function fallbackExploreLinks() {
   return [
-    { label: "Dog Toys", href: "/collections/dog-toys" },
-    { label: "Cat Toys", href: "/collections/cat-toys" },
-    { label: "Pet Apparel", href: "/collections/pet-apparel" },
-    { label: "Walking Essentials", href: "/collections/walking-essentials" },
-    { label: "Beds & Blankets", href: "/collections/beds-blankets" },
-    { label: "Sale", href: "/sale" }
+    ...Object.values(collectionConfigs)
+      .filter((config) => config.slug !== "all" && config.slug !== "sale")
+      .map((config) => ({
+        label: config.title,
+        href: config.href
+      })),
+    { label: collectionConfigs.sale.title, href: collectionConfigs.sale.href }
   ];
 }
 
@@ -904,7 +905,7 @@ function collectionMobileFilters(config: CollectionConfig, category: CategoryMet
     return config.mobileFilters;
   }
 
-  return [`All ${category?.name ?? config.title}`, ...config.mobileFilters.slice(1)];
+  return [category ? `All ${category.name}` : (config.parentFilterLabel ?? `All ${config.title}`), ...config.mobileFilters.slice(1)];
 }
 
 function productsWithCategoryLabels(products: Product[], categories: CategoryMetadata[]) {
@@ -1017,24 +1018,18 @@ function isSaleProduct(product: Product) {
   return Boolean(product.isSale);
 }
 
+function productMatchesCollectionSlug(product: Product, slug: string) {
+  return product.collectionSlug === slug || categorySlugFromName(product.category) === slug;
+}
+
 function productsForCollection(slug: string, products: Product[]) {
   switch (slug) {
     case "all":
       return products;
-    case "beds-blankets":
-      return products.filter((product) => product.collectionSlug === slug || product.category === "Beds & Blankets");
-    case "cat-toys":
-      return products.filter((product) => product.collectionSlug === slug || product.category === "Cat Toys");
-    case "dog-toys":
-      return products.filter((product) => product.collectionSlug === slug || product.category === "Dog Toys");
-    case "pet-apparel":
-      return products.filter((product) => product.collectionSlug === slug || product.category === "Pet Apparel");
-    case "walking-essentials":
-      return products.filter((product) => product.collectionSlug === slug || product.category === "Walking Essentials");
     case "sale":
       return products.filter(isSaleProduct);
     default:
-      return products.filter((product) => product.collectionSlug === slug);
+      return products.filter((product) => productMatchesCollectionSlug(product, slug));
   }
 }
 
@@ -1098,6 +1093,7 @@ function collectionConfigWithCategory(
     description,
     seoTitle: category.seoTitle ?? `${category.name} | ${brandName}`,
     seoDescription: category.seoDescription ?? description,
+    parentFilterLabel: `All ${category.name}`,
     mobileFilters: collectionMobileFilters(config, category),
     ...(categoryFilterOptions ? { categoryFilterOptions } : {}),
     exploreLinks,

@@ -13,6 +13,7 @@ export type CollectionConfig = {
   primaryCtaHref?: string;
   featuredProductId?: string;
   featuredLabel?: string;
+  parentFilterLabel?: string;
   mobileFilters: string[];
   categoryFilterOptions?: Array<{
     label: string;
