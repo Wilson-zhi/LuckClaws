@@ -1,7 +1,21 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Award, Heart, ShieldCheck, Sparkles, Truck } from "lucide-react";
+import {
+  ArrowRight,
+  Award,
+  CheckCircle2,
+  Heart,
+  Leaf,
+  Lock,
+  Package as PackageIcon,
+  RotateCcw,
+  ShieldCheck,
+  Sparkles,
+  Star,
+  Truck,
+  type LucideIcon
+} from "lucide-react";
 import { ViewItemListTracker } from "@/components/analytics/EcommerceEventTrackers";
 import { CategoryCard } from "@/components/product/CategoryCard";
 import { ProductCard } from "@/components/product/ProductCard";
@@ -11,6 +25,8 @@ import { CompactTrustBar, type CompactTrustItem } from "@/components/sections/Co
 import { TrustBadges } from "@/components/sections/TrustBadges";
 import { SiteShell } from "@/components/layout/SiteShell";
 import { brandName, categories } from "@/data/products";
+import { type HomepageTrustBadgeIconKey } from "@/lib/homepage-content";
+import { getPublicHomepageSettings } from "@/lib/homepage-settings";
 import { getPublicHomepageProducts } from "@/lib/public-product-data";
 import { absoluteUrl, createSeoMetadata, iconPath } from "@/lib/seo";
 import { freeShippingLabel } from "@/lib/shipping";
@@ -31,12 +47,22 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-const topTrustItems: CompactTrustItem[] = [
-  { key: "shipping", label: freeShippingLabel, Icon: Truck },
-  { key: "support-policy", label: "Damaged or incorrect items covered", Icon: ShieldCheck },
-  { key: "secure", label: "Secure checkout", Icon: ShieldCheck },
-  { key: "materials", label: "Pet-conscious materials", Icon: Heart }
-];
+const homepageTrustIconMap = {
+  truck: Truck,
+  shield: ShieldCheck,
+  heart: Heart,
+  star: Star,
+  sparkles: Sparkles,
+  leaf: Leaf,
+  package: PackageIcon,
+  check: CheckCircle2,
+  rotate: RotateCcw,
+  lock: Lock
+} as const satisfies Record<HomepageTrustBadgeIconKey, LucideIcon>;
+
+function homepageTrustIcon(icon: HomepageTrustBadgeIconKey) {
+  return homepageTrustIconMap[icon] ?? ShieldCheck;
+}
 
 const valueHighlights = [
   {
@@ -57,7 +83,18 @@ const valueHighlights = [
 ];
 
 export default async function HomePage() {
-  const { featuredProduct, featuredProducts, bestSellers, newArrivals } = await getPublicHomepageProducts();
+  const [{ featuredProduct, featuredProducts, bestSellers, newArrivals }, homepageSettings] = await Promise.all([
+    getPublicHomepageProducts(),
+    getPublicHomepageSettings()
+  ]);
+  const { hero } = homepageSettings;
+  const topTrustItems: CompactTrustItem[] = homepageSettings.trustBadges.map((badge) => ({
+    key: badge.key,
+    label: badge.title,
+    Icon: homepageTrustIcon(badge.icon)
+  }));
+  const primaryButtonLink = hero.primaryButtonLink || featuredProduct.productUrl;
+  const secondaryButtonLink = hero.secondaryButtonLink || "/collections";
   const organizationStructuredData = {
     "@context": "https://schema.org",
     "@type": "Organization",
@@ -80,27 +117,26 @@ export default async function HomePage() {
       <section className="section-shell grid min-h-[620px] items-center gap-10 py-10 md:grid-cols-2 md:py-16">
         <div>
           <span className="inline-flex rounded-full bg-primary-container/20 px-4 py-2 text-xs font-bold uppercase tracking-wide text-primary">
-            Premium Pet Essentials
+            {hero.eyebrow}
           </span>
           <h1 className="mt-5 max-w-xl font-heading text-4xl font-extrabold leading-tight md:text-6xl">
-            Thoughtfully Designed Pet Essentials for Happier Dogs & Cats
+            {hero.title}
           </h1>
           <p className="mt-5 max-w-md text-base leading-7 text-on-surface-variant">
-            Shop enrichment toys, cozy apparel, walking essentials, beds, blankets, and everyday favorites made for
-            modern pet parents.
+            {hero.subtitle}
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
-              href={featuredProduct.productUrl}
+              href={primaryButtonLink}
               className="rounded-full bg-primary-container px-6 py-3 text-sm font-bold text-on-primary-container transition hover:bg-[#e08f00]"
             >
-              Shop Best Sellers
+              {hero.primaryButtonText}
             </Link>
             <Link
-              href="/collections"
+              href={secondaryButtonLink}
               className="rounded-full border border-outline-variant bg-white px-6 py-3 text-sm font-bold text-on-surface transition hover:border-primary hover:text-primary"
             >
-              Explore Collections
+              {hero.secondaryButtonText}
             </Link>
           </div>
         </div>
@@ -109,8 +145,8 @@ export default async function HomePage() {
           <div className="absolute inset-0 rounded-xl bg-[#F9E7D0] md:-inset-5" />
           <div className="relative overflow-hidden rounded-xl bg-surface-container shadow-lift">
             <Image
-              src="/images/hero-dog-running.jpg"
-              alt="A happy dog running through grass, representing LUCK CLAWS pet essentials."
+              src={hero.imageUrl}
+              alt={hero.imageAlt}
               width={720}
               height={760}
               priority
@@ -122,8 +158,8 @@ export default async function HomePage() {
               <Award aria-hidden className="h-5 w-5" />
             </span>
             <div className="text-sm">
-              <p className="font-bold">Featured Pick</p>
-              <p className="text-on-surface-variant">Everyday enrichment</p>
+              <p className="font-bold">{hero.featuredLabel}</p>
+              <p className="text-on-surface-variant">{hero.featuredText}</p>
             </div>
           </div>
         </div>

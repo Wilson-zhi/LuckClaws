@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Box, LayoutDashboard, Package, Tags, Users } from "lucide-react";
+import { Box, Home, LayoutDashboard, Package, Tags, Users } from "lucide-react";
 import {
   AdminLanguageProvider,
   type AdminLabel,
@@ -23,6 +23,7 @@ type AdminPageFrameProps = {
 
 const adminNavItems = [
   { labelKey: "dashboard", href: "/admin", Icon: LayoutDashboard },
+  { labelKey: "homepage", href: "/admin/homepage", Icon: Home },
   { labelKey: "orders", href: "/admin/orders", Icon: Package },
   { labelKey: "customers", href: "/admin/customers", Icon: Users },
   { labelKey: "categories", href: "/admin/categories", Icon: Tags },
