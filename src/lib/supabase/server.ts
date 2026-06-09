@@ -3,6 +3,12 @@ import { createClient, type SupabaseClient, type User } from "@supabase/supabase
 
 let adminClient: SupabaseClient | null = null;
 
+function getBearerTokenFromRequest(request: Request) {
+  const authorizationHeader = request.headers.get("authorization");
+
+  return authorizationHeader?.match(/^Bearer\s+(.+)$/i)?.[1] ?? null;
+}
+
 export function getSupabaseAdminClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.SUPABASE_SECRET_KEY;
@@ -23,9 +29,31 @@ export function getSupabaseAdminClient() {
   return adminClient;
 }
 
+export function getSupabaseAuthenticatedClientFromRequest(request: Request) {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey =
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const token = getBearerTokenFromRequest(request);
+
+  if (!supabaseUrl || !supabaseKey || !token) {
+    return null;
+  }
+
+  return createClient(supabaseUrl, supabaseKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    },
+    global: {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    }
+  });
+}
+
 export async function getUserFromRequest(request: Request): Promise<User | null> {
-  const authorizationHeader = request.headers.get("authorization");
-  const token = authorizationHeader?.match(/^Bearer\s+(.+)$/i)?.[1];
+  const token = getBearerTokenFromRequest(request);
 
   if (!token) {
     return null;

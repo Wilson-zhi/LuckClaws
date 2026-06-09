@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAdminFromRequest } from "@/lib/admin-auth";
-import { getSupabaseAdminClient } from "@/lib/supabase/server";
+import { getSupabaseAuthenticatedClientFromRequest } from "@/lib/supabase/server";
 
 type RouteContext = {
   params: Promise<{
@@ -17,11 +17,11 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     return NextResponse.json({ error: auth.message }, { status: auth.status });
   }
 
-  const supabase = getSupabaseAdminClient();
+  const supabase = getSupabaseAuthenticatedClientFromRequest(request);
 
   if (!supabase) {
     return NextResponse.json(
-      { error: "Supabase server environment variables are not configured." },
+      { error: "Authenticated Supabase session is not available." },
       { status: 500 }
     );
   }
@@ -50,7 +50,8 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     .maybeSingle();
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("Unable to update newsletter subscriber:", error.message);
+    return NextResponse.json({ error: "Unable to update subscriber status." }, { status: 500 });
   }
 
   if (!data) {
@@ -67,11 +68,11 @@ export async function DELETE(request: Request, { params }: RouteContext) {
     return NextResponse.json({ error: auth.message }, { status: auth.status });
   }
 
-  const supabase = getSupabaseAdminClient();
+  const supabase = getSupabaseAuthenticatedClientFromRequest(request);
 
   if (!supabase) {
     return NextResponse.json(
-      { error: "Supabase server environment variables are not configured." },
+      { error: "Authenticated Supabase session is not available." },
       { status: 500 }
     );
   }
@@ -85,7 +86,8 @@ export async function DELETE(request: Request, { params }: RouteContext) {
   const { error } = await supabase.from("newsletter_subscribers").delete().eq("id", id);
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("Unable to delete newsletter subscriber:", error.message);
+    return NextResponse.json({ error: "Unable to delete subscriber." }, { status: 500 });
   }
 
   return NextResponse.json({ ok: true });

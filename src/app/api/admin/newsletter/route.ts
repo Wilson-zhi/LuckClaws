@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAdminFromRequest } from "@/lib/admin-auth";
-import { getSupabaseAdminClient } from "@/lib/supabase/server";
+import { getSupabaseAuthenticatedClientFromRequest } from "@/lib/supabase/server";
 
 export type AdminNewsletterSubscriberRow = {
   id: string;
@@ -18,11 +18,11 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: auth.message }, { status: auth.status });
   }
 
-  const supabase = getSupabaseAdminClient();
+  const supabase = getSupabaseAuthenticatedClientFromRequest(request);
 
   if (!supabase) {
     return NextResponse.json(
-      { error: "Supabase server environment variables are not configured." },
+      { error: "Authenticated Supabase session is not available." },
       { status: 500 }
     );
   }
@@ -33,7 +33,8 @@ export async function GET(request: Request) {
     .order("created_at", { ascending: false });
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("Unable to load newsletter subscribers:", error.message);
+    return NextResponse.json({ error: "Unable to load newsletter subscribers." }, { status: 500 });
   }
 
   return NextResponse.json({
