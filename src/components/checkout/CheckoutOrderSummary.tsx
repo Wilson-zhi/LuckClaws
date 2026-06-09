@@ -5,10 +5,12 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { BeginCheckoutTracker } from "@/components/analytics/EcommerceEventTrackers";
+import { DiscountCodeBox } from "@/components/checkout/DiscountCodeBox";
 import { readBuyNowCheckoutItem } from "@/lib/buy-now-checkout";
+import { type AppliedDiscount } from "@/lib/discounts";
 import { standardShippingSentence, variableShippingSentence } from "@/lib/shipping";
 import { useCartStore, getCartTotals, productById, type CartItem } from "@/store/cart-store";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, roundMoney } from "@/lib/utils";
 
 export function CheckoutOrderSummary() {
   const searchParams = useSearchParams();
@@ -16,6 +18,7 @@ export function CheckoutOrderSummary() {
   const isBuyNowMode = searchParams.get("mode") === "buy-now";
   const [buyNowItem, setBuyNowItem] = useState<CartItem | null>(null);
   const [buyNowLoaded, setBuyNowLoaded] = useState(!isBuyNowMode);
+  const [appliedDiscount, setAppliedDiscount] = useState<AppliedDiscount | null>(null);
 
   useEffect(() => {
     if (!isBuyNowMode) {
@@ -37,6 +40,8 @@ export function CheckoutOrderSummary() {
   }, [buyNowItem, buyNowLoaded, cartItems, isBuyNowMode]);
 
   const totals = getCartTotals(checkoutItems);
+  const discountAmount = appliedDiscount?.amount ?? 0;
+  const finalTotal = roundMoney(Math.max(0, totals.total - discountAmount));
   const showLoadingState = isBuyNowMode && !buyNowLoaded;
   const showBuyNowNote = isBuyNowMode && buyNowLoaded && Boolean(buyNowItem);
   const showBuyNowFallbackNote = isBuyNowMode && buyNowLoaded && !buyNowItem;
@@ -116,9 +121,20 @@ export function CheckoutOrderSummary() {
           <span className="text-on-surface">Calculated at next step</span>
         </div>
       </div>
+      {checkoutItems.length > 0 && (
+        <div className="pb-6">
+          <DiscountCodeBox items={checkoutItems} onDiscountChange={setAppliedDiscount} />
+        </div>
+      )}
+      {discountAmount > 0 && (
+        <div className="flex justify-between pb-6 text-primary">
+          <span>Discount</span>
+          <span>-{formatPrice(discountAmount)}</span>
+        </div>
+      )}
       <div className="flex items-baseline justify-between border-t border-outline-variant pt-6">
         <span className="font-heading text-2xl font-bold">Total</span>
-        <span className="font-heading text-4xl font-bold">{formatPrice(totals.total)}</span>
+        <span className="font-heading text-4xl font-bold">{formatPrice(finalTotal)}</span>
       </div>
       <p className="mt-4 text-sm text-on-surface-variant">
         {standardShippingSentence} {variableShippingSentence} Payment will be connected in the next step.

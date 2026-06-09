@@ -5,12 +5,14 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { Lock, Mail, ShieldCheck, Truck } from "lucide-react";
+import { DiscountCodeBox } from "@/components/checkout/DiscountCodeBox";
 import { PayPalSandboxButtons } from "@/components/checkout/PayPalSandboxButtons";
 import { CompactTrustBar, type CompactTrustItem } from "@/components/sections/CompactTrustBar";
 import { readBuyNowCheckoutItem } from "@/lib/buy-now-checkout";
 import { type CheckoutInfo, isCheckoutInfoValid, normalizeCheckoutInfo, readCheckoutInfo } from "@/lib/checkout-info";
+import { type AppliedDiscount } from "@/lib/discounts";
 import { freeShippingLabel, shortStandardShippingSentence, variableShippingSentence } from "@/lib/shipping";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, roundMoney } from "@/lib/utils";
 import { getCartTotals, productById, type CartItem, useCartStore } from "@/store/cart-store";
 
 const checkoutTrustItems: CompactTrustItem[] = [
@@ -36,6 +38,7 @@ export function CheckoutPaymentContent() {
   const [buyNowLoaded, setBuyNowLoaded] = useState(!isBuyNowMode);
   const [checkoutInfo, setCheckoutInfo] = useState<CheckoutInfo | null>(null);
   const [checkoutInfoLoaded, setCheckoutInfoLoaded] = useState(false);
+  const [appliedDiscount, setAppliedDiscount] = useState<AppliedDiscount | null>(null);
 
   useEffect(() => {
     const savedCheckoutInfo = readCheckoutInfo();
@@ -62,6 +65,8 @@ export function CheckoutPaymentContent() {
   }, [buyNowItem, buyNowLoaded, cartItems, isBuyNowMode]);
 
   const totals = getCartTotals(checkoutItems);
+  const discountAmount = appliedDiscount?.amount ?? 0;
+  const finalTotal = roundMoney(Math.max(0, totals.total - discountAmount));
   const showLoadingState = isBuyNowMode && !buyNowLoaded;
   const hasItems = checkoutItems.length > 0;
   const hasValidCheckoutInfo = checkoutInfoLoaded && isCheckoutInfoValid(checkoutInfo);
@@ -75,6 +80,7 @@ export function CheckoutPaymentContent() {
         checkoutInfo.email ?? "",
         checkoutInfo.zip ?? "",
         totals.total,
+        appliedDiscount?.code ?? "",
         totals.estimatedShipping,
         checkoutItemsSignature
       ].join("-")
@@ -172,10 +178,11 @@ export function CheckoutPaymentContent() {
               <PayPalSandboxButtons
                 key={paypalButtonsKey}
                 items={checkoutItems}
-                total={totals.total}
+                total={finalTotal}
                 shipping={totals.estimatedShipping}
                 checkoutMode={isBuyNowMode ? "buy-now" : "cart"}
                 checkoutInfo={checkoutInfo}
+                discountCode={appliedDiscount?.code ?? null}
               />
             </div>
           ) : (
@@ -244,9 +251,20 @@ export function CheckoutPaymentContent() {
             <span className="text-on-surface">Not calculated</span>
           </div>
         </div>
+        {checkoutItems.length > 0 && (
+          <div className="pb-6">
+            <DiscountCodeBox items={checkoutItems} onDiscountChange={setAppliedDiscount} />
+          </div>
+        )}
+        {discountAmount > 0 && (
+          <div className="flex justify-between pb-6 text-primary">
+            <span>Discount</span>
+            <span>-{formatPrice(discountAmount)}</span>
+          </div>
+        )}
         <div className="flex items-baseline justify-between border-t border-outline-variant pt-6">
           <span className="font-heading text-2xl font-bold">Total</span>
-          <span className="font-heading text-4xl font-bold">{formatPrice(totals.total)}</span>
+          <span className="font-heading text-4xl font-bold">{formatPrice(finalTotal)}</span>
         </div>
       </aside>
     </div>

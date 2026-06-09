@@ -1,6 +1,7 @@
 import { getPublicProducts } from "@/lib/public-product-data";
 import { DEFAULT_SHIPPING_RATE, FREE_SHIPPING_THRESHOLD } from "@/lib/shipping";
 import { roundMoney } from "@/lib/utils";
+import { calculateDiscountAmount, type AppliedDiscount } from "@/lib/discounts";
 
 export type CheckoutItemInput = {
   id: string;
@@ -25,6 +26,8 @@ export type ValidatedCheckoutItem = {
 export type CheckoutTotals = {
   subtotal: number;
   shipping: number;
+  discountAmount: number;
+  discountCode: string | null;
   total: number;
   hasFreeShipping: boolean;
 };
@@ -46,7 +49,7 @@ function isCheckoutItemInput(value: unknown): value is CheckoutItemInput {
   return typeof item.id === "string" && Number.isInteger(quantity) && quantity !== undefined && quantity > 0 && quantity <= 99;
 }
 
-export function calculateCheckoutTotals(items: ValidatedCheckoutItem[]): CheckoutTotals {
+export function calculateCheckoutTotals(items: ValidatedCheckoutItem[], discount?: AppliedDiscount | null): CheckoutTotals {
   const subtotal = roundMoney(items.reduce((sum, item) => sum + item.price * item.quantity, 0));
   const hasFreeShipping = subtotal >= FREE_SHIPPING_THRESHOLD;
   const shipping =
@@ -54,10 +57,20 @@ export function calculateCheckoutTotals(items: ValidatedCheckoutItem[]): Checkou
       ? 0
       : roundMoney(items.reduce((highestRate, item) => Math.max(highestRate, item.shippingRate), DEFAULT_SHIPPING_RATE));
 
+  const discountAmount = discount
+    ? calculateDiscountAmount({
+        subtotal,
+        type: discount.type,
+        value: discount.value
+      })
+    : 0;
+
   return {
     subtotal,
     shipping,
-    total: roundMoney(subtotal + shipping),
+    discountAmount,
+    discountCode: discount && discountAmount > 0 ? discount.code : null,
+    total: roundMoney(Math.max(0, subtotal + shipping - discountAmount)),
     hasFreeShipping
   };
 }

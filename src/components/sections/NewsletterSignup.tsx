@@ -113,7 +113,7 @@ export function NewsletterSignup() {
                 </span>
                 <h3 className="mt-4 font-heading text-2xl font-bold text-on-surface">You&apos;re in the pack!</h3>
                 <p className="mt-2 text-sm leading-6 text-on-surface-variant">
-                  Thanks for joining LUCK CLAWS. Your 10% offer will be available soon.
+                  Thanks for joining LUCK CLAWS. Use code WELCOME10 for 10% off your first order.
                 </p>
                 {visibleSubmittedEmail && (
                   <p className="mt-3 break-all text-xs font-semibold text-on-surface-variant">

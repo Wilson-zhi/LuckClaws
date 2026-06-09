@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { type CheckoutInfo, validateCheckoutInfo } from "@/lib/checkout-info";
-import { validateCheckoutItems } from "@/lib/checkout-items";
+import { calculateCheckoutTotals, validateCheckoutItems } from "@/lib/checkout-items";
+import { validateDiscountForSubtotal } from "@/lib/discount-validation";
 import { capturePayPalOrder } from "@/lib/paypal";
 import { savePayPalOrderToSupabase } from "@/lib/supabase/orders";
 import { getUserFromRequest } from "@/lib/supabase/server";
@@ -47,6 +48,7 @@ export async function POST(request: Request) {
       orderId?: unknown;
       items?: unknown;
       checkoutInfo?: unknown;
+      discountCode?: unknown;
     };
 
     if (typeof payload.orderId !== "string" || !payload.orderId.trim()) {
@@ -54,6 +56,14 @@ export async function POST(request: Request) {
     }
 
     const checkout = await validateCheckoutItems(payload.items);
+    const discountCode = typeof payload.discountCode === "string" ? payload.discountCode : "";
+    const discount = discountCode
+      ? await validateDiscountForSubtotal({
+          code: discountCode,
+          subtotal: checkout.totals.subtotal
+        })
+      : null;
+    const totals = calculateCheckoutTotals(checkout.items, discount);
     const checkoutInfo = sanitizeCheckoutInfo(payload.checkoutInfo);
 
     if (validateCheckoutInfo(checkoutInfo).length > 0) {
@@ -82,7 +92,7 @@ export async function POST(request: Request) {
     if (
       completedCapture.amount?.currency_code !== "USD" ||
       !Number.isFinite(capturedValue) ||
-      roundMoney(capturedValue) !== checkout.totals.total
+      roundMoney(capturedValue) !== totals.total
     ) {
       return NextResponse.json(
         {
@@ -104,7 +114,7 @@ export async function POST(request: Request) {
         checkoutInfo,
         user,
         items: checkout.items,
-        totals: checkout.totals
+        totals
       });
 
       internalOrderId = savedOrder.id;

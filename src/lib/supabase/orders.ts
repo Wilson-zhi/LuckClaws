@@ -59,6 +59,45 @@ function shippingAddressFromInfo(checkoutInfo: CheckoutInfo | null, customerName
   };
 }
 
+function isMissingDiscountColumnError(error: { message?: string; code?: string }) {
+  const message = error.message?.toLowerCase() ?? "";
+
+  return Boolean(error.code === "PGRST204" || message.includes("discount_code") || message.includes("discount_amount"));
+}
+
+async function incrementDiscountUsage(code: string | null) {
+  if (!code) {
+    return;
+  }
+
+  const supabase = getSupabaseAdminClient();
+
+  if (!supabase) {
+    return;
+  }
+
+  const { data } = await supabase
+    .from("discount_codes")
+    .select("id, used_count")
+    .eq("code", code)
+    .maybeSingle();
+  const discount = data as { id: string; used_count: number | string | null } | null;
+
+  if (!discount?.id) {
+    return;
+  }
+
+  const currentUsedCount = typeof discount.used_count === "number" ? discount.used_count : Number(discount.used_count ?? 0);
+
+  await supabase
+    .from("discount_codes")
+    .update({
+      used_count: Number.isFinite(currentUsedCount) ? currentUsedCount + 1 : 1,
+      updated_at: new Date().toISOString()
+    })
+    .eq("id", discount.id);
+}
+
 export async function savePayPalOrderToSupabase({
   paypalOrderId,
   paypalCaptureId,
@@ -95,27 +134,47 @@ export async function savePayPalOrderToSupabase({
   const orderNumber = createOrderNumber();
   const customerName = customerNameFromInfo(checkoutInfo);
   const customerEmail = clean(checkoutInfo?.email) ?? user?.email ?? null;
+  const baseOrderPayload = {
+    user_id: user?.id ?? null,
+    order_number: orderNumber,
+    paypal_order_id: paypalOrderId,
+    paypal_capture_id: paypalCaptureId,
+    customer_email: customerEmail,
+    customer_name: customerName,
+    shipping_address: shippingAddressFromInfo(checkoutInfo, customerName),
+    currency: "USD",
+    subtotal: roundMoney(totals.subtotal),
+    shipping_amount: roundMoney(totals.shipping),
+    total_amount: roundMoney(totals.total),
+    payment_status: "paid",
+    fulfillment_status: "processing",
+    source: "paypal_sandbox"
+  };
+  const orderPayload =
+    totals.discountCode && totals.discountAmount > 0
+      ? {
+          ...baseOrderPayload,
+          discount_code: totals.discountCode,
+          discount_amount: roundMoney(totals.discountAmount)
+        }
+      : baseOrderPayload;
 
-  const { data: orderData, error: orderError } = await supabase
+  let { data: orderData, error: orderError } = await supabase
     .from("orders")
-    .insert({
-      user_id: user?.id ?? null,
-      order_number: orderNumber,
-      paypal_order_id: paypalOrderId,
-      paypal_capture_id: paypalCaptureId,
-      customer_email: customerEmail,
-      customer_name: customerName,
-      shipping_address: shippingAddressFromInfo(checkoutInfo, customerName),
-      currency: "USD",
-      subtotal: roundMoney(totals.subtotal),
-      shipping_amount: roundMoney(totals.shipping),
-      total_amount: roundMoney(totals.total),
-      payment_status: "paid",
-      fulfillment_status: "processing",
-      source: "paypal_sandbox"
-    })
+    .insert(orderPayload)
     .select("id, order_number")
     .single();
+
+  if (orderError && "discountCode" in totals && isMissingDiscountColumnError(orderError)) {
+    const fallbackResult = await supabase
+      .from("orders")
+      .insert(baseOrderPayload)
+      .select("id, order_number")
+      .single();
+
+    orderData = fallbackResult.data;
+    orderError = fallbackResult.error;
+  }
 
   if (orderError || !orderData) {
     throw new Error(orderError?.message ?? "Unable to save order.");
@@ -136,6 +195,8 @@ export async function savePayPalOrderToSupabase({
   if (itemError) {
     throw new Error(itemError.message);
   }
+
+  await incrementDiscountUsage(totals.discountCode);
 
   return {
     id: order.id,

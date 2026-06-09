@@ -32,6 +32,27 @@ function money(value: number) {
   return value.toFixed(2);
 }
 
+function amountBreakdown(totals: CheckoutTotals) {
+  return {
+    item_total: {
+      currency_code: "USD",
+      value: money(totals.subtotal)
+    },
+    shipping: {
+      currency_code: "USD",
+      value: money(totals.shipping)
+    },
+    ...(totals.discountAmount > 0
+      ? {
+          discount: {
+            currency_code: "USD",
+            value: money(totals.discountAmount)
+          }
+        }
+      : {})
+  };
+}
+
 function getPayPalApiBase() {
   const environment = process.env.PAYPAL_ENV ?? "sandbox";
 
@@ -95,16 +116,7 @@ export async function createPayPalOrder(items: ValidatedCheckoutItem[], totals: 
           amount: {
             currency_code: "USD",
             value: money(totals.total),
-            breakdown: {
-              item_total: {
-                currency_code: "USD",
-                value: money(totals.subtotal)
-              },
-              shipping: {
-                currency_code: "USD",
-                value: money(totals.shipping)
-              }
-            }
+            breakdown: amountBreakdown(totals)
           },
           items: items.map((item) => ({
             name: item.name.slice(0, 120),

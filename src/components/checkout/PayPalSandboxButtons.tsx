@@ -16,6 +16,7 @@ type PayPalSandboxButtonsProps = {
   shipping: number;
   checkoutMode: "cart" | "buy-now";
   checkoutInfo: CheckoutInfo;
+  discountCode?: string | null;
 };
 
 type PayPalCreateOrderResponse = {
@@ -84,7 +85,8 @@ export function PayPalSandboxButtons({
   total,
   shipping,
   checkoutMode,
-  checkoutInfo
+  checkoutInfo,
+  discountCode
 }: PayPalSandboxButtonsProps) {
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -95,6 +97,7 @@ export function PayPalSandboxButtons({
   const itemSignature = useMemo(() => JSON.stringify(checkoutItemsPayload(items)), [items]);
   const normalizedCheckoutInfo = useMemo(() => normalizeCheckoutInfo(checkoutInfo), [checkoutInfo]);
   const checkoutInfoSignature = useMemo(() => JSON.stringify(normalizedCheckoutInfo), [normalizedCheckoutInfo]);
+  const normalizedDiscountCode = discountCode?.trim().toUpperCase() ?? null;
 
   useEffect(() => {
     if (window.paypal) {
@@ -148,7 +151,8 @@ export function PayPalSandboxButtons({
           body: JSON.stringify({
             checkoutMode,
             items: checkoutItemsPayload(items),
-            checkoutInfo: normalizedCheckoutInfo
+            checkoutInfo: normalizedCheckoutInfo,
+            discountCode: normalizedDiscountCode
           })
         });
         const payload = (await response.json()) as PayPalCreateOrderResponse;
@@ -186,7 +190,8 @@ export function PayPalSandboxButtons({
           body: JSON.stringify({
             orderId: data.orderID,
             items: checkoutItemsPayload(items),
-            checkoutInfo: normalizedCheckoutInfo
+            checkoutInfo: normalizedCheckoutInfo,
+            discountCode: normalizedDiscountCode
           })
         });
         const payload = (await response.json()) as PayPalCaptureOrderResponse;
@@ -232,7 +237,7 @@ export function PayPalSandboxButtons({
       buttons.close?.();
       buttonsRef.current = null;
     };
-  }, [checkoutInfoSignature, checkoutMode, itemSignature, items, normalizedCheckoutInfo, router, scriptReady, shipping, total]);
+  }, [checkoutInfoSignature, checkoutMode, itemSignature, items, normalizedCheckoutInfo, normalizedDiscountCode, router, scriptReady, shipping, total]);
 
   if (!clientId) {
     return (

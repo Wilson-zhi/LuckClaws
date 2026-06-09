@@ -1,16 +1,22 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { Lock, Mail, RotateCcw, ShieldCheck, Truck } from "lucide-react";
+import { DiscountCodeBox } from "@/components/checkout/DiscountCodeBox";
 import { trackBeginCheckout } from "@/lib/ga4-ecommerce";
 import { freeShippingLabel, shortStandardShippingSentence, standardShippingSentence } from "@/lib/shipping";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, roundMoney } from "@/lib/utils";
+import { type AppliedDiscount } from "@/lib/discounts";
 import { getCartTotals, useCartStore } from "@/store/cart-store";
 
 export function CartOrderSummary() {
   const items = useCartStore((state) => state.items);
+  const [appliedDiscount, setAppliedDiscount] = useState<AppliedDiscount | null>(null);
   const totals = getCartTotals(items);
   const hasItems = items.length > 0;
+  const discountAmount = appliedDiscount?.amount ?? 0;
+  const estimatedTotal = roundMoney(Math.max(0, totals.total - discountAmount));
 
   return (
     <aside className="rounded-lg bg-surface-container-lowest p-6 shadow-ambient md:p-8">
@@ -35,9 +41,20 @@ export function CartOrderSummary() {
           {standardShippingSentence} Shipping may vary by item size or product type.
         </p>
       </div>
+      {hasItems && (
+        <div className="mt-6">
+          <DiscountCodeBox items={items} onDiscountChange={setAppliedDiscount} />
+        </div>
+      )}
+      {discountAmount > 0 && (
+        <div className="mt-6 flex justify-between text-primary">
+          <span>Discount</span>
+          <span>-{formatPrice(discountAmount)}</span>
+        </div>
+      )}
       <div className="mt-6 flex items-center justify-between">
         <span className="font-heading text-2xl font-bold">Estimated Total</span>
-        <span className="font-heading text-3xl font-bold text-primary">{formatPrice(totals.total)}</span>
+        <span className="font-heading text-3xl font-bold text-primary">{formatPrice(estimatedTotal)}</span>
       </div>
       {hasItems ? (
         <Link
