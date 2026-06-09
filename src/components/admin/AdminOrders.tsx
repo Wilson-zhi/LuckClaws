@@ -13,6 +13,7 @@ type AdminOrderRow = {
   customer_email: string | null;
   customer_name: string | null;
   total_amount: number | string | null;
+  currency: string | null;
   payment_status: string | null;
   fulfillment_status: string | null;
   paypal_order_id: string | null;
@@ -117,8 +118,9 @@ function OrdersTable() {
               <th className="px-4 py-3">{t("email")}</th>
               <th className="px-4 py-3">{t("name")}</th>
               <th className="px-4 py-3">{t("total")}</th>
+              <th className="px-4 py-3">{t("currency")}</th>
               <th className="px-4 py-3">{t("payment")}</th>
-              <th className="px-4 py-3">{t("fulfillment")}</th>
+              <th className="px-4 py-3">Order status</th>
               <th className="px-4 py-3">PayPal Order</th>
               <th className="px-4 py-3">{t("created")}</th>
               <th className="px-4 py-3">{t("actions")}</th>
@@ -131,6 +133,7 @@ function OrdersTable() {
                 <td className="px-4 py-4 text-on-surface-variant">{displayValue(order.customer_email, t("notProvided"))}</td>
                 <td className="px-4 py-4 text-on-surface-variant">{displayValue(order.customer_name, t("notProvided"))}</td>
                 <td className="px-4 py-4 font-semibold">{formatPrice(totalFromRow(order))}</td>
+                <td className="px-4 py-4 text-on-surface-variant">{order.currency ?? "USD"}</td>
                 <td className="px-4 py-4 text-on-surface-variant">{formatAdminStatus(order.payment_status, t)}</td>
                 <td className="px-4 py-4 text-on-surface-variant">{formatAdminStatus(order.fulfillment_status, t)}</td>
                 <td className="px-4 py-4 text-on-surface-variant">{displayValue(order.paypal_order_id, t("notProvided"))}</td>

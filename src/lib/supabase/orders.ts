@@ -111,7 +111,7 @@ export async function savePayPalOrderToSupabase({
       shipping_amount: roundMoney(totals.shipping),
       total_amount: roundMoney(totals.total),
       payment_status: "paid",
-      fulfillment_status: "unfulfilled",
+      fulfillment_status: "processing",
       source: "paypal_sandbox"
     })
     .select("id, order_number")

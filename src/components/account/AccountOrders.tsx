@@ -150,10 +150,16 @@ export function AccountOrders() {
               {displayStatus(order.payment_status)}
             </p>
             <p className="rounded-md bg-surface-container-low p-3">
-              <span className="font-semibold text-on-surface">Fulfillment:</span>{" "}
+              <span className="font-semibold text-on-surface">Status:</span>{" "}
               {displayStatus(order.fulfillment_status)}
             </p>
           </div>
+          <Link
+            href={`/account/orders/${order.id}`}
+            className="mt-6 inline-flex rounded-full border border-primary px-5 py-2 font-heading text-sm font-bold text-primary transition hover:bg-primary-container/10"
+          >
+            View details
+          </Link>
         </article>
       ))}
     </div>

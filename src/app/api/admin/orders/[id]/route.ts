@@ -15,6 +15,7 @@ type OrderRow = {
   customer_email: string | null;
   customer_name: string | null;
   shipping_address: unknown;
+  billing_address?: unknown;
   currency: string | null;
   subtotal: number | string | null;
   shipping_amount: number | string | null;
@@ -47,6 +48,11 @@ type ShippingAddress = {
   country: string | null;
 };
 
+const orderStatuses = new Set(["pending", "paid", "processing", "shipped", "delivered", "cancelled", "refunded"]);
+
+const orderColumns =
+  "id, order_number, customer_email, customer_name, shipping_address, currency, subtotal, shipping_amount, total_amount, payment_status, fulfillment_status, source, paypal_order_id, paypal_capture_id, created_at";
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
@@ -61,7 +67,7 @@ function shippingAddressFromOrder(value: unknown): ShippingAddress {
   const record = isRecord(value) ? value : {};
 
   return {
-    name: stringFromRecord(record, "full_name"),
+    name: stringFromRecord(record, "full_name") ?? stringFromRecord(record, "name"),
     phone: stringFromRecord(record, "phone"),
     address_line1: stringFromRecord(record, "address_line1"),
     address_line2: stringFromRecord(record, "address_line2"),
@@ -78,6 +84,20 @@ function productSlugFromItem(item: OrderItemRow) {
   }
 
   return getProduct(item.product_id)?.slug ?? item.product_id;
+}
+
+function productImageFromItem(item: OrderItemRow, productRows: Map<string, { image_url: string | null }>) {
+  if (!item.product_id) {
+    return null;
+  }
+
+  return productRows.get(item.product_id)?.image_url ?? getProduct(item.product_id)?.image ?? null;
+}
+
+function isMissingBillingColumnError(error: { message?: string; code?: string }) {
+  return Boolean(
+    error.code === "PGRST204" || error.message?.toLowerCase().includes("billing_address")
+  );
 }
 
 export async function GET(request: Request, { params }: RouteContext) {
@@ -102,13 +122,24 @@ export async function GET(request: Request, { params }: RouteContext) {
     return NextResponse.json({ error: "Order id is required." }, { status: 400 });
   }
 
-  const { data: orderData, error: orderError } = await supabase
+  const orderResult = await supabase
     .from("orders")
-    .select(
-      "id, order_number, customer_email, customer_name, shipping_address, currency, subtotal, shipping_amount, total_amount, payment_status, fulfillment_status, source, paypal_order_id, paypal_capture_id, created_at"
-    )
+    .select(`${orderColumns}, billing_address`)
     .eq("id", id)
     .maybeSingle();
+  let orderData: unknown = orderResult.data;
+  let orderError = orderResult.error;
+
+  if (orderError && isMissingBillingColumnError(orderError)) {
+    const fallbackResult = await supabase
+      .from("orders")
+      .select(orderColumns)
+      .eq("id", id)
+      .maybeSingle();
+
+    orderData = fallbackResult.data;
+    orderError = fallbackResult.error;
+  }
 
   if (orderError) {
     return NextResponse.json({ error: orderError.message }, { status: 500 });
@@ -128,8 +159,28 @@ export async function GET(request: Request, { params }: RouteContext) {
     return NextResponse.json({ error: itemError.message }, { status: 500 });
   }
 
+  const itemRows = (itemData ?? []) as OrderItemRow[];
+  const productIds = Array.from(
+    new Set(itemRows.map((item) => item.product_id).filter((value): value is string => Boolean(value)))
+  );
+  const productRows = new Map<string, { image_url: string | null }>();
+
+  if (productIds.length > 0) {
+    const { data: products } = await supabase
+      .from("products")
+      .select("slug, image_url")
+      .in("slug", productIds);
+
+    for (const product of (products ?? []) as Array<{ slug: string | null; image_url: string | null }>) {
+      if (product.slug) {
+        productRows.set(product.slug, { image_url: product.image_url });
+      }
+    }
+  }
+
   const order = orderData as OrderRow;
   const shippingAddress = shippingAddressFromOrder(order.shipping_address);
+  const billingAddress = order.billing_address ? shippingAddressFromOrder(order.billing_address) : null;
 
   return NextResponse.json({
     order: {
@@ -151,13 +202,70 @@ export async function GET(request: Request, { params }: RouteContext) {
       brand: brandName
     },
     shipping_address: shippingAddress,
-    items: ((itemData ?? []) as OrderItemRow[]).map((item) => ({
+    billing_address: billingAddress,
+    items: itemRows.map((item) => ({
       id: item.id,
       product_title: item.product_name,
       product_slug: productSlugFromItem(item),
+      product_image: productImageFromItem(item, productRows),
       quantity: item.quantity,
       unit_price: item.unit_price,
       line_total: item.line_total
     }))
   });
+}
+
+export async function PATCH(request: Request, { params }: RouteContext) {
+  const auth = await requireAdminFromRequest(request);
+
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.message }, { status: auth.status });
+  }
+
+  const supabase = getSupabaseAdminClient();
+
+  if (!supabase) {
+    return NextResponse.json(
+      { error: "Supabase server environment variables are not configured." },
+      { status: 500 }
+    );
+  }
+
+  const { id } = await params;
+
+  if (!id) {
+    return NextResponse.json({ error: "Order id is required." }, { status: 400 });
+  }
+
+  const payload = (await request.json().catch(() => null)) as {
+    fulfillment_status?: unknown;
+    status?: unknown;
+  } | null;
+  const nextStatus =
+    typeof payload?.fulfillment_status === "string"
+      ? payload.fulfillment_status.trim()
+      : typeof payload?.status === "string"
+        ? payload.status.trim()
+        : "";
+
+  if (!orderStatuses.has(nextStatus)) {
+    return NextResponse.json({ error: "Invalid order status." }, { status: 400 });
+  }
+
+  const { data, error } = await supabase
+    .from("orders")
+    .update({ fulfillment_status: nextStatus })
+    .eq("id", id)
+    .select("id, fulfillment_status")
+    .maybeSingle();
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  if (!data) {
+    return NextResponse.json({ error: "Order not found." }, { status: 404 });
+  }
+
+  return NextResponse.json({ order: data });
 }

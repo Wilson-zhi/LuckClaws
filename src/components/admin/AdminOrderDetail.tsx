@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
 import { AdminGuard, useAdminAuth } from "@/components/admin/AdminGuard";
@@ -40,6 +41,7 @@ type AdminOrderItem = {
   id: string;
   product_title: string | null;
   product_slug: string | null;
+  product_image: string | null;
   quantity: number | string | null;
   unit_price: number | string | null;
   line_total: number | string | null;
@@ -48,9 +50,16 @@ type AdminOrderItem = {
 type AdminOrderDetailPayload = {
   order?: AdminOrderDetailRow;
   shipping_address?: AdminOrderShippingAddress;
+  billing_address?: AdminOrderShippingAddress | null;
   items?: AdminOrderItem[];
   error?: string;
 };
+
+const orderStatuses = ["pending", "paid", "processing", "shipped", "delivered", "cancelled", "refunded"];
+
+function normalizeEditableOrderStatus(value: string | null) {
+  return orderStatuses.includes(value ?? "") ? value ?? "pending" : "pending";
+}
 
 function numberFromValue(value: number | string | null) {
   const numberValue = typeof value === "number" ? value : Number(value ?? 0);
@@ -89,14 +98,45 @@ function SummaryField({ label, value }: { label: string; value: ReactNode }) {
   );
 }
 
+function AddressFields({ address }: { address: AdminOrderShippingAddress | null }) {
+  const { t } = useAdminLanguage();
+  const notProvidedLabel = t("notProvided");
+
+  return (
+    <dl className="mt-6 grid gap-4 sm:grid-cols-2">
+      <SummaryField label={t("name")} value={displayValue(address?.name ?? null, notProvidedLabel)} />
+      <SummaryField label={t("phone")} value={displayValue(address?.phone ?? null, notProvidedLabel)} />
+      <SummaryField
+        label={t("addressLine1")}
+        value={displayValue(address?.address_line1 ?? null, notProvidedLabel)}
+      />
+      <SummaryField
+        label={t("addressLine2")}
+        value={displayValue(address?.address_line2 ?? null, notProvidedLabel)}
+      />
+      <SummaryField label={t("city")} value={displayValue(address?.city ?? null, notProvidedLabel)} />
+      <SummaryField label={t("state")} value={displayValue(address?.state ?? null, notProvidedLabel)} />
+      <SummaryField
+        label={t("postalCode")}
+        value={displayValue(address?.postal_code ?? null, notProvidedLabel)}
+      />
+      <SummaryField label={t("country")} value={displayValue(address?.country ?? null, notProvidedLabel)} />
+    </dl>
+  );
+}
+
 function OrderDetailContent({ orderId }: { orderId: string }) {
   const { accessToken } = useAdminAuth();
   const { t } = useAdminLanguage();
   const [order, setOrder] = useState<AdminOrderDetailRow | null>(null);
   const [shippingAddress, setShippingAddress] = useState<AdminOrderShippingAddress | null>(null);
+  const [billingAddress, setBillingAddress] = useState<AdminOrderShippingAddress | null>(null);
   const [items, setItems] = useState<AdminOrderItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("");
+  const [savingStatus, setSavingStatus] = useState(false);
+  const [statusMessage, setStatusMessage] = useState("");
   const unavailableLabel = t("unavailable");
   const notProvidedLabel = t("notProvided");
 
@@ -118,7 +158,9 @@ function OrderDetailContent({ orderId }: { orderId: string }) {
         if (active) {
           setOrder(payload.order ?? null);
           setShippingAddress(payload.shipping_address ?? null);
+          setBillingAddress(payload.billing_address ?? null);
           setItems(payload.items ?? []);
+          setSelectedStatus(normalizeEditableOrderStatus(payload.order?.fulfillment_status ?? null));
         }
       })
       .catch((loadError: unknown) => {
@@ -136,6 +178,43 @@ function OrderDetailContent({ orderId }: { orderId: string }) {
       active = false;
     };
   }, [accessToken, orderId, t]);
+
+  async function handleStatusSave() {
+    if (!order || !selectedStatus) {
+      return;
+    }
+
+    setSavingStatus(true);
+    setStatusMessage("");
+
+    try {
+      const response = await fetch(`/api/admin/orders/${encodeURIComponent(orderId)}`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ fulfillment_status: selectedStatus })
+      });
+      const payload = (await response.json()) as {
+        order?: Pick<AdminOrderDetailRow, "fulfillment_status">;
+        error?: string;
+      };
+
+      if (!response.ok) {
+        throw new Error(payload.error ?? "Unable to update order status.");
+      }
+
+      setOrder((currentOrder) =>
+        currentOrder ? { ...currentOrder, fulfillment_status: payload.order?.fulfillment_status ?? selectedStatus } : currentOrder
+      );
+      setStatusMessage("Order status updated.");
+    } catch (saveError) {
+      setStatusMessage(saveError instanceof Error ? saveError.message : "Unable to update order status.");
+    } finally {
+      setSavingStatus(false);
+    }
+  }
 
   if (loading) {
     return (
@@ -204,30 +283,54 @@ function OrderDetailContent({ orderId }: { orderId: string }) {
       </section>
 
       <section className="ambient-card p-6 md:p-8">
-        <h2 className="font-heading text-2xl font-bold">{t("shippingAddress")}</h2>
-        <dl className="mt-6 grid gap-4 sm:grid-cols-2">
-          <SummaryField label={t("name")} value={displayValue(shippingAddress?.name ?? null, notProvidedLabel)} />
-          <SummaryField label={t("phone")} value={displayValue(shippingAddress?.phone ?? null, notProvidedLabel)} />
-          <SummaryField
-            label={t("addressLine1")}
-            value={displayValue(shippingAddress?.address_line1 ?? null, notProvidedLabel)}
-          />
-          <SummaryField
-            label={t("addressLine2")}
-            value={displayValue(shippingAddress?.address_line2 ?? null, notProvidedLabel)}
-          />
-          <SummaryField label={t("city")} value={displayValue(shippingAddress?.city ?? null, notProvidedLabel)} />
-          <SummaryField label={t("state")} value={displayValue(shippingAddress?.state ?? null, notProvidedLabel)} />
-          <SummaryField
-            label={t("postalCode")}
-            value={displayValue(shippingAddress?.postal_code ?? null, notProvidedLabel)}
-          />
-          <SummaryField
-            label={t("country")}
-            value={displayValue(shippingAddress?.country ?? null, notProvidedLabel)}
-          />
-        </dl>
+        <div className="max-w-3xl">
+          <h2 className="font-heading text-2xl font-bold">Update Order Status</h2>
+          <p className="mt-3 text-sm leading-6 text-on-surface-variant">
+            Payment status reflects the payment result. Order status reflects fulfillment progress.
+          </p>
+          <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-end">
+            <label className="block flex-1 text-sm font-semibold text-on-surface">
+              Order status
+              <select
+                value={selectedStatus}
+                onChange={(event) => setSelectedStatus(event.target.value)}
+                className="mt-2 w-full rounded-md border-outline-variant bg-surface-container-lowest text-on-surface focus:border-primary focus:ring-primary"
+              >
+                {orderStatuses.map((status) => (
+                  <option key={status} value={status}>
+                    {formatAdminStatus(status, t)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <button
+              type="button"
+              onClick={handleStatusSave}
+              disabled={savingStatus || selectedStatus === normalizeEditableOrderStatus(order.fulfillment_status)}
+              className="inline-flex justify-center rounded-full bg-primary-container px-6 py-3 font-heading text-sm font-bold text-on-primary-container transition hover:bg-[#e08f00] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {savingStatus ? "Saving..." : "Save Status"}
+            </button>
+          </div>
+          {statusMessage && (
+            <p className="mt-3 text-sm leading-6 text-on-surface-variant" role="status">
+              {statusMessage}
+            </p>
+          )}
+        </div>
       </section>
+
+      <section className="ambient-card p-6 md:p-8">
+        <h2 className="font-heading text-2xl font-bold">{t("shippingAddress")}</h2>
+        <AddressFields address={shippingAddress} />
+      </section>
+
+      {billingAddress && (
+        <section className="ambient-card p-6 md:p-8">
+          <h2 className="font-heading text-2xl font-bold">Billing Address</h2>
+          <AddressFields address={billingAddress} />
+        </section>
+      )}
 
       <section className="ambient-card p-6 md:p-8">
         <h2 className="font-heading text-2xl font-bold">{t("orderItems")}</h2>
@@ -239,6 +342,7 @@ function OrderDetailContent({ orderId }: { orderId: string }) {
               <table className="w-full min-w-[760px] text-left text-sm">
                 <thead className="bg-surface-container-low text-xs uppercase tracking-wide text-on-surface-variant">
                   <tr>
+                    <th className="px-4 py-3">Image</th>
                     <th className="px-4 py-3">{t("product")}</th>
                     <th className="px-4 py-3">Slug</th>
                     <th className="px-4 py-3">{t("quantity")}</th>
@@ -249,6 +353,21 @@ function OrderDetailContent({ orderId }: { orderId: string }) {
                 <tbody className="divide-y divide-outline-variant/70">
                   {items.map((item) => (
                     <tr key={item.id}>
+                      <td className="px-4 py-4">
+                        {item.product_image ? (
+                          <Image
+                            src={item.product_image}
+                            alt={displayValue(item.product_title, "Order item")}
+                            width={56}
+                            height={56}
+                            className="h-14 w-14 rounded-md object-cover"
+                          />
+                        ) : (
+                          <div className="grid h-14 w-14 place-items-center rounded-md bg-surface-container-low text-xs text-on-surface-variant">
+                            No image
+                          </div>
+                        )}
+                      </td>
                       <td className="px-4 py-4 font-semibold text-on-surface">
                         {displayValue(item.product_title, notProvidedLabel)}
                       </td>

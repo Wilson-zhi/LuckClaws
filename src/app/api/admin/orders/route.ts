@@ -8,6 +8,7 @@ export type AdminOrderRow = {
   customer_email: string | null;
   customer_name: string | null;
   total_amount: number | string | null;
+  currency: string | null;
   payment_status: string | null;
   fulfillment_status: string | null;
   paypal_order_id: string | null;
@@ -33,7 +34,7 @@ export async function GET(request: Request) {
   const { data, error } = await supabase
     .from("orders")
     .select(
-      "id, order_number, customer_email, customer_name, total_amount, payment_status, fulfillment_status, paypal_order_id, created_at"
+      "id, order_number, customer_email, customer_name, total_amount, currency, payment_status, fulfillment_status, paypal_order_id, created_at"
     )
     .order("created_at", { ascending: false })
     .limit(25);
