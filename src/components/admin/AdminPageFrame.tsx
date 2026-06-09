@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Box, Home, LayoutDashboard, Package, Tags, Users } from "lucide-react";
+import { Box, Home, LayoutDashboard, Mail, Package, Tags, Users } from "lucide-react";
 import {
   AdminLanguageProvider,
   type AdminLabel,
@@ -24,6 +24,7 @@ type AdminPageFrameProps = {
 const adminNavItems = [
   { labelKey: "dashboard", href: "/admin", Icon: LayoutDashboard },
   { labelKey: "homepage", href: "/admin/homepage", Icon: Home },
+  { label: { zh: "订阅", en: "Newsletter" }, href: "/admin/newsletter", Icon: Mail },
   { labelKey: "orders", href: "/admin/orders", Icon: Package },
   { labelKey: "customers", href: "/admin/customers", Icon: Users },
   { labelKey: "categories", href: "/admin/categories", Icon: Tags },
@@ -111,14 +112,14 @@ export function AdminPageFrame({
         <div className={bodyGridClass}>
           <nav className="rounded-lg bg-surface-container-lowest p-4 shadow-soft" aria-label="Admin navigation">
             <div className="grid gap-2">
-              {adminNavItems.map(({ labelKey, href, Icon }) => (
+              {adminNavItems.map((item) => (
                 <Link
-                  key={href}
-                  href={href}
+                  key={item.href}
+                  href={item.href}
                   className="flex items-center gap-3 rounded-md px-4 py-3 text-sm font-semibold text-on-surface-variant transition hover:bg-primary-container/10 hover:text-primary"
                 >
-                  <Icon aria-hidden className="h-4 w-4 shrink-0" />
-                  {t(labelKey)}
+                  <item.Icon aria-hidden className="h-4 w-4 shrink-0" />
+                  {"label" in item ? text(item.label) : t(item.labelKey)}
                 </Link>
               ))}
             </div>
