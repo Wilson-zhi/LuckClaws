@@ -94,6 +94,12 @@ const emptyFormState: DiscountFormState = {
 const inputClass =
   "min-h-12 rounded-md border border-outline-variant bg-white px-4 text-sm text-on-surface outline-none transition focus:border-primary focus:ring-2 focus:ring-primary-container/30";
 
+function statusHelpText(language: "zh" | "en") {
+  return language === "zh"
+    ? "active = 可在结账时使用；draft = 草稿，不可使用；archived = 已停用，不可使用"
+    : "active = usable at checkout; draft = draft, not usable; archived = deactivated, not usable";
+}
+
 function dateTimeLocalFromIso(value: string | null) {
   if (!value) {
     return "";
@@ -295,6 +301,7 @@ function DiscountFormContent({ mode, discountId }: AdminDiscountFormProps) {
             <option value="draft">{c.draft}</option>
             <option value="archived">{c.archived}</option>
           </select>
+          <span className="text-xs font-normal text-on-surface-variant">{statusHelpText(language)}</span>
           {fieldErrors.status && <span className="text-sm font-semibold text-error">{fieldErrors.status}</span>}
         </label>
 

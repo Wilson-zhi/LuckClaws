@@ -103,15 +103,85 @@ function formatDiscountValue(discount: DiscountCodeRow) {
   return formatPrice(value);
 }
 
+function uiCopy(language: "zh" | "en") {
+  return language === "zh"
+    ? {
+        activeStatus: "启用中",
+        draftStatus: "草稿",
+        archivedStatus: "已停用",
+        deactivate: "停用",
+        activate: "启用",
+        deactivating: "停用中...",
+        activating: "启用中...",
+        confirmDeactivate:
+          "确定要停用这个优惠码吗？停用后用户将无法在结账时使用它。",
+        confirm: "确认停用",
+        cancel: "取消",
+        activated: "优惠码已启用。",
+        deactivated: "优惠码已停用。",
+        updateFailed: "无法更新优惠码，请稍后重试。"
+      }
+    : {
+        activeStatus: "Active",
+        draftStatus: "Draft",
+        archivedStatus: "Inactive",
+        deactivate: "Deactivate",
+        activate: "Activate",
+        deactivating: "Deactivating...",
+        activating: "Activating...",
+        confirmDeactivate:
+          "Are you sure you want to deactivate this discount code? Customers will no longer be able to use it at checkout.",
+        confirm: "Confirm Deactivate",
+        cancel: "Cancel",
+        activated: "Discount code activated.",
+        deactivated: "Discount code deactivated.",
+        updateFailed: "Unable to update discount code. Please try again."
+      };
+}
+
+function statusLabel(status: string | null, language: "zh" | "en") {
+  const labels = uiCopy(language);
+
+  switch (status) {
+    case "active":
+      return labels.activeStatus;
+    case "draft":
+      return labels.draftStatus;
+    case "archived":
+      return labels.archivedStatus;
+    default:
+      return language === "zh" ? "未填写" : "Not provided";
+  }
+}
+
+function StatusBadge({ status, language }: { status: string | null; language: "zh" | "en" }) {
+  const normalizedStatus = status?.trim() ?? "";
+  const className =
+    normalizedStatus === "active"
+      ? "bg-primary-container/20 text-primary"
+      : normalizedStatus === "draft"
+        ? "bg-surface-container-low text-on-surface-variant"
+        : "bg-error/10 text-error";
+
+  return (
+    <span className={`inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide ${className}`}>
+      {statusLabel(normalizedStatus, language)}
+    </span>
+  );
+}
+
 function DiscountsTable() {
   const { accessToken } = useAdminAuth();
   const { language } = useAdminLanguage();
   const c = copy[language];
+  const labels = uiCopy(language);
   const [discounts, setDiscounts] = useState<DiscountCodeRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [actionError, setActionError] = useState("");
+  const [actionMessage, setActionMessage] = useState("");
   const [updatingId, setUpdatingId] = useState("");
+  const [confirmDeactivateId, setConfirmDeactivateId] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -149,13 +219,8 @@ function DiscountsTable() {
   }, [accessToken, c.unableToLoad]);
 
   async function updateStatus(discount: DiscountCodeRow, action: "archive" | "activate") {
-    const confirmed = window.confirm(action === "archive" ? c.confirmArchive : c.confirmActivate);
-
-    if (!confirmed) {
-      return;
-    }
-
     setActionError("");
+    setActionMessage("");
     setUpdatingId(discount.id);
 
     const response = await fetch(`/api/admin/discounts/${encodeURIComponent(discount.id)}`, {
@@ -172,7 +237,7 @@ function DiscountsTable() {
     };
 
     if (!response.ok) {
-      setActionError(payload.error ?? c.unableToUpdate);
+      setActionError(labels.updateFailed);
       setUpdatingId("");
       return;
     }
@@ -188,6 +253,8 @@ function DiscountsTable() {
           : currentDiscount
       )
     );
+    setActionMessage(action === "archive" ? labels.deactivated : labels.activated);
+    setConfirmDeactivateId("");
     setUpdatingId("");
   }
 
@@ -212,6 +279,11 @@ function DiscountsTable() {
       {actionError && (
         <div className="rounded-md bg-error/10 p-4 text-sm font-semibold text-error" role="alert">
           {actionError}
+        </div>
+      )}
+      {actionMessage && (
+        <div className="rounded-md bg-primary-container/15 p-4 text-sm font-semibold text-primary" role="status">
+          {actionMessage}
         </div>
       )}
 
@@ -246,7 +318,9 @@ function DiscountsTable() {
                     <td className="px-4 py-4 text-on-surface-variant">{displayValue(discount.name, c.notProvided)}</td>
                     <td className="px-4 py-4 text-on-surface-variant">{displayValue(discount.type, c.notProvided)}</td>
                     <td className="px-4 py-4 font-semibold">{formatDiscountValue(discount)}</td>
-                    <td className="px-4 py-4 text-on-surface-variant">{displayValue(discount.status, c.notProvided)}</td>
+                    <td className="px-4 py-4">
+                      <StatusBadge status={discount.status} language={language} />
+                    </td>
                     <td className="px-4 py-4 text-on-surface-variant">{formatPrice(numberFromDiscountValue(discount.minimum_order_amount))}</td>
                     <td className="px-4 py-4 text-on-surface-variant">{discount.max_uses ?? c.notProvided}</td>
                     <td className="px-4 py-4 text-on-surface-variant">{discount.used_count ?? 0}</td>
@@ -261,23 +335,51 @@ function DiscountsTable() {
                         >
                           {c.edit}
                         </Link>
-                        {discount.status === "archived" ? (
+                        {discount.status === "active" ? (
+                          confirmDeactivateId === discount.id ? (
+                            <div className="grid max-w-[360px] gap-2 rounded-md bg-error/10 p-3 text-xs leading-5 text-on-surface-variant">
+                              <p>{labels.confirmDeactivate}</p>
+                              <div className="flex flex-wrap gap-2">
+                                <button
+                                  type="button"
+                                  disabled={updatingId === discount.id}
+                                  className="inline-flex rounded-full bg-error px-3 py-2 font-heading text-xs font-bold text-white transition hover:bg-error/90 disabled:cursor-not-allowed disabled:opacity-60"
+                                  onClick={() => updateStatus(discount, "archive")}
+                                >
+                                  {updatingId === discount.id ? labels.deactivating : labels.confirm}
+                                </button>
+                                <button
+                                  type="button"
+                                  disabled={updatingId === discount.id}
+                                  className="inline-flex rounded-full border border-outline-variant px-3 py-2 font-heading text-xs font-bold text-on-surface-variant transition hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-60"
+                                  onClick={() => setConfirmDeactivateId("")}
+                                >
+                                  {labels.cancel}
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <button
+                              type="button"
+                              disabled={updatingId === discount.id}
+                              className="inline-flex rounded-full border border-error/40 px-3 py-2 font-heading text-xs font-bold text-error transition hover:bg-error/10 disabled:cursor-not-allowed disabled:opacity-60"
+                              onClick={() => {
+                                setActionError("");
+                                setActionMessage("");
+                                setConfirmDeactivateId(discount.id);
+                              }}
+                            >
+                              {updatingId === discount.id ? labels.deactivating : labels.deactivate}
+                            </button>
+                          )
+                        ) : (
                           <button
                             type="button"
                             disabled={updatingId === discount.id}
                             className="inline-flex rounded-full border border-primary px-3 py-2 font-heading text-xs font-bold text-primary transition hover:bg-primary-container/10 disabled:cursor-not-allowed disabled:opacity-60"
                             onClick={() => updateStatus(discount, "activate")}
                           >
-                            {updatingId === discount.id ? c.activating : c.activate}
-                          </button>
-                        ) : (
-                          <button
-                            type="button"
-                            disabled={updatingId === discount.id}
-                            className="inline-flex rounded-full border border-error/40 px-3 py-2 font-heading text-xs font-bold text-error transition hover:bg-error/10 disabled:cursor-not-allowed disabled:opacity-60"
-                            onClick={() => updateStatus(discount, "archive")}
-                          >
-                            {updatingId === discount.id ? c.archiving : c.archive}
+                            {updatingId === discount.id ? labels.activating : labels.activate}
                           </button>
                         )}
                       </div>

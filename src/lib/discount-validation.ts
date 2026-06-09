@@ -58,7 +58,11 @@ export async function validateDiscountForSubtotal({
   const discount = data as DiscountCodeRow;
   const type = discount.type?.trim() ?? null;
 
-  if (discount.status !== "active" || !isDiscountCodeType(type)) {
+  if (discount.status !== "active") {
+    throw new Error("This discount code is not currently available.");
+  }
+
+  if (!isDiscountCodeType(type)) {
     throw new Error("Invalid code.");
   }
 
