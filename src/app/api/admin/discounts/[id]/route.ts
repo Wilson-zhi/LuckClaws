@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAdminFromRequest } from "@/lib/admin-auth";
 import { validateAdminDiscountPayload } from "@/lib/admin-discounts";
 import { type DiscountCodeRow } from "@/lib/discounts";
-import { getSupabaseAdminClient } from "@/lib/supabase/server";
+import { getSupabaseAuthenticatedClientFromRequest } from "@/lib/supabase/server";
 
 type RouteContext = {
   params: Promise<{
@@ -20,11 +20,11 @@ export async function GET(request: Request, { params }: RouteContext) {
     return NextResponse.json({ error: auth.message }, { status: auth.status });
   }
 
-  const supabase = getSupabaseAdminClient();
+  const supabase = getSupabaseAuthenticatedClientFromRequest(request);
 
   if (!supabase) {
     return NextResponse.json(
-      { error: "Supabase server environment variables are not configured." },
+      { error: "Authenticated Supabase session is not available." },
       { status: 500 }
     );
   }
@@ -42,6 +42,7 @@ export async function GET(request: Request, { params }: RouteContext) {
     .maybeSingle();
 
   if (error) {
+    console.error("Unable to load discount code:", error.message);
     return NextResponse.json({ error: "Unable to load discount code." }, { status: 500 });
   }
 
@@ -59,11 +60,11 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     return NextResponse.json({ error: auth.message }, { status: auth.status });
   }
 
-  const supabase = getSupabaseAdminClient();
+  const supabase = getSupabaseAuthenticatedClientFromRequest(request);
 
   if (!supabase) {
     return NextResponse.json(
-      { error: "Supabase server environment variables are not configured." },
+      { error: "Authenticated Supabase session is not available." },
       { status: 500 }
     );
   }
@@ -92,6 +93,7 @@ export async function PATCH(request: Request, { params }: RouteContext) {
         .maybeSingle();
 
       if (error) {
+        console.error("Unable to update discount status:", error.message);
         return NextResponse.json({ error: "Unable to update discount code." }, { status: 500 });
       }
 
@@ -132,6 +134,7 @@ export async function PATCH(request: Request, { params }: RouteContext) {
       );
     }
 
+    console.error("Unable to update discount code:", error.message);
     return NextResponse.json({ error: "Unable to update discount code." }, { status: 500 });
   }
 

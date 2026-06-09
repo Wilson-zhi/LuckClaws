@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAdminFromRequest } from "@/lib/admin-auth";
 import { validateAdminDiscountPayload } from "@/lib/admin-discounts";
-import { getSupabaseAdminClient } from "@/lib/supabase/server";
+import { getSupabaseAuthenticatedClientFromRequest } from "@/lib/supabase/server";
 import { type DiscountCodeRow } from "@/lib/discounts";
 
 const discountColumns =
@@ -14,11 +14,11 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: auth.message }, { status: auth.status });
   }
 
-  const supabase = getSupabaseAdminClient();
+  const supabase = getSupabaseAuthenticatedClientFromRequest(request);
 
   if (!supabase) {
     return NextResponse.json(
-      { error: "Supabase server environment variables are not configured." },
+      { error: "Authenticated Supabase session is not available." },
       { status: 500 }
     );
   }
@@ -29,6 +29,7 @@ export async function GET(request: Request) {
     .order("created_at", { ascending: false });
 
   if (error) {
+    console.error("Unable to load discount codes:", error.message);
     return NextResponse.json({ error: "Unable to load discount codes." }, { status: 500 });
   }
 
@@ -44,11 +45,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: auth.message }, { status: auth.status });
   }
 
-  const supabase = getSupabaseAdminClient();
+  const supabase = getSupabaseAuthenticatedClientFromRequest(request);
 
   if (!supabase) {
     return NextResponse.json(
-      { error: "Supabase server environment variables are not configured." },
+      { error: "Authenticated Supabase session is not available." },
       { status: 500 }
     );
   }
@@ -78,6 +79,7 @@ export async function POST(request: Request) {
       );
     }
 
+    console.error("Unable to create discount code:", error.message);
     return NextResponse.json({ error: "Unable to create discount code." }, { status: 500 });
   }
 
