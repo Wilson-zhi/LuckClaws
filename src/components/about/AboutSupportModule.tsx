@@ -44,9 +44,10 @@ export function AboutSupportModule() {
 
   return (
     <section className="section-shell py-12 md:py-20">
-      <div className="relative overflow-hidden rounded-[32px] bg-primary-container p-6 text-on-primary-container shadow-ambient md:p-10 lg:p-14">
-        <div className="pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full border border-white/35" />
-        <div className="pointer-events-none absolute -bottom-14 left-8 h-40 w-40 rounded-full bg-white/20" />
+      <div className="group/about-contact relative overflow-hidden rounded-[32px] bg-primary-container p-6 text-on-primary-container shadow-ambient md:p-10 lg:p-14">
+        <div className="pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full border border-white/35 transition-transform duration-500 ease-out group-hover/about-contact:-translate-x-[14px] group-hover/about-contact:translate-y-3 group-hover/about-contact:rotate-[8deg] group-hover/about-contact:scale-105 motion-reduce:group-hover/about-contact:translate-x-0 motion-reduce:group-hover/about-contact:translate-y-0 motion-reduce:group-hover/about-contact:rotate-0 motion-reduce:group-hover/about-contact:scale-100" />
+        <div className="pointer-events-none absolute -bottom-14 left-8 h-40 w-40 rounded-full bg-white/20 transition-transform duration-500 ease-out group-hover/about-contact:translate-x-[18px] group-hover/about-contact:-translate-y-[14px] group-hover/about-contact:scale-[1.08] motion-reduce:group-hover/about-contact:translate-x-0 motion-reduce:group-hover/about-contact:translate-y-0 motion-reduce:group-hover/about-contact:scale-100" />
+        <div className="pointer-events-none absolute bottom-24 right-16 h-10 w-10 rounded-full bg-white/25 transition-transform duration-500 ease-out group-hover/about-contact:-translate-x-3 group-hover/about-contact:-translate-y-2 group-hover/about-contact:scale-110 motion-reduce:group-hover/about-contact:translate-x-0 motion-reduce:group-hover/about-contact:translate-y-0 motion-reduce:group-hover/about-contact:scale-100" />
         <div className="relative grid gap-8 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-center">
           <div>
             <span className="inline-flex rounded-full bg-white/45 px-4 py-2 text-xs font-bold uppercase tracking-wide text-primary">

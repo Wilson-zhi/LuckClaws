@@ -157,20 +157,20 @@ export default function AboutPage() {
           </AboutReveal>
 
           <AboutReveal className="homepage-enter-delay-1">
-            <div className="group relative isolate rounded-[32px] bg-surface-container-lowest p-4 shadow-ambient transition duration-300 hover:-translate-y-1 hover:shadow-lift motion-reduce:hover:translate-y-0">
+            <div className="group/about-hero relative isolate rounded-[32px] bg-surface-container-lowest p-4 shadow-ambient transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-lift motion-reduce:hover:translate-y-0">
               <div className="pointer-events-none absolute -right-4 -top-4 -z-10 h-24 w-24 rounded-full border border-primary/20" />
               <div className="pointer-events-none absolute -bottom-5 left-8 -z-10 h-20 w-20 rounded-full bg-primary-container/20" />
-              <div className="pointer-events-none absolute inset-5 z-10 rounded-[26px] border border-white/30" />
-              <div className="relative aspect-[4/3] overflow-hidden rounded-[26px] bg-surface-container">
+              <div className="relative isolate aspect-[4/3] overflow-hidden rounded-[26px] bg-surface-container [transform:translateZ(0)]">
                 <Image
                   src="/images/about-dogs-running.jpg"
                   alt="Pets outside, representing LUCK CLAWS routine-first pet essentials."
                   fill
                   priority
                   sizes="(min-width: 1024px) 520px, 100vw"
-                  className="object-cover transition duration-500 group-hover:scale-[1.02] motion-reduce:group-hover:scale-100"
+                  className="rounded-[inherit] object-cover transition-transform duration-500 ease-out [backface-visibility:hidden] group-hover/about-hero:scale-[1.02] motion-reduce:group-hover/about-hero:scale-100"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
+                <div className="absolute inset-0 rounded-[inherit] bg-gradient-to-t from-black/35 via-transparent to-transparent" />
+                <div className="pointer-events-none absolute inset-0 z-10 rounded-[inherit] ring-1 ring-inset ring-white/30" />
                 <div className="absolute left-12 top-16 h-[2px] w-40 rotate-[18deg] bg-white/55" />
                 <div className="absolute right-16 top-24 h-[2px] w-28 rotate-[-22deg] bg-white/45" />
                 <RoutineChip label="Play" className="left-5 top-5" />
