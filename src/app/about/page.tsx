@@ -4,15 +4,13 @@ import Link from "next/link";
 import {
   ArrowRight,
   CheckCircle2,
-  Heart,
   Mail,
-  PackageCheck,
   ShieldCheck,
-  Sparkles,
   type LucideIcon
 } from "lucide-react";
 import { AboutReveal } from "@/components/about/AboutReveal";
 import { AboutRoutineTabs } from "@/components/about/AboutRoutineTabs";
+import { AboutSupportModule } from "@/components/about/AboutSupportModule";
 import { SiteShell } from "@/components/layout/SiteShell";
 import { brandName } from "@/data/products";
 import { createSeoMetadata } from "@/lib/seo";
@@ -21,7 +19,7 @@ export const metadata: Metadata = {
   ...createSeoMetadata({
     title: "About LUCK CLAWS | Routine-First Pet Essentials",
     description:
-      "Learn how LUCK CLAWS helps pet parents shop practical pet essentials by routine, from play and walks to cozy rest and everyday comfort.",
+      "Learn how LUCK CLAWS helps pet parents shop practical pet essentials by routine, from play and walks to cozy rest, comfort, and support.",
     path: "/about",
     openGraphTitle: "About LUCK CLAWS | Routine-First Pet Essentials",
     openGraphDescription:
@@ -35,6 +33,7 @@ export const metadata: Metadata = {
 type IconCard = {
   title: string;
   text: string;
+  detail: string;
   Icon: LucideIcon;
 };
 
@@ -42,21 +41,25 @@ const promiseCards: IconCard[] = [
   {
     title: "Clear choices",
     text: "Collections are organized around what pets do every day, so shoppers can start from the routine instead of the product maze.",
+    detail: "Choose the moment first, then the product.",
     Icon: ArrowRight
   },
   {
     title: "Routine-first details",
     text: "Product pages focus on use cases, fit, materials, care guidance, and what to expect before checkout.",
+    detail: "Everyday pet supplies should be easier to understand before checkout.",
     Icon: CheckCircle2
   },
   {
     title: "Secure checkout",
     text: "Checkout keeps the path direct, familiar, and focused on the information needed to complete an order.",
+    detail: "A direct checkout path reduces unnecessary friction.",
     Icon: ShieldCheck
   },
   {
     title: "Real support",
     text: "Product questions, order help, and damaged or incorrect item issues have a clear support path.",
+    detail: "Support is part of the path, not an afterthought.",
     Icon: Mail
   }
 ];
@@ -101,24 +104,6 @@ const categoryLinks = [
   }
 ];
 
-const supportDetails: IconCard[] = [
-  {
-    title: "Product questions",
-    text: "Tell us what you are shopping for and what your pet needs next.",
-    Icon: Sparkles
-  },
-  {
-    title: "Order help",
-    text: "Include your order number so support can review the right details.",
-    Icon: PackageCheck
-  },
-  {
-    title: "Item support",
-    text: "For damaged or incorrect items, send the order number and photos.",
-    Icon: Heart
-  }
-];
-
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <span className="inline-flex rounded-full bg-primary-container/20 px-4 py-2 text-xs font-bold uppercase tracking-wide text-primary">
@@ -145,18 +130,18 @@ export default function AboutPage() {
           <AboutReveal>
             <SectionLabel>About {brandName}</SectionLabel>
             <h1 className="mt-6 max-w-4xl font-heading text-4xl font-extrabold leading-tight md:text-6xl">
-              Pet essentials, chosen around real routines.
+              Pet essentials, mapped around real routines.
             </h1>
             <p className="mt-6 max-w-2xl text-base leading-8 text-on-surface-variant md:text-lg">
-              From playful mornings to quiet evenings, {brandName} curates practical pet products
-              that fit the way pets and their people actually live.
+              {brandName} helps pet parents move from browsing to choosing with clearer paths for
+              play, walks, rest, comfort, and everyday support.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <Link
-                href="/collections"
+                href="#paw-path"
                 className="group inline-flex items-center justify-center gap-2 rounded-full bg-primary-container px-7 py-3 font-heading text-sm font-bold text-on-primary-container transition hover:bg-[#e08f00]"
               >
-                Explore Collections
+                Explore the Paw Path
                 <ArrowRight
                   aria-hidden
                   className="h-4 w-4 transition group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0"
@@ -166,34 +151,37 @@ export default function AboutPage() {
                 href="/contact"
                 className="inline-flex items-center justify-center rounded-full border border-primary px-7 py-3 font-heading text-sm font-bold text-primary transition hover:bg-primary-container/10"
               >
-                Get Support
+                Contact Us
               </Link>
             </div>
           </AboutReveal>
 
           <AboutReveal className="homepage-enter-delay-1">
-            <div className="group relative rounded-xl bg-surface-container-lowest p-4 shadow-ambient transition duration-300 hover:-translate-y-1 hover:shadow-lift motion-reduce:hover:translate-y-0">
-              <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full border border-primary/20" />
-              <div className="absolute -bottom-5 left-8 h-20 w-20 rounded-full bg-primary-container/20" />
-              <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-surface-container">
+            <div className="group relative isolate rounded-[32px] bg-surface-container-lowest p-4 shadow-ambient transition duration-300 hover:-translate-y-1 hover:shadow-lift motion-reduce:hover:translate-y-0">
+              <div className="pointer-events-none absolute -right-4 -top-4 -z-10 h-24 w-24 rounded-full border border-primary/20" />
+              <div className="pointer-events-none absolute -bottom-5 left-8 -z-10 h-20 w-20 rounded-full bg-primary-container/20" />
+              <div className="pointer-events-none absolute inset-5 z-10 rounded-[26px] border border-white/30" />
+              <div className="relative aspect-[4/3] overflow-hidden rounded-[26px] bg-surface-container">
                 <Image
                   src="/images/about-dogs-running.jpg"
                   alt="Pets outside, representing LUCK CLAWS routine-first pet essentials."
                   fill
                   priority
                   sizes="(min-width: 1024px) 520px, 100vw"
-                  className="object-cover transition duration-500 group-hover:scale-[1.03] motion-reduce:group-hover:scale-100"
+                  className="object-cover transition duration-500 group-hover:scale-[1.02] motion-reduce:group-hover:scale-100"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
+                <div className="absolute left-12 top-16 h-[2px] w-40 rotate-[18deg] bg-white/55" />
+                <div className="absolute right-16 top-24 h-[2px] w-28 rotate-[-22deg] bg-white/45" />
                 <RoutineChip label="Play" className="left-5 top-5" />
                 <RoutineChip label="Walk" className="right-5 top-12" />
                 <RoutineChip label="Rest" className="bottom-20 left-6" />
                 <RoutineChip label="Comfort" className="bottom-6 right-6" />
               </div>
-              <div className="relative mt-4 rounded-lg bg-surface-container-low p-5">
-                <p className="font-heading text-xl font-bold">Routine-first pet supplies</p>
+              <div className="relative mt-4 rounded-[22px] bg-surface-container-low p-5">
+                <p className="font-heading text-xl font-bold">Routine Compass</p>
                 <p className="mt-2 text-sm leading-6 text-on-surface-variant">
-                  A clearer way to shop for play, walks, rest, and everyday comfort.
+                  A clearer way to shop by play, walk, rest, comfort, and support.
                 </p>
               </div>
             </div>
@@ -202,17 +190,17 @@ export default function AboutPage() {
       </section>
 
       <AboutReveal>
-        <section className="section-shell py-10 md:py-16">
+        <section id="paw-path" className="section-shell scroll-mt-24 py-10 md:py-16">
           <div className="rounded-xl bg-surface-container-lowest p-6 shadow-ambient md:p-8 lg:p-10">
             <div className="grid gap-8 lg:grid-cols-[360px_minmax(0,1fr)] lg:items-start">
               <div>
-                <SectionLabel>Shopping philosophy</SectionLabel>
+                <SectionLabel>Paw Path</SectionLabel>
                 <h2 className="mt-5 font-heading text-3xl font-extrabold leading-tight md:text-5xl">
-                  Shop by the moments that matter
+                  Follow the Paw Path
                 </h2>
                 <p className="mt-5 text-sm leading-7 text-on-surface-variant md:text-base">
-                  Pets do not shop by SKU. Their routines are simpler: play, walk, rest, and feel
-                  comfortable. That is the path we use to organize the store.
+                  Choose the moment you are shopping for, then follow a clearer path to the right
+                  category.
                 </p>
               </div>
               <AboutRoutineTabs />
@@ -228,7 +216,7 @@ export default function AboutPage() {
               <div>
                 <SectionLabel>Curation</SectionLabel>
                 <h2 className="mt-5 max-w-3xl font-heading text-3xl font-extrabold leading-tight md:text-5xl">
-                  Not more noise. Better paths.
+                  Less scrolling. More certainty.
                 </h2>
                 <p className="mt-5 max-w-2xl text-sm leading-7 text-on-surface-variant md:text-base">
                   Pet shopping can feel crowded. We organize products around practical use cases,
@@ -236,17 +224,20 @@ export default function AboutPage() {
                   choosing with less guesswork.
                 </p>
               </div>
-              <div className="rounded-xl bg-surface-container-lowest p-5 shadow-soft">
-                <div className="rounded-lg bg-primary-container/20 p-5">
-                  <p className="font-heading text-2xl font-bold text-primary">Selection filter</p>
+              <div className="rounded-[28px] bg-surface-container-lowest p-5 shadow-soft">
+                <div className="rounded-[20px] bg-primary-container/20 p-5">
+                  <p className="font-heading text-2xl font-bold text-primary">Decision path</p>
                   <p className="mt-2 text-sm leading-6 text-on-surface-variant">
-                    The page should answer the question before checkout: what is this useful for?
+                    Choose the moment first, then use product details to narrow the choice.
                   </p>
                 </div>
-                <div className="mt-4 grid gap-3">
-                  {checklistItems.map((item) => (
-                    <div key={item} className="flex items-center gap-3 rounded-md bg-white p-4">
-                      <CheckCircle2 aria-hidden className="h-5 w-5 shrink-0 text-primary" />
+                <div className="relative mt-5 grid gap-4 pl-5">
+                  <div className="absolute bottom-4 left-[29px] top-4 w-px bg-primary/25" />
+                  {checklistItems.map((item, index) => (
+                    <div key={item} className="relative flex items-center gap-4 rounded-[18px] bg-white p-4">
+                      <span className="z-10 grid h-7 w-7 shrink-0 place-items-center rounded-full bg-primary text-xs font-bold text-white">
+                        {index + 1}
+                      </span>
                       <span className="text-sm font-bold">{item}</span>
                     </div>
                   ))}
@@ -260,22 +251,25 @@ export default function AboutPage() {
       <AboutReveal>
         <section className="section-shell py-12 md:py-20">
           <div className="mb-8 max-w-3xl">
-            <SectionLabel>The {brandName} way</SectionLabel>
+            <SectionLabel>The {brandName} standard</SectionLabel>
             <h2 className="mt-5 font-heading text-3xl font-extrabold leading-tight md:text-5xl">
-              Useful, clear, and built for real shopping decisions.
+              A clearer way to shop by routine.
             </h2>
           </div>
           <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-            {promiseCards.map(({ title, text, Icon }) => (
+            {promiseCards.map(({ title, text, detail, Icon }) => (
               <article
                 key={title}
-                className="group rounded-xl bg-surface-container-lowest p-6 shadow-soft transition duration-300 hover:-translate-y-1 hover:rotate-[0.35deg] hover:shadow-lift motion-reduce:hover:translate-y-0 motion-reduce:hover:rotate-0"
+                className="group rounded-[26px] bg-surface-container-lowest p-6 shadow-soft transition duration-300 hover:-translate-y-1 hover:rotate-[0.25deg] hover:shadow-lift motion-reduce:hover:translate-y-0 motion-reduce:hover:rotate-0"
               >
                 <span className="grid h-12 w-12 place-items-center rounded-full bg-primary-container/20 text-primary transition group-hover:bg-primary group-hover:text-white">
                   <Icon aria-hidden className="h-5 w-5" />
                 </span>
                 <h3 className="mt-6 font-heading text-xl font-bold">{title}</h3>
                 <p className="mt-3 text-sm leading-6 text-on-surface-variant">{text}</p>
+                <p className="mt-4 min-h-12 rounded-md bg-surface-container-low px-4 py-3 text-sm font-semibold leading-6 text-primary opacity-100 transition md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100">
+                  {detail}
+                </p>
               </article>
             ))}
           </div>
@@ -289,8 +283,11 @@ export default function AboutPage() {
               <div className="max-w-3xl">
                 <SectionLabel>Start with a routine</SectionLabel>
                 <h2 className="mt-5 font-heading text-3xl font-extrabold leading-tight md:text-5xl">
-                  Choose the path that matches what your pet needs next.
+                  Start with the routine your pet needs next.
                 </h2>
+                <p className="mt-4 text-sm leading-7 text-on-surface-variant md:text-base">
+                  Choose the path that matches what your pet needs next.
+                </p>
               </div>
               <Link
                 href="/collections"
@@ -308,7 +305,7 @@ export default function AboutPage() {
                 <Link
                   key={category.href}
                   href={category.href}
-                  className="group relative overflow-hidden rounded-xl bg-surface-container-lowest shadow-soft transition duration-300 hover:-translate-y-1 hover:shadow-lift motion-reduce:hover:translate-y-0"
+                  className="group relative overflow-hidden rounded-[24px] bg-surface-container-lowest shadow-soft transition duration-300 hover:shadow-lift"
                 >
                   <div className="relative aspect-[1.08] bg-surface-container">
                     <Image
@@ -316,7 +313,7 @@ export default function AboutPage() {
                       alt={category.alt}
                       fill
                       sizes="(min-width: 1024px) 220px, 50vw"
-                      className="object-cover transition duration-500 group-hover:scale-[1.06] motion-reduce:group-hover:scale-100"
+                      className="object-cover transition duration-500 group-hover:scale-[1.035] motion-reduce:group-hover:scale-100"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/15 to-transparent" />
                     <div className="absolute inset-x-4 bottom-4 flex items-center justify-between gap-3">
@@ -334,57 +331,7 @@ export default function AboutPage() {
       </AboutReveal>
 
       <AboutReveal>
-        <section className="section-shell py-12 md:py-20">
-          <div className="relative overflow-hidden rounded-2xl bg-primary-container p-6 text-on-primary-container shadow-ambient md:p-10 lg:p-14">
-            <div className="absolute -right-10 -top-10 h-36 w-36 rounded-full border border-white/35" />
-            <div className="absolute -bottom-14 left-8 h-40 w-40 rounded-full bg-white/20" />
-            <div className="relative grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-center">
-              <div>
-                <SectionLabel>Support</SectionLabel>
-                <h2 className="mt-5 font-heading text-3xl font-extrabold leading-tight md:text-5xl">
-                  Need help choosing?
-                </h2>
-                <p className="mt-5 max-w-2xl text-sm leading-7 md:text-base">
-                  Tell us what you are shopping for, what your pet needs, or what happened with an
-                  order. We will help you find the right next step.
-                </p>
-                <p className="mt-4 text-sm leading-7">
-                  Email{" "}
-                  <a href="mailto:support@luckclaws.com" className="font-bold underline underline-offset-4">
-                    support@luckclaws.com
-                  </a>
-                </p>
-                <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-                  <Link
-                    href="/contact"
-                    className="group inline-flex items-center justify-center gap-2 rounded-full bg-primary px-8 py-3 font-heading font-bold text-white transition hover:bg-primary/90"
-                  >
-                    Contact Us
-                    <ArrowRight
-                      aria-hidden
-                      className="h-4 w-4 transition group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0"
-                    />
-                  </Link>
-                  <Link
-                    href="/collections"
-                    className="inline-flex items-center justify-center rounded-full border border-primary/35 bg-white/70 px-8 py-3 font-heading font-bold text-on-surface transition hover:bg-white"
-                  >
-                    Explore Collections
-                  </Link>
-                </div>
-              </div>
-              <div className="grid gap-3">
-                {supportDetails.map(({ title, text, Icon }) => (
-                  <article key={title} className="rounded-lg bg-white/70 p-5 text-on-surface shadow-soft backdrop-blur">
-                    <Icon aria-hidden className="h-5 w-5 text-primary" />
-                    <h3 className="mt-3 font-heading font-bold">{title}</h3>
-                    <p className="mt-2 text-sm leading-6 text-on-surface-variant">{text}</p>
-                  </article>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
+        <AboutSupportModule />
       </AboutReveal>
     </SiteShell>
   );
