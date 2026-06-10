@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Clock, Mail, PackageCheck } from "lucide-react";
+import { ContactForm } from "@/components/support/ContactForm";
 import { SupportPageLayout } from "@/components/support/SupportPageLayout";
 import { brandName } from "@/data/products";
 import { createSeoMetadata } from "@/lib/seo";
@@ -11,9 +12,6 @@ export const metadata: Metadata = {
     path: "/contact"
   })
 };
-
-const supportEmailHref =
-  "mailto:support@luckclaws.com?subject=LUCK%20CLAWS%20Support%20Request&body=Name:%0AEmail:%0AOrder%20Number:%0AMessage:";
 
 export default function ContactPage() {
   return (
@@ -67,31 +65,28 @@ export default function ContactPage() {
           </div>
         </aside>
 
-        <section className="ambient-card p-6 md:p-8" aria-labelledby="email-support-heading">
-          <h2 id="email-support-heading" className="font-heading text-2xl font-bold">
-            Email Support
+        <section className="ambient-card p-6 md:p-8" aria-labelledby="contact-form-heading">
+          <h2 id="contact-form-heading" className="font-heading text-2xl font-bold">
+            Send a Message
           </h2>
           <p className="mt-3 text-sm leading-6 text-on-surface-variant">
-            Send us an email and we will respond within 1-2 business days. For order help, include
+            Submit your question here and our support team will review it. For order help, include
             your order number and any relevant details.
           </p>
           <div className="mt-6 rounded-md bg-surface-container-low p-5 text-sm leading-7 text-on-surface-variant">
             <p className="font-semibold text-on-surface">Please include:</p>
             <ul className="mt-3 list-disc space-y-2 pl-5">
-              <li>Your name and email address</li>
+              <li>Your email address</li>
               <li>Your order number, if available</li>
               <li>A short description of your question or issue</li>
               <li>Photos of the item and packaging for damaged, defective, or incorrect items</li>
             </ul>
           </div>
-          <a
-            href={supportEmailHref}
-            className="mt-6 inline-flex w-full justify-center rounded-full bg-primary-container px-8 py-3 font-heading font-bold text-on-primary-container transition hover:bg-[#e08f00] md:w-auto"
-          >
-            Email Support
-          </a>
+          <div className="mt-6">
+            <ContactForm />
+          </div>
           <p className="mt-4 text-sm leading-6 text-on-surface-variant">
-            If the button does not open your email app, email{" "}
+            You can also email{" "}
             <a href="mailto:support@luckclaws.com" className="font-semibold text-primary hover:underline">
               support@luckclaws.com
             </a>{" "}
