@@ -83,12 +83,12 @@ const valueHighlights = [
 ];
 
 export default async function HomePage() {
-  const [{ featuredProduct, featuredProducts, bestSellers, newArrivals }, homepageSettings, homepageCategories] = await Promise.all([
+  const [{ featuredProduct, featuredProducts, bestSellers, newArrivals }, homepageSettings] = await Promise.all([
     getPublicHomepageProducts(),
-    getPublicHomepageSettings(),
-    getPublicHomepageCategories()
+    getPublicHomepageSettings()
   ]);
-  const { hero } = homepageSettings;
+  const { hero, categorySection } = homepageSettings;
+  const homepageCategories = await getPublicHomepageCategories(categorySection);
   const topTrustItems: CompactTrustItem[] = homepageSettings.trustBadges.map((badge) => ({
     key: badge.key,
     label: badge.title,
@@ -96,6 +96,8 @@ export default async function HomePage() {
   }));
   const primaryButtonLink = hero.primaryButtonLink || featuredProduct.productUrl;
   const secondaryButtonLink = hero.secondaryButtonLink || "/collections";
+  const categoryCtaText = categorySection.ctaText || "Explore All Collections";
+  const categoryCtaHref = categorySection.ctaHref || "/collections";
   const organizationStructuredData = {
     "@context": "https://schema.org",
     "@type": "Organization",
@@ -170,22 +172,45 @@ export default async function HomePage() {
         <CompactTrustBar items={topTrustItems} columns="wide" className="section-shell" />
       </section>
 
-      <section className="section-shell py-10 md:py-14">
-        <div className="mb-6 flex items-center justify-between gap-4">
-          <h2 className="font-heading text-2xl font-bold md:text-3xl">Curated For Every Pet</h2>
-          <Link href="/collections" className="hidden items-center gap-2 text-sm font-semibold text-primary md:flex">
-            Explore All Collections <ArrowRight aria-hidden className="h-4 w-4" />
-          </Link>
-        </div>
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
-          {homepageCategories.map((category) => (
-            <CategoryCard key={category.name} {...category} />
-          ))}
-        </div>
-        <Link href="/collections" className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-primary md:hidden">
-          Explore All Collections <ArrowRight aria-hidden className="h-4 w-4" />
-        </Link>
-      </section>
+      {categorySection.enabled && homepageCategories.length > 0 && (
+        <section className="section-shell py-10 md:py-14">
+          <div className="mb-6 flex items-start justify-between gap-4">
+            <div>
+              <h2 className="font-heading text-2xl font-bold md:text-3xl">{categorySection.title}</h2>
+              {categorySection.subtitle && (
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-on-surface-variant">
+                  {categorySection.subtitle}
+                </p>
+              )}
+            </div>
+            {categoryCtaText && categoryCtaHref && (
+              <Link href={categoryCtaHref} className="hidden items-center gap-2 text-sm font-semibold text-primary md:flex">
+                {categoryCtaText} <ArrowRight aria-hidden className="h-4 w-4" />
+              </Link>
+            )}
+          </div>
+          {categorySection.layout === "carousel" ? (
+            <div className="-mx-4 flex gap-4 overflow-x-auto px-4 pb-2 md:mx-0 md:px-0">
+              {homepageCategories.map((category) => (
+                <div key={category.name} className="min-w-[240px] sm:min-w-[280px] md:min-w-[300px]">
+                  <CategoryCard {...category} />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 md:gap-6">
+              {homepageCategories.map((category) => (
+                <CategoryCard key={category.name} {...category} />
+              ))}
+            </div>
+          )}
+          {categoryCtaText && categoryCtaHref && (
+            <Link href={categoryCtaHref} className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-primary md:hidden">
+              {categoryCtaText} <ArrowRight aria-hidden className="h-4 w-4" />
+            </Link>
+          )}
+        </section>
+      )}
 
       <HomeFeaturedProduct product={featuredProduct} />
 

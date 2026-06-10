@@ -5,15 +5,21 @@ import { AdminGuard } from "@/components/admin/AdminGuard";
 import { AdminPageFrame } from "@/components/admin/AdminPageFrame";
 import { type AdminLabelKey, useAdminLanguage } from "@/components/admin/admin-language";
 import {
+  buildHomepageCategorySectionValue,
   buildHomepageHeroValue,
   buildHomepageTrustBadgesValue,
+  defaultHomepageCategorySection,
   defaultHomepageHero,
+  homepageCategorySectionFromValue,
+  homepageCategorySectionSettingKey,
   homepageHeroFromValue,
   homepageHeroSettingKey,
   homepageTrustBadgeIconKeys,
   homepageTrustBadgesFromValue,
   homepageTrustBadgesSettingKey,
   normalizeHomepageTrustBadgeIconKey,
+  type HomepageCategorySectionContent,
+  type HomepageCategorySectionLayout,
   type HomepageHeroContent,
   type HomepageTrustBadge,
   type HomepageTrustBadgeIconKey
@@ -27,6 +33,14 @@ type HomepageSettingRow = {
 
 type EditableTrustBadge = HomepageTrustBadge & {
   id: string;
+};
+
+type HomepageCategoryRow = {
+  name: string | null;
+  slug: string | null;
+  status: string | null;
+  sort_order: number | string | null;
+  show_on_home: boolean | null;
 };
 
 const inputClass =
@@ -51,6 +65,51 @@ const iconLabelKeys = {
   rotate: "iconRotate",
   lock: "iconLock"
 } as const satisfies Record<HomepageTrustBadgeIconKey, AdminLabelKey>;
+
+const homepageCategorySectionCopy = {
+  zh: {
+    title: "首页分类模块",
+    description: "控制首页分类卡片的标题、布局、数量和显示哪些分类。",
+    showSection: "显示该模块",
+    sectionTitle: "标题",
+    subtitle: "副标题",
+    ctaText: "按钮文字",
+    ctaHref: "按钮链接",
+    layout: "布局",
+    grid4: "四列网格",
+    carousel: "横向滚动",
+    maxItems: "最多显示数量",
+    selectCategories: "选择首页显示的分类",
+    save: "保存分类模块",
+    saved: "分类模块已保存。",
+    unableToSave: "无法保存分类模块。",
+    unableToLoadCategories: "无法加载分类选项。",
+    noActiveCategories: "暂无可选择的启用分类。",
+    selectedCount: "已选择",
+    categoryCountUnit: "个分类"
+  },
+  en: {
+    title: "Homepage Category Section",
+    description: "Control the homepage category card title, layout, count, and selected categories.",
+    showSection: "Show this section",
+    sectionTitle: "Title",
+    subtitle: "Subtitle",
+    ctaText: "Button text",
+    ctaHref: "Button link",
+    layout: "Layout",
+    grid4: "4-card grid",
+    carousel: "Carousel",
+    maxItems: "Max items",
+    selectCategories: "Select categories shown on homepage",
+    save: "Save category section",
+    saved: "Category section saved.",
+    unableToSave: "Unable to save category section.",
+    unableToLoadCategories: "Unable to load category options.",
+    noActiveCategories: "No active categories are available.",
+    selectedCount: "Selected",
+    categoryCountUnit: "categories"
+  }
+} as const;
 
 function createBadgeId() {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -109,17 +168,25 @@ function HeroField({
 }
 
 function AdminHomepageFormContent() {
-  const { t } = useAdminLanguage();
+  const { t, language } = useAdminLanguage();
+  const categoryCopy = homepageCategorySectionCopy[language];
   const supabase = getSupabaseBrowserClient();
   const [hero, setHero] = useState<HomepageHeroContent>(defaultHomepageHero);
   const [badges, setBadges] = useState<EditableTrustBadge[]>([]);
+  const [categorySection, setCategorySection] =
+    useState<HomepageCategorySectionContent>(defaultHomepageCategorySection);
+  const [activeCategories, setActiveCategories] = useState<HomepageCategoryRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [savingCategorySection, setSavingCategorySection] = useState(false);
   const [uploadingHeroImage, setUploadingHeroImage] = useState(false);
   const [uploadMessage, setUploadMessage] = useState("");
   const [uploadError, setUploadError] = useState("");
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [categoryLoadError, setCategoryLoadError] = useState("");
+  const [categorySaveError, setCategorySaveError] = useState("");
+  const [categorySuccessMessage, setCategorySuccessMessage] = useState("");
 
   useEffect(() => {
     if (!supabase) {
@@ -133,28 +200,46 @@ function AdminHomepageFormContent() {
 
     async function loadHomepageSettings() {
       try {
-        const { data, error: loadError } = await browserSupabase
-          .from("homepage_settings")
-          .select("key, value")
-          .in("key", [homepageHeroSettingKey, homepageTrustBadgesSettingKey]);
+        const [settingsResult, categoriesResult] = await Promise.all([
+          browserSupabase
+            .from("homepage_settings")
+            .select("key, value")
+            .in("key", [homepageHeroSettingKey, homepageTrustBadgesSettingKey, homepageCategorySectionSettingKey]),
+          browserSupabase
+            .from("product_categories")
+            .select("name, slug, status, sort_order, show_on_home")
+            .eq("status", "active")
+            .order("sort_order", { ascending: true, nullsFirst: false })
+        ]);
 
-        if (loadError) {
-          throw loadError;
+        if (settingsResult.error) {
+          throw settingsResult.error;
         }
 
         if (!active) {
           return;
         }
 
-        const rowsByKey = settingRowsByKey((data ?? []) as HomepageSettingRow[]);
+        const rowsByKey = settingRowsByKey((settingsResult.data ?? []) as HomepageSettingRow[]);
 
         setHero(homepageHeroFromValue(rowsByKey.get(homepageHeroSettingKey)));
         setBadges(editableBadgesFromValue(rowsByKey.get(homepageTrustBadgesSettingKey)));
+        setCategorySection(homepageCategorySectionFromValue(rowsByKey.get(homepageCategorySectionSettingKey)));
+
+        if (categoriesResult.error) {
+          setCategoryLoadError(categoryCopy.unableToLoadCategories);
+          setActiveCategories([]);
+        } else {
+          setCategoryLoadError("");
+          setActiveCategories((categoriesResult.data ?? []) as HomepageCategoryRow[]);
+        }
       } catch (loadError: unknown) {
         if (active) {
           setError(loadError instanceof Error ? loadError.message : t("unableToLoadHomepage"));
           setHero(defaultHomepageHero);
           setBadges(editableBadgesFromValue(undefined));
+          setCategorySection(defaultHomepageCategorySection);
+          setActiveCategories([]);
         }
       } finally {
         if (active) {
@@ -168,7 +253,7 @@ function AdminHomepageFormContent() {
     return () => {
       active = false;
     };
-  }, [supabase, t]);
+  }, [categoryCopy.unableToLoadCategories, supabase, t]);
 
   const savedBadges = useMemo(
     () =>
@@ -187,6 +272,33 @@ function AdminHomepageFormContent() {
       ...currentHero,
       [field]: value
     }));
+  };
+
+  const updateCategorySectionField = (
+    field: keyof HomepageCategorySectionContent,
+    value: string | boolean | number | HomepageCategorySectionLayout
+  ) => {
+    setCategorySaveError("");
+    setCategorySuccessMessage("");
+    setCategorySection((currentCategorySection) => ({
+      ...currentCategorySection,
+      [field]: value
+    }));
+  };
+
+  const toggleSelectedCategorySlug = (slug: string, checked: boolean) => {
+    setCategorySaveError("");
+    setCategorySuccessMessage("");
+    setCategorySection((currentCategorySection) => {
+      const currentSlugs = currentCategorySection.selectedCategorySlugs.filter(Boolean);
+
+      return {
+        ...currentCategorySection,
+        selectedCategorySlugs: checked
+          ? Array.from(new Set([...currentSlugs, slug]))
+          : currentSlugs.filter((currentSlug) => currentSlug !== slug)
+      };
+    });
   };
 
   const updateBadge = (id: string, field: keyof HomepageTrustBadge, value: string) => {
@@ -329,9 +441,42 @@ function AdminHomepageFormContent() {
     setSuccessMessage(t("homepageSaved"));
   };
 
+  const saveCategorySection = async () => {
+    if (!supabase) {
+      setCategorySaveError(t("supabaseMissing"));
+      return;
+    }
+
+    setSavingCategorySection(true);
+    setCategorySaveError("");
+    setCategorySuccessMessage("");
+
+    const { error: saveError } = await supabase.from("homepage_settings").upsert(
+      [
+        {
+          key: homepageCategorySectionSettingKey,
+          status: "active",
+          value: buildHomepageCategorySectionValue(categorySection)
+        }
+      ],
+      { onConflict: "key" }
+    );
+
+    setSavingCategorySection(false);
+
+    if (saveError) {
+      setCategorySaveError(saveError.message || categoryCopy.unableToSave);
+      return;
+    }
+
+    setCategorySuccessMessage(categoryCopy.saved);
+  };
+
   const handleBadgeIconChange = (id: string) => (event: ChangeEvent<HTMLSelectElement>) => {
     updateBadge(id, "icon", event.target.value);
   };
+
+  const selectedCategorySlugSet = new Set(categorySection.selectedCategorySlugs);
 
   if (loading) {
     return (
@@ -536,6 +681,148 @@ function AdminHomepageFormContent() {
               </div>
             ))
           )}
+        </div>
+      </section>
+
+      <section className="ambient-card p-6 md:p-8">
+        <div>
+          <h2 className="font-heading text-2xl font-bold text-on-surface">{categoryCopy.title}</h2>
+          <p className="mt-2 text-sm leading-6 text-on-surface-variant">{categoryCopy.description}</p>
+        </div>
+
+        <div className="mt-6 grid gap-5">
+          <label className="flex items-center gap-3 rounded-md bg-surface-container-low p-4 text-sm font-semibold text-on-surface">
+            <input
+              type="checkbox"
+              checked={categorySection.enabled}
+              className="h-5 w-5 rounded border-outline-variant text-primary focus:ring-primary"
+              onChange={(event) => updateCategorySectionField("enabled", event.target.checked)}
+            />
+            {categoryCopy.showSection}
+          </label>
+
+          <div className="grid gap-5 md:grid-cols-2">
+            <HeroField
+              label={categoryCopy.sectionTitle}
+              value={categorySection.title}
+              onChange={(value) => updateCategorySectionField("title", value)}
+            />
+            <HeroField
+              label={categoryCopy.subtitle}
+              value={categorySection.subtitle}
+              onChange={(value) => updateCategorySectionField("subtitle", value)}
+            />
+            <HeroField
+              label={categoryCopy.ctaText}
+              value={categorySection.ctaText}
+              onChange={(value) => updateCategorySectionField("ctaText", value)}
+            />
+            <HeroField
+              label={categoryCopy.ctaHref}
+              value={categorySection.ctaHref}
+              onChange={(value) => updateCategorySectionField("ctaHref", value)}
+            />
+            <label className="grid gap-2 text-sm font-semibold text-on-surface">
+              {categoryCopy.layout}
+              <select
+                className={inputClass}
+                value={categorySection.layout}
+                onChange={(event) =>
+                  updateCategorySectionField("layout", event.target.value as HomepageCategorySectionLayout)
+                }
+              >
+                <option value="grid_4">{categoryCopy.grid4}</option>
+                <option value="carousel">{categoryCopy.carousel}</option>
+              </select>
+            </label>
+            <label className="grid gap-2 text-sm font-semibold text-on-surface">
+              {categoryCopy.maxItems}
+              <input
+                className={inputClass}
+                min={1}
+                max={12}
+                type="number"
+                value={categorySection.maxItems}
+                onChange={(event) =>
+                  updateCategorySectionField(
+                    "maxItems",
+                    Number.isFinite(event.target.valueAsNumber) ? event.target.valueAsNumber : 4
+                  )
+                }
+              />
+            </label>
+          </div>
+
+          <div className="rounded-md bg-surface-container-low p-4">
+            <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+              <h3 className="font-heading text-lg font-bold text-on-surface">{categoryCopy.selectCategories}</h3>
+              <p className="text-sm font-semibold text-on-surface-variant">
+                {categoryCopy.selectedCount} {categorySection.selectedCategorySlugs.length}{" "}
+                {categoryCopy.categoryCountUnit}
+              </p>
+            </div>
+
+            {categoryLoadError && (
+              <div className="mt-4 rounded-md bg-error/10 p-4 text-sm font-semibold text-error" role="alert">
+                {categoryLoadError}
+              </div>
+            )}
+
+            {activeCategories.length === 0 ? (
+              <p className="mt-4 rounded-md bg-white p-4 text-sm font-semibold text-on-surface-variant">
+                {categoryCopy.noActiveCategories}
+              </p>
+            ) : (
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                {activeCategories.map((category) => {
+                  const slug = category.slug?.trim() ?? "";
+
+                  if (!slug) {
+                    return null;
+                  }
+
+                  return (
+                    <label
+                      key={slug}
+                      className="flex items-center gap-3 rounded-md border border-outline-variant bg-white p-4 text-sm font-semibold text-on-surface transition hover:border-primary"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedCategorySlugSet.has(slug)}
+                        className="h-5 w-5 rounded border-outline-variant text-primary focus:ring-primary"
+                        onChange={(event) => toggleSelectedCategorySlug(slug, event.target.checked)}
+                      />
+                      <span>
+                        {category.name?.trim() || slug}
+                        <span className="ml-2 text-xs font-normal text-on-surface-variant">/{slug}</span>
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {categorySaveError && (
+            <div className="rounded-md bg-error/10 p-4 text-sm font-semibold text-error" role="alert">
+              {categorySaveError}
+            </div>
+          )}
+
+          {categorySuccessMessage && (
+            <div className="rounded-md bg-primary-container/15 p-4 text-sm font-semibold text-primary" role="status">
+              {categorySuccessMessage}
+            </div>
+          )}
+
+          <button
+            type="button"
+            disabled={savingCategorySection}
+            className="inline-flex w-fit rounded-full bg-primary px-7 py-3 font-heading font-bold text-white transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
+            onClick={saveCategorySection}
+          >
+            {savingCategorySection ? t("saving") : categoryCopy.save}
+          </button>
         </div>
       </section>
 

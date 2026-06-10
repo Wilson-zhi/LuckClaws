@@ -18,6 +18,7 @@ import {
 import { collectionConfigs, type CollectionConfig } from "@/data/collections";
 import { topLevelNavigation, type NavigationItem } from "@/data/navigation";
 import { categorySlugFromName } from "@/lib/admin-categories";
+import { defaultHomepageCategorySection, type HomepageCategorySectionContent } from "@/lib/homepage-content";
 import { normalizeProductHighlightIconKey } from "@/lib/product-highlight-icons";
 import { DEFAULT_SHIPPING_RATE, standardShippingSentence } from "@/lib/shipping";
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
@@ -1218,12 +1219,37 @@ export async function getPublicCollectionConfigForSlug(
   return (await getPublicCollectionConfigBySlug(slug)) ?? getPublicCollectionConfig(fallbackKey);
 }
 
-export async function getPublicHomepageCategories(): Promise<PublicCategoryCard[]> {
-  const categories = (await fetchActiveCategoryMetadata())
-    .filter((category) => category.showOnHome)
-    .map(categoryCardFromMetadata);
+export async function getPublicHomepageCategories(
+  categorySection: HomepageCategorySectionContent = defaultHomepageCategorySection
+): Promise<PublicCategoryCard[]> {
+  if (!categorySection.enabled) {
+    return [];
+  }
 
-  return categories.length > 0 ? categories : staticCategories;
+  const activeCategories = await fetchActiveCategoryMetadata();
+  const maxItems =
+    Number.isFinite(categorySection.maxItems) && categorySection.maxItems > 0
+      ? Math.min(Math.floor(categorySection.maxItems), 12)
+      : defaultHomepageCategorySection.maxItems;
+
+  if (activeCategories.length === 0) {
+    return staticCategories.slice(0, maxItems);
+  }
+
+  const selectedCategorySlugs = categorySection.selectedCategorySlugs.filter(Boolean);
+  const selectedSlugSet = new Set(selectedCategorySlugs);
+  const categoryBySlug = new Map(activeCategories.map((category) => [category.slug, category]));
+  const categories =
+    selectedCategorySlugs.length > 0
+      ? selectedCategorySlugs
+          .map((slug) => categoryBySlug.get(slug))
+          .filter((category): category is CategoryMetadata => Boolean(category))
+      : activeCategories.filter((category) => category.showOnHome);
+
+  return categories
+    .filter((category) => selectedCategorySlugs.length === 0 || selectedSlugSet.has(category.slug))
+    .slice(0, maxItems)
+    .map(categoryCardFromMetadata);
 }
 
 export async function getPublicCategoryCollectionRoutes() {

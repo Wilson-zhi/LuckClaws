@@ -2,6 +2,7 @@ import { freeShippingLabel } from "@/lib/shipping";
 
 export const homepageHeroSettingKey = "home_hero";
 export const homepageTrustBadgesSettingKey = "home_trust_badges";
+export const homepageCategorySectionSettingKey = "home_category_section";
 
 export const homepageTrustBadgeIconKeys = [
   "truck",
@@ -38,6 +39,19 @@ export type HomepageTrustBadge = {
   title: string;
 };
 
+export type HomepageCategorySectionLayout = "grid_4" | "carousel";
+
+export type HomepageCategorySectionContent = {
+  enabled: boolean;
+  title: string;
+  subtitle: string;
+  ctaText: string;
+  ctaHref: string;
+  layout: HomepageCategorySectionLayout;
+  maxItems: number;
+  selectedCategorySlugs: string[];
+};
+
 export type HomepageTrustBadgesValue = {
   active: boolean;
   items: HomepageTrustBadge[];
@@ -65,7 +79,19 @@ export const defaultHomepageTrustBadges: HomepageTrustBadge[] = [
   { key: "materials", icon: "heart", title: "Pet-conscious materials" }
 ];
 
+export const defaultHomepageCategorySection: HomepageCategorySectionContent = {
+  enabled: true,
+  title: "Curated For Every Pet",
+  subtitle: "",
+  ctaText: "Explore All Collections",
+  ctaHref: "/collections",
+  layout: "grid_4",
+  maxItems: 4,
+  selectedCategorySlugs: ["dog-toys", "cat-toys", "pet-apparel", "walking-essentials"]
+};
+
 const homepageTrustBadgeIconSet = new Set<string>(homepageTrustBadgeIconKeys);
+const homepageCategorySectionLayoutSet = new Set<string>(["grid_4", "carousel"]);
 
 function cleanString(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
@@ -77,6 +103,20 @@ function recordFromUnknown(value: unknown): Record<string, unknown> | null {
 
 function arrayFromUnknown(value: unknown) {
   return Array.isArray(value) ? value : [];
+}
+
+function stringArrayFromUnknown(value: unknown) {
+  return Array.isArray(value) ? value.map((item) => cleanString(item)).filter(Boolean) : undefined;
+}
+
+function numberFromUnknown(value: unknown) {
+  if (value === null || value === undefined || value === "") {
+    return null;
+  }
+
+  const parsed = typeof value === "number" ? value : Number(value);
+
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
 function stringFromRecord(record: Record<string, unknown> | null, keys: string[], fallback: string) {
@@ -95,6 +135,22 @@ export function normalizeHomepageTrustBadgeIconKey(value: unknown): HomepageTrus
   const icon = cleanString(value);
 
   return homepageTrustBadgeIconSet.has(icon) ? (icon as HomepageTrustBadgeIconKey) : "shield";
+}
+
+function normalizeHomepageCategorySectionLayout(value: unknown): HomepageCategorySectionLayout {
+  const layout = cleanString(value);
+
+  return homepageCategorySectionLayoutSet.has(layout) ? (layout as HomepageCategorySectionLayout) : "grid_4";
+}
+
+function normalizeHomepageCategoryMaxItems(value: unknown) {
+  const parsed = numberFromUnknown(value);
+
+  if (!parsed || parsed < 1) {
+    return defaultHomepageCategorySection.maxItems;
+  }
+
+  return Math.min(Math.floor(parsed), 12);
 }
 
 export function homepageSettingValueIsActive(value: unknown) {
@@ -179,6 +235,25 @@ export function homepageTrustBadgesFromValue(value: unknown): HomepageTrustBadge
   return items.length > 0 ? items : defaultHomepageTrustBadges;
 }
 
+export function homepageCategorySectionFromValue(value: unknown): HomepageCategorySectionContent {
+  const record = recordFromUnknown(value);
+  const selectedCategorySlugs =
+    stringArrayFromUnknown(record?.selectedCategorySlugs) ??
+    stringArrayFromUnknown(record?.selected_category_slugs) ??
+    defaultHomepageCategorySection.selectedCategorySlugs;
+
+  return {
+    enabled: record?.enabled === false ? false : defaultHomepageCategorySection.enabled,
+    title: stringFromRecord(record, ["title"], defaultHomepageCategorySection.title),
+    subtitle: stringFromRecord(record, ["subtitle"], defaultHomepageCategorySection.subtitle),
+    ctaText: stringFromRecord(record, ["ctaText", "cta_text"], defaultHomepageCategorySection.ctaText),
+    ctaHref: stringFromRecord(record, ["ctaHref", "cta_href"], defaultHomepageCategorySection.ctaHref),
+    layout: normalizeHomepageCategorySectionLayout(record?.layout),
+    maxItems: normalizeHomepageCategoryMaxItems(record?.maxItems ?? record?.max_items),
+    selectedCategorySlugs
+  };
+}
+
 export function buildHomepageHeroValue(hero: HomepageHeroContent) {
   return {
     active: true,
@@ -208,5 +283,19 @@ export function buildHomepageTrustBadgesValue(badges: HomepageTrustBadge[]): Hom
         title: badge.title.trim()
       }))
       .filter((badge) => badge.title)
+  };
+}
+
+export function buildHomepageCategorySectionValue(categorySection: HomepageCategorySectionContent) {
+  return {
+    active: true,
+    enabled: categorySection.enabled,
+    title: categorySection.title.trim(),
+    subtitle: categorySection.subtitle.trim(),
+    ctaText: categorySection.ctaText.trim(),
+    ctaHref: categorySection.ctaHref.trim(),
+    layout: normalizeHomepageCategorySectionLayout(categorySection.layout),
+    maxItems: normalizeHomepageCategoryMaxItems(categorySection.maxItems),
+    selectedCategorySlugs: categorySection.selectedCategorySlugs.map((slug) => slug.trim()).filter(Boolean)
   };
 }
