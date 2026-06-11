@@ -64,13 +64,6 @@ const promiseCards: IconCard[] = [
   }
 ];
 
-const checklistItems = [
-  "Useful before novelty",
-  "Comfort before complication",
-  "Clear details before checkout",
-  "Support after purchase"
-];
-
 const categoryLinks = [
   {
     title: "Dog Toys",
@@ -190,61 +183,8 @@ export default function AboutPage() {
       </section>
 
       <AboutReveal>
-        <section id="paw-path" className="section-shell scroll-mt-24 py-10 md:py-16">
-          <div className="rounded-xl bg-surface-container-lowest p-6 shadow-ambient md:p-8 lg:p-10">
-            <div className="grid gap-8 lg:grid-cols-[360px_minmax(0,1fr)] lg:items-start">
-              <div>
-                <SectionLabel>Paw Path</SectionLabel>
-                <h2 className="mt-5 font-heading text-3xl font-extrabold leading-tight md:text-5xl">
-                  Follow the Paw Path
-                </h2>
-                <p className="mt-5 text-sm leading-7 text-on-surface-variant md:text-base">
-                  Choose the moment you are shopping for, then follow a clearer path to the right
-                  category.
-                </p>
-              </div>
-              <AboutRoutineTabs />
-            </div>
-          </div>
-        </section>
-      </AboutReveal>
-
-      <AboutReveal>
-        <section className="bg-surface-container-low py-12 md:py-20">
-          <div className="section-shell">
-            <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-center">
-              <div>
-                <SectionLabel>Curation</SectionLabel>
-                <h2 className="mt-5 max-w-3xl font-heading text-3xl font-extrabold leading-tight md:text-5xl">
-                  Less scrolling. More certainty.
-                </h2>
-                <p className="mt-5 max-w-2xl text-sm leading-7 text-on-surface-variant md:text-base">
-                  Pet shopping can feel crowded. We organize products around practical use cases,
-                  clear categories, and everyday comfort so shoppers can move from browsing to
-                  choosing with less guesswork.
-                </p>
-              </div>
-              <div className="rounded-[28px] bg-surface-container-lowest p-5 shadow-soft">
-                <div className="rounded-[20px] bg-primary-container/20 p-5">
-                  <p className="font-heading text-2xl font-bold text-primary">Decision path</p>
-                  <p className="mt-2 text-sm leading-6 text-on-surface-variant">
-                    Choose the moment first, then use product details to narrow the choice.
-                  </p>
-                </div>
-                <div className="relative mt-5 grid gap-4 pl-5">
-                  <div className="absolute bottom-4 left-[29px] top-4 w-px bg-primary/25" />
-                  {checklistItems.map((item, index) => (
-                    <div key={item} className="relative flex items-center gap-4 rounded-[18px] bg-white p-4">
-                      <span className="z-10 grid h-7 w-7 shrink-0 place-items-center rounded-full bg-primary text-xs font-bold text-white">
-                        {index + 1}
-                      </span>
-                      <span className="text-sm font-bold">{item}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
+        <section id="paw-path" className="section-shell scroll-mt-24 py-8 md:py-12">
+          <AboutRoutineTabs />
         </section>
       </AboutReveal>
 
