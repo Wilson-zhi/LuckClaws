@@ -31,9 +31,7 @@ export const supportFooterLinks = [
 ];
 
 export const companyFooterLinks = [
-  { label: "About Us", href: "/about" },
-  { label: "Sustainability", href: "/about" },
-  { label: "Community", href: "/about" }
+  { label: "About Us", href: "/about" }
 ];
 
 export const legalFooterLinks = [

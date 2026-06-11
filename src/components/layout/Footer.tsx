@@ -36,7 +36,7 @@ export function Footer() {
               {brandName}
             </Link>
             <p className="mt-5 max-w-xs text-sm leading-6 text-inverse-on-surface/80">
-              Premium supplies for the modern pet parent. Designed with love, crafted with care.
+              Practical pet essentials for everyday routines.
             </p>
             <p className="mt-4 text-sm leading-6 text-inverse-on-surface/80">
               Support:{" "}

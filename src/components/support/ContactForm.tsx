@@ -115,7 +115,7 @@ export function ContactForm() {
     const supabase = getSupabaseBrowserClient();
 
     if (!supabase) {
-      setSubmitError("Support messages are temporarily unavailable. Please email support@luckclaws.com.");
+      setSubmitError("Support messages are temporarily unavailable. Email: support@luckclaws.com.");
       return;
     }
 
@@ -135,7 +135,7 @@ export function ContactForm() {
 
     if (error) {
       console.error("Unable to submit contact message:", error.message);
-      setSubmitError("Unable to send your message right now. Please email support@luckclaws.com.");
+      setSubmitError("Unable to send your message right now. Email: support@luckclaws.com.");
       return;
     }
 

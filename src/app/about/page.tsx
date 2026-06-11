@@ -39,28 +39,28 @@ type IconCard = {
 
 const promiseCards: IconCard[] = [
   {
-    title: "Clear choices",
-    text: "Collections are organized around what pets do every day, so shoppers can start from the routine instead of the product maze.",
-    detail: "Choose the moment first, then the product.",
+    title: "Clear product details",
+    text: "Product pages focus on practical use, materials, sizing guidance, care details, and what to expect before checkout.",
+    detail: "Useful details stay visible before purchase.",
     Icon: ArrowRight
   },
   {
-    title: "Routine-first details",
-    text: "Product pages focus on use cases, fit, materials, care guidance, and what to expect before checkout.",
-    detail: "Everyday pet supplies should be easier to understand before checkout.",
+    title: "Easy category paths",
+    text: "Collections are organized around everyday routines, so shoppers can start with the need instead of a crowded product list.",
+    detail: "Choose the routine first, then narrow the product.",
     Icon: CheckCircle2
   },
   {
-    title: "Secure checkout",
+    title: "Support for product and order questions",
+    text: "Product questions, order help, and damaged or incorrect item issues have a clear email support path.",
+    detail: "Support is available when the next step is unclear.",
+    Icon: Mail
+  },
+  {
+    title: "Simple checkout",
     text: "Checkout keeps the path direct, familiar, and focused on the information needed to complete an order.",
     detail: "A direct checkout path reduces unnecessary friction.",
     Icon: ShieldCheck
-  },
-  {
-    title: "Real support",
-    text: "Product questions, order help, and damaged or incorrect item issues have a clear support path.",
-    detail: "Support is part of the path, not an afterthought.",
-    Icon: Mail
   }
 ];
 
@@ -141,7 +141,7 @@ export default function AboutPage() {
                 href="#paw-path"
                 className="group inline-flex items-center justify-center gap-2 rounded-full bg-primary-container px-7 py-3 font-heading text-sm font-bold text-on-primary-container transition hover:bg-[#e08f00]"
               >
-                Explore the Paw Path
+                Shop by Routine
                 <ArrowRight
                   aria-hidden
                   className="h-4 w-4 transition group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0"
@@ -251,9 +251,9 @@ export default function AboutPage() {
       <AboutReveal>
         <section className="section-shell py-12 md:py-20">
           <div className="mb-8 max-w-3xl">
-            <SectionLabel>The {brandName} standard</SectionLabel>
+            <SectionLabel>Trust clarity</SectionLabel>
             <h2 className="mt-5 font-heading text-3xl font-extrabold leading-tight md:text-5xl">
-              A clearer way to shop by routine.
+              What you can expect from {brandName}
             </h2>
           </div>
           <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">

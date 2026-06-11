@@ -63,7 +63,7 @@ const questions = [
   {
     title: "How can I contact support?",
     content:
-      "Email support@luckclaws.com or use the Contact Us page. Please include your order number if your question is about an existing order."
+      "Email: support@luckclaws.com or use the Contact Us page. Please include your order number if your question is about an existing order."
   }
 ];
 
