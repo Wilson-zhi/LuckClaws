@@ -94,11 +94,41 @@ const routines: Routine[] = [
   }
 ];
 
-const guideBadges = [
-  "Useful before novelty",
-  "Comfort before complication",
-  "Clear details before checkout",
-  "Support after purchase"
+const guideNotes: Array<{
+  label: string;
+  emphasis: string;
+  rest: string;
+  Icon: LucideIcon;
+  className: string;
+}> = [
+  {
+    label: "Useful before novelty",
+    emphasis: "Useful",
+    rest: "before novelty",
+    Icon: PawPrint,
+    className: "lg:-rotate-[1.4deg] lg:translate-y-1"
+  },
+  {
+    label: "Comfort before complication",
+    emphasis: "Comfort",
+    rest: "before complication",
+    Icon: Heart,
+    className: "lg:rotate-[0.9deg]"
+  },
+  {
+    label: "Clear details before checkout",
+    emphasis: "Clear details",
+    rest: "before checkout",
+    Icon: Sparkles,
+    className: "lg:-rotate-[0.8deg] lg:translate-y-2"
+  },
+  {
+    label: "Support after purchase",
+    emphasis: "Support",
+    rest: "after purchase",
+    Icon: ArrowRight,
+    className: "lg:rotate-[1.2deg] lg:translate-y-0.5"
+  }
 ];
 
 export function AboutRoutineTabs() {
@@ -238,14 +268,28 @@ export function AboutRoutineTabs() {
               })}
             </div>
 
-            <div className="mt-5 grid gap-2 sm:grid-cols-2 lg:absolute lg:bottom-4 lg:left-4 lg:right-4 lg:mt-0 lg:grid-cols-4">
-              {guideBadges.map((badge) => (
-                <span
-                  key={badge}
-                  className="rounded-full border border-primary/15 bg-[#fff8ed]/80 px-3 py-2 text-xs font-bold text-on-surface-variant"
+            <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:absolute lg:bottom-4 lg:left-4 lg:right-4 lg:mt-0 lg:grid-cols-4 lg:items-end">
+              {guideNotes.map(({ label, emphasis, rest, Icon, className }) => (
+                <div
+                  key={label}
+                  aria-label={label}
+                  className={`relative overflow-hidden rounded-[18px] border border-primary/15 bg-[#fffaf3]/90 px-3.5 py-3 text-left shadow-soft backdrop-blur transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-lift motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${className}`}
                 >
-                  {badge}
-                </span>
+                  <span className="pointer-events-none absolute -right-5 -top-5 h-12 w-12 rounded-full bg-primary-container/25" />
+                  <span className="relative flex items-start gap-2.5">
+                    <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full bg-primary-container/35 text-primary">
+                      <Icon aria-hidden className="h-3.5 w-3.5" />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block font-heading text-sm font-extrabold leading-5 text-primary">
+                        {emphasis}
+                      </span>
+                      <span className="block text-[11px] font-semibold uppercase tracking-wide text-on-surface-variant">
+                        {rest}
+                      </span>
+                    </span>
+                  </span>
+                </div>
               ))}
             </div>
           </div>
