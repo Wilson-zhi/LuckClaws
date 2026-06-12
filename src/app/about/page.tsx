@@ -13,7 +13,10 @@ import { AboutRoutineTabs } from "@/components/about/AboutRoutineTabs";
 import { AboutSupportModule } from "@/components/about/AboutSupportModule";
 import { SiteShell } from "@/components/layout/SiteShell";
 import { brandName } from "@/data/products";
+import { getPublicAboutPawContent } from "@/lib/about-paw-settings";
 import { createSeoMetadata } from "@/lib/seo";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   ...createSeoMetadata({
@@ -115,7 +118,9 @@ function RoutineChip({ label, className = "" }: { label: string; className?: str
   );
 }
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const pawPathContent = await getPublicAboutPawContent();
+
   return (
     <SiteShell>
       <section className="section-shell py-10 md:py-16">
@@ -184,7 +189,7 @@ export default function AboutPage() {
 
       <AboutReveal>
         <section id="paw-path" className="section-shell scroll-mt-24 py-8 md:py-12">
-          <AboutRoutineTabs />
+          <AboutRoutineTabs content={pawPathContent} />
         </section>
       </AboutReveal>
 

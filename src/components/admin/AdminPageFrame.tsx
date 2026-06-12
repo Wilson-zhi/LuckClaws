@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { BadgePercent, Box, Home, LayoutDashboard, Mail, MessageSquare, Package, Tags, Users } from "lucide-react";
+import { BadgePercent, Box, Home, LayoutDashboard, Mail, Map, MessageSquare, Package, Tags, Users } from "lucide-react";
 import {
   AdminLanguageProvider,
   type AdminLabel,
@@ -24,6 +24,7 @@ type AdminPageFrameProps = {
 const adminNavItems = [
   { labelKey: "dashboard", href: "/admin", Icon: LayoutDashboard },
   { labelKey: "homepage", href: "/admin/homepage", Icon: Home },
+  { label: { zh: "关于", en: "About" }, href: "/admin/about", Icon: Map },
   { label: { zh: "订阅", en: "Newsletter" }, href: "/admin/newsletter", Icon: Mail },
   { label: { zh: "消息", en: "Messages" }, href: "/admin/messages", Icon: MessageSquare },
   { label: { zh: "优惠码", en: "Discounts" }, href: "/admin/discounts", Icon: BadgePercent },

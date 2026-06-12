@@ -4,23 +4,28 @@ import Link from "next/link";
 import { useState } from "react";
 import {
   ArrowRight,
+  Check,
   Heart,
+  Leaf,
+  Lock,
   Mail,
   PawPrint,
   PackageCheck,
+  RotateCcw,
+  ShieldCheck,
   Sparkles,
+  Star,
   Truck,
   type LucideIcon
 } from "lucide-react";
+import {
+  fallbackAboutPawContent,
+  type AboutPawContent,
+  type AboutPawNoteContent,
+  type AboutPawRouteContent
+} from "@/lib/about-paw-content";
 
-type RoutineKey = "play" | "walk" | "rest" | "comfort" | "support";
-
-type Routine = {
-  key: RoutineKey;
-  label: string;
-  title: string;
-  description: string;
-  note: string;
+type Routine = AboutPawRouteContent & {
   Icon: LucideIcon;
   desktopPosition: string;
   links: Array<{
@@ -29,111 +34,90 @@ type Routine = {
   }>;
 };
 
-const routines: Routine[] = [
-  {
-    key: "play",
-    label: "Play",
-    title: "Playful energy, easier choices",
-    description: "For curious pets who need toys, textures, and daily enrichment.",
-    note: "Start here when your pet needs activity, chewing, chasing, or enrichment.",
-    Icon: Sparkles,
-    desktopPosition: "lg:left-4 lg:top-14",
-    links: [
-      { label: "Dog Toys", href: "/collections/dog-toys" },
-      { label: "Cat Toys", href: "/collections/cat-toys" }
-    ]
-  },
-  {
-    key: "walk",
-    label: "Walk",
-    title: "Out-the-door essentials",
-    description: "For everyday walks, quick errands, and longer strolls.",
-    note: "Start here when you need movement, comfort, and simple walking gear.",
-    Icon: Truck,
-    desktopPosition: "lg:left-[24%] lg:top-[48%]",
-    links: [
-      { label: "Walking Essentials", href: "/collections/walking-essentials" },
-      { label: "Pet Apparel", href: "/collections/pet-apparel" }
-    ]
-  },
-  {
-    key: "rest",
-    label: "Rest",
-    title: "Cozy corners and slower moments",
-    description: "For rest, recovery, warmth, and calmer routines.",
-    note: "Start here when your pet needs a softer place to settle.",
-    Icon: Heart,
-    desktopPosition: "lg:left-[46%] lg:top-12",
-    links: [{ label: "Beds & Blankets", href: "/collections/beds-and-blankets" }]
-  },
-  {
-    key: "comfort",
-    label: "Comfort",
-    title: "Everyday comfort without overthinking",
-    description: "For practical apparel and products that are easier to compare before checkout.",
-    note: "Start here when comfort, fit, and everyday use matter most.",
-    Icon: PackageCheck,
-    desktopPosition: "lg:left-[64%] lg:top-[54%]",
-    links: [
-      { label: "Pet Apparel", href: "/collections/pet-apparel" },
-      { label: "Explore Collections", href: "/collections" }
-    ]
-  },
-  {
-    key: "support",
-    label: "Support",
-    title: "Not sure where to start?",
-    description: "Tell us what you are shopping for or what happened with an order.",
-    note: "Support is part of the path, not an afterthought.",
-    Icon: Mail,
-    desktopPosition: "lg:right-4 lg:top-20",
-    links: [
-      { label: "Contact Us", href: "/contact" },
-      { label: "Explore Collections", href: "/collections" }
-    ]
-  }
+const routePositionsByKey: Record<string, string> = {
+  play: "lg:left-4 lg:top-14",
+  walk: "lg:left-[24%] lg:top-[48%]",
+  rest: "lg:left-[46%] lg:top-12",
+  comfort: "lg:left-[64%] lg:top-[54%]",
+  support: "lg:right-4 lg:top-20"
+};
+
+const fallbackRoutePositions = [
+  "lg:left-4 lg:top-14",
+  "lg:left-[24%] lg:top-[48%]",
+  "lg:left-[46%] lg:top-12",
+  "lg:left-[64%] lg:top-[54%]",
+  "lg:right-4 lg:top-20"
 ];
 
-const guideNotes: Array<{
-  label: string;
-  emphasis: string;
-  rest: string;
-  Icon: LucideIcon;
-  className: string;
-}> = [
-  {
-    label: "Useful before novelty",
-    emphasis: "Useful",
-    rest: "before novelty",
-    Icon: PawPrint,
-    className: "lg:-rotate-[1.4deg] lg:translate-y-1"
-  },
-  {
-    label: "Comfort before complication",
-    emphasis: "Comfort",
-    rest: "before complication",
-    Icon: Heart,
-    className: "lg:rotate-[0.9deg]"
-  },
-  {
-    label: "Clear details before checkout",
-    emphasis: "Clear details",
-    rest: "before checkout",
-    Icon: Sparkles,
-    className: "lg:-rotate-[0.8deg] lg:translate-y-2"
-  },
-  {
-    label: "Support after purchase",
-    emphasis: "Support",
-    rest: "after purchase",
-    Icon: ArrowRight,
-    className: "lg:rotate-[1.2deg] lg:translate-y-0.5"
-  }
+const iconMap: Record<string, LucideIcon> = {
+  paw: PawPrint,
+  shield: ShieldCheck,
+  heart: Heart,
+  star: Star,
+  sparkles: Sparkles,
+  leaf: Leaf,
+  truck: Truck,
+  package: PackageCheck,
+  check: Check,
+  rotate: RotateCcw,
+  lock: Lock,
+  mail: Mail,
+  arrow: ArrowRight
+};
+
+const noteClassesByKey: Record<string, string> = {
+  useful: "lg:-rotate-[1.4deg] lg:translate-y-1",
+  comfort: "lg:rotate-[0.9deg]",
+  "clear-details": "lg:-rotate-[0.8deg] lg:translate-y-2",
+  support: "lg:rotate-[1.2deg] lg:translate-y-0.5"
+};
+
+const fallbackNoteClasses = [
+  "lg:-rotate-[1.4deg] lg:translate-y-1",
+  "lg:rotate-[0.9deg]",
+  "lg:-rotate-[0.8deg] lg:translate-y-2",
+  "lg:rotate-[1.2deg] lg:translate-y-0.5"
 ];
 
-export function AboutRoutineTabs() {
-  const [activeRoutineKey, setActiveRoutineKey] = useState<RoutineKey>("play");
-  const activeRoutine = routines.find((routine) => routine.key === activeRoutineKey) ?? routines[0];
+function iconForKey(iconKey: string) {
+  return iconMap[iconKey] ?? PawPrint;
+}
+
+function routeLinksFromContent(route: AboutPawRouteContent) {
+  const links = [{ label: route.ctaLabel, href: route.ctaHref }];
+
+  if (route.secondaryCtaLabel && route.secondaryCtaHref) {
+    links.push({
+      label: route.secondaryCtaLabel,
+      href: route.secondaryCtaHref
+    });
+  }
+
+  return links;
+}
+
+function displayRoutinesFromContent(content: AboutPawContent): Routine[] {
+  const routes = content.routes.length > 0 ? content.routes : fallbackAboutPawContent.routes;
+
+  return routes.map((route, index) => ({
+    ...route,
+    Icon: iconForKey(route.iconKey),
+    desktopPosition:
+      routePositionsByKey[route.routeKey] ?? fallbackRoutePositions[index] ?? fallbackRoutePositions[0],
+    links: routeLinksFromContent(route)
+  }));
+}
+
+function noteClassName(note: AboutPawNoteContent, index: number) {
+  return noteClassesByKey[note.noteKey] ?? fallbackNoteClasses[index] ?? "";
+}
+
+export function AboutRoutineTabs({ content = fallbackAboutPawContent }: { content?: AboutPawContent }) {
+  const routines = displayRoutinesFromContent(content);
+  const guideNotes = content.notes.length > 0 ? content.notes : fallbackAboutPawContent.notes;
+  const [activeRoutineKey, setActiveRoutineKey] = useState(routines[0]?.routeKey ?? "play");
+  const activeRoutine = routines.find((routine) => routine.routeKey === activeRoutineKey) ?? routines[0];
   const ActiveIcon = activeRoutine.Icon;
 
   return (
@@ -144,16 +128,16 @@ export function AboutRoutineTabs() {
       <div className="relative">
         <div className="max-w-3xl">
           <span className="inline-flex rounded-full bg-white/80 px-4 py-2 text-xs font-bold uppercase tracking-wide text-primary shadow-soft">
-            Routine Route
+            {content.header.sectionLabel}
           </span>
           <h2 className="mt-5 font-heading text-3xl font-extrabold leading-tight text-on-surface md:text-5xl">
-            The Paw Path Finder
+            {content.header.title}
           </h2>
           <p className="mt-4 max-w-2xl text-sm leading-7 text-on-surface-variant md:text-base">
-            Choose your pet&apos;s next moment, then follow a clearer route to the right products.
+            {content.header.subtitle}
           </p>
           <p className="mt-3 text-sm font-bold leading-6 text-primary">
-            Less scrolling. More certainty. Start with the routine before checkout.
+            {content.header.supportingLine}
           </p>
         </div>
 
@@ -188,12 +172,12 @@ export function AboutRoutineTabs() {
 
             <div className="flex gap-3 overflow-x-auto pb-2 lg:hidden" role="tablist" aria-label="Paw Path Finder routines">
               {routines.map((routine) => {
-                const selected = routine.key === activeRoutineKey;
+                const selected = routine.routeKey === activeRoutineKey;
                 const RoutineIcon = routine.Icon;
 
                 return (
                   <button
-                    key={routine.key}
+                    key={routine.routeKey}
                     type="button"
                     role="tab"
                     aria-selected={selected}
@@ -203,7 +187,7 @@ export function AboutRoutineTabs() {
                         ? "border-primary bg-primary text-white shadow-lift"
                         : "border-primary/15 bg-white text-primary hover:border-primary/35"
                     }`}
-                    onClick={() => setActiveRoutineKey(routine.key)}
+                    onClick={() => setActiveRoutineKey(routine.routeKey)}
                   >
                     <span className="flex items-center gap-2 text-sm font-bold">
                       <RoutineIcon aria-hidden className="h-4 w-4" />
@@ -220,23 +204,23 @@ export function AboutRoutineTabs() {
               aria-label="Paw Path Finder routines"
             >
               {routines.map((routine) => {
-                const selected = routine.key === activeRoutineKey;
+                const selected = routine.routeKey === activeRoutineKey;
                 const RoutineIcon = routine.Icon;
 
                 return (
                   <button
-                    key={routine.key}
+                    key={routine.routeKey}
                     type="button"
                     role="tab"
                     aria-selected={selected}
                     aria-controls="about-routine-panel"
-                    id={`about-routine-tab-${routine.key}`}
+                    id={`about-routine-tab-${routine.routeKey}`}
                     className={`group absolute w-[168px] rounded-[24px] border px-3 py-3 text-left transition-[border-color,background-color,box-shadow,transform] duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:transition-none ${routine.desktopPosition} ${
                       selected
                         ? "z-20 -translate-y-1 border-primary bg-white shadow-lift"
                         : "z-10 border-primary/10 bg-white/80 shadow-soft hover:-translate-y-0.5 hover:border-primary/35 hover:bg-white"
                     }`}
-                    onClick={() => setActiveRoutineKey(routine.key)}
+                    onClick={() => setActiveRoutineKey(routine.routeKey)}
                   >
                     <span className="flex items-center gap-3">
                       <span
@@ -269,11 +253,15 @@ export function AboutRoutineTabs() {
             </div>
 
             <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:absolute lg:bottom-4 lg:left-4 lg:right-4 lg:mt-0 lg:grid-cols-4 lg:items-end">
-              {guideNotes.map(({ label, emphasis, rest, Icon, className }) => (
+              {guideNotes.map((note, index) => {
+                const Icon = iconForKey(note.iconKey);
+                const label = `${note.keyword} ${note.secondaryText}`;
+
+                return (
                 <div
                   key={label}
                   aria-label={label}
-                  className={`relative overflow-hidden rounded-[18px] border border-primary/15 bg-[#fffaf3]/90 px-3.5 py-3 text-left shadow-soft backdrop-blur transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-lift motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${className}`}
+                  className={`relative overflow-hidden rounded-[18px] border border-primary/15 bg-[#fffaf3]/90 px-3.5 py-3 text-left shadow-soft backdrop-blur transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-lift motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${noteClassName(note, index)}`}
                 >
                   <span className="pointer-events-none absolute -right-5 -top-5 h-12 w-12 rounded-full bg-primary-container/25" />
                   <span className="relative flex items-start gap-2.5">
@@ -282,20 +270,21 @@ export function AboutRoutineTabs() {
                     </span>
                     <span className="min-w-0">
                       <span className="block font-heading text-sm font-extrabold leading-5 text-primary">
-                        {emphasis}
+                        {note.keyword}
                       </span>
                       <span className="block text-[11px] font-semibold uppercase tracking-wide text-on-surface-variant">
-                        {rest}
+                        {note.secondaryText}
                       </span>
                     </span>
                   </span>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
           <div
-            key={activeRoutine.key}
+            key={activeRoutine.routeKey}
             id="about-routine-panel"
             role="tabpanel"
             aria-label={`${activeRoutine.label} recommendations`}
@@ -311,13 +300,13 @@ export function AboutRoutineTabs() {
               </div>
             </div>
             <h3 className="mt-6 font-heading text-2xl font-extrabold leading-tight">
-              {activeRoutine.title}
+              {activeRoutine.recommendationTitle}
             </h3>
             <p className="mt-3 text-sm leading-7 text-on-surface-variant md:text-base">
-              {activeRoutine.description}
+              {activeRoutine.recommendationDescription}
             </p>
             <p className="mt-5 rounded-[20px] bg-[#fff8ed] px-4 py-3 text-sm font-semibold leading-6 text-on-surface-variant">
-              {activeRoutine.note}
+              {activeRoutine.noteText}
             </p>
             <div className="mt-auto flex flex-wrap gap-3 pt-6">
               {activeRoutine.links.map((link) => (
