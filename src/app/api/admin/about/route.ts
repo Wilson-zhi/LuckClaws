@@ -5,6 +5,7 @@ import { getSupabaseAuthenticatedClientFromRequest } from "@/lib/supabase/server
 
 export type AdminAboutSettingsRow = {
   id: string;
+  section_key: string | null;
   section_label: string | null;
   title: string | null;
   subtitle: string | null;
@@ -13,6 +14,7 @@ export type AdminAboutSettingsRow = {
 
 export type AdminAboutHeroRow = {
   id: string;
+  section_key: string | null;
   eyebrow: string | null;
   title: string | null;
   description: string | null;
@@ -54,6 +56,7 @@ export type AdminAboutNoteRow = {
 
 export type AdminAboutCollectionSectionRow = {
   id: string;
+  section_key: string | null;
   eyebrow: string | null;
   title: string | null;
   subtitle: string | null;
@@ -74,12 +77,12 @@ export type AdminAboutCollectionCardRow = {
 };
 
 const aboutHeroColumns =
-  "id, eyebrow, title, description, primary_cta_label, primary_cta_href, secondary_cta_label, secondary_cta_href, hero_image_url, hero_image_alt, compass_title, compass_description";
-const aboutSettingsColumns = "id, section_label, title, subtitle, supporting_line";
+  "id, section_key, eyebrow, title, description, primary_cta_label, primary_cta_href, secondary_cta_label, secondary_cta_href, hero_image_url, hero_image_alt, compass_title, compass_description";
+const aboutSettingsColumns = "id, section_key, section_label, title, subtitle, supporting_line";
 const aboutRouteColumns =
   "id, route_key, label, icon_key, recommendation_title, recommendation_description, note_text, cta_label, cta_href, secondary_cta_label, secondary_cta_href, sort_order, enabled";
 const aboutNoteColumns = "id, note_key, keyword, secondary_text, icon_key, sort_order, enabled";
-const aboutCollectionSectionColumns = "id, eyebrow, title, subtitle, view_all_label, view_all_href";
+const aboutCollectionSectionColumns = "id, section_key, eyebrow, title, subtitle, view_all_label, view_all_href";
 const aboutCollectionCardColumns =
   "id, card_key, title, category_slug, href, image_url, image_alt, sort_order, enabled";
 
@@ -189,6 +192,12 @@ function positiveSortOrder(value: unknown, fallback: number) {
 
 function isValidHref(value: string) {
   return value.startsWith("/") || value.startsWith("https://") || value.startsWith("http://");
+}
+
+function logAboutError(message: string, details: unknown) {
+  if (process.env.NODE_ENV === "development") {
+    console.error(message, details);
+  }
 }
 
 function validateAboutPayload(body: unknown): ValidationResult {
@@ -554,8 +563,16 @@ async function getAboutAdminData(request: Request) {
     collectionSectionResult,
     collectionCardsResult
   ] = await Promise.all([
-    supabase.from("about_hero_settings").select(aboutHeroColumns).limit(1).maybeSingle(),
-    supabase.from("about_page_settings").select(aboutSettingsColumns).limit(1).maybeSingle(),
+    supabase
+      .from("about_hero_settings")
+      .select(aboutHeroColumns)
+      .eq("section_key", "about_hero")
+      .maybeSingle(),
+    supabase
+      .from("about_page_settings")
+      .select(aboutSettingsColumns)
+      .eq("section_key", "paw_path_finder")
+      .maybeSingle(),
     supabase
       .from("about_paw_routes")
       .select(aboutRouteColumns)
@@ -567,7 +584,7 @@ async function getAboutAdminData(request: Request) {
     supabase
       .from("about_collection_section_settings")
       .select(aboutCollectionSectionColumns)
-      .limit(1)
+      .eq("section_key", "about_collections")
       .maybeSingle(),
     supabase
       .from("about_collection_cards")
@@ -583,7 +600,7 @@ async function getAboutAdminData(request: Request) {
     collectionSectionResult.error ||
     collectionCardsResult.error
   ) {
-    console.error("Unable to load About admin content:", {
+    logAboutError("Unable to load About admin content:", {
       hero: heroResult.error?.message,
       settings: settingsResult.error?.message,
       routes: routesResult.error?.message,
@@ -662,6 +679,7 @@ export async function PATCH(request: Request) {
   const { supabase } = result;
   const { hero, settings, routes, notes, collectionSection, collectionCards } = validation.payload;
   const heroValues = {
+    section_key: "about_hero",
     eyebrow: hero.eyebrow,
     title: hero.title,
     description: hero.description,
@@ -701,6 +719,7 @@ export async function PATCH(request: Request) {
     : supabase
         .from("about_page_settings")
         .insert({
+          section_key: "paw_path_finder",
           section_label: settings.section_label,
           title: settings.title,
           subtitle: settings.subtitle,
@@ -709,6 +728,7 @@ export async function PATCH(request: Request) {
         .select(aboutSettingsColumns)
         .single();
   const collectionSectionValues = {
+    section_key: "about_collections",
     eyebrow: collectionSection.eyebrow,
     title: collectionSection.title,
     subtitle: collectionSection.subtitle,
@@ -780,7 +800,7 @@ export async function PATCH(request: Request) {
     noteWriteError ||
     collectionCardWriteError
   ) {
-    console.error("Unable to save About admin content:", {
+    logAboutError("Unable to save About admin content:", {
       hero: heroResult.error?.message,
       settings: settingsResult.error?.message,
       collectionSection: collectionSectionResult.error?.message,
@@ -808,7 +828,7 @@ export async function PATCH(request: Request) {
   ]);
 
   if (routesResult.error || notesResult.error || collectionCardsResult.error) {
-    console.error("Unable to reload About admin content after save:", {
+    logAboutError("Unable to reload About admin content after save:", {
       routes: routesResult.error?.message,
       notes: notesResult.error?.message,
       collectionCards: collectionCardsResult.error?.message

@@ -247,7 +247,7 @@ export const fallbackAboutCollectionSectionContent: AboutCollectionSectionConten
 
 export const fallbackAboutCollectionCards: AboutCollectionCardContent[] = [
   {
-    cardKey: "dog-toys",
+    cardKey: "dog_toys",
     title: "Dog Toys",
     categorySlug: "dog-toys",
     href: "/collections/dog-toys",
@@ -257,7 +257,7 @@ export const fallbackAboutCollectionCards: AboutCollectionCardContent[] = [
     enabled: true
   },
   {
-    cardKey: "cat-toys",
+    cardKey: "cat_toys",
     title: "Cat Toys",
     categorySlug: "cat-toys",
     href: "/collections/cat-toys",
@@ -267,7 +267,7 @@ export const fallbackAboutCollectionCards: AboutCollectionCardContent[] = [
     enabled: true
   },
   {
-    cardKey: "pet-apparel",
+    cardKey: "pet_apparel",
     title: "Pet Apparel",
     categorySlug: "pet-apparel",
     href: "/collections/pet-apparel",
@@ -277,7 +277,7 @@ export const fallbackAboutCollectionCards: AboutCollectionCardContent[] = [
     enabled: true
   },
   {
-    cardKey: "walking-essentials",
+    cardKey: "walking_essentials",
     title: "Walking Essentials",
     categorySlug: "walking-essentials",
     href: "/collections/walking-essentials",
@@ -287,7 +287,7 @@ export const fallbackAboutCollectionCards: AboutCollectionCardContent[] = [
     enabled: true
   },
   {
-    cardKey: "beds-blankets",
+    cardKey: "beds_blankets",
     title: "Beds & Blankets",
     categorySlug: "beds-blankets",
     href: "/collections/beds-blankets",
@@ -387,6 +387,10 @@ function sortBySortOrder<T extends { sortOrder: number }>(items: T[]) {
   return [...items].sort((first, second) => first.sortOrder - second.sortOrder);
 }
 
+function normalizedLookupKey(value: string) {
+  return value.replaceAll("-", "_");
+}
+
 export function normalizeAboutIconKey(value: unknown, fallback: AboutIconKey = "paw"): AboutIconKey {
   const cleaned = cleanString(value).toLowerCase();
 
@@ -466,7 +470,9 @@ export function aboutCollectionCardsFromRows(
         return null;
       }
 
-      const fallbackByKey = fallbackAboutCollectionCards.find((card) => card.cardKey === cardKey);
+      const fallbackByKey = fallbackAboutCollectionCards.find(
+        (card) => normalizedLookupKey(card.cardKey) === normalizedLookupKey(cardKey)
+      );
 
       return {
         cardKey,

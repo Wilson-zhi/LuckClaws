@@ -340,6 +340,12 @@ function safeFileName(fileName: string) {
   return sanitizePathSegment(fileName) || "about-image";
 }
 
+function logUploadError(message: string, error: unknown) {
+  if (process.env.NODE_ENV === "development") {
+    console.error(message, error);
+  }
+}
+
 function sortEditableItems<T extends { sort_order: string }>(items: T[]) {
   return [...items].sort((first, second) => {
     const firstSort = Number(first.sort_order);
@@ -768,6 +774,82 @@ function AdminAboutForm() {
     return data.publicUrl;
   }
 
+  async function persistHeroImageUrl(publicUrl: string) {
+    if (!supabase) {
+      throw new Error(c.uploadConfigMissing);
+    }
+
+    const updateQuery = hero.id
+      ? supabase.from("about_hero_settings").update({ hero_image_url: publicUrl }).eq("id", hero.id)
+      : supabase
+          .from("about_hero_settings")
+          .update({ hero_image_url: publicUrl })
+          .eq("section_key", "about_hero");
+    const { data, error: updateError } = await updateQuery
+      .select("id, hero_image_url")
+      .maybeSingle();
+
+    if (updateError) {
+      throw updateError;
+    }
+
+    if (data) {
+      return data as Pick<AdminAboutHeroRow, "id" | "hero_image_url">;
+    }
+
+    const { data: insertedData, error: insertError } = await supabase
+      .from("about_hero_settings")
+      .insert({
+        section_key: "about_hero",
+        eyebrow: hero.eyebrow,
+        title: hero.title,
+        description: hero.description,
+        primary_cta_label: hero.primary_cta_label,
+        primary_cta_href: hero.primary_cta_href,
+        secondary_cta_label: hero.secondary_cta_label,
+        secondary_cta_href: hero.secondary_cta_href,
+        hero_image_url: publicUrl,
+        hero_image_alt: hero.hero_image_alt,
+        compass_title: hero.compass_title,
+        compass_description: hero.compass_description
+      })
+      .select("id, hero_image_url")
+      .single();
+
+    if (insertError) {
+      throw insertError;
+    }
+
+    return insertedData as Pick<AdminAboutHeroRow, "id" | "hero_image_url">;
+  }
+
+  async function persistCollectionCardImageUrl(index: number, publicUrl: string) {
+    if (!supabase) {
+      throw new Error(c.uploadConfigMissing);
+    }
+
+    const card = collectionCards[index];
+    const updateQuery = card.id
+      ? supabase.from("about_collection_cards").update({ image_url: publicUrl }).eq("id", card.id)
+      : supabase
+          .from("about_collection_cards")
+          .update({ image_url: publicUrl })
+          .eq("card_key", card.card_key);
+    const { data, error: updateError } = await updateQuery
+      .select("id, card_key, image_url")
+      .maybeSingle();
+
+    if (updateError) {
+      throw updateError;
+    }
+
+    if (!data) {
+      throw new Error("Collection card row was not found. Save the card before uploading an image.");
+    }
+
+    return data as Pick<AdminAboutCollectionCardRow, "id" | "card_key" | "image_url">;
+  }
+
   async function handleHeroImageUpload(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0] ?? null;
     event.target.value = "";
@@ -782,9 +864,16 @@ function AdminAboutForm() {
 
     try {
       const publicUrl = await uploadAboutImage(file, "hero");
-      setHero((current) => ({ ...current, hero_image_url: publicUrl }));
+      const persistedHero = await persistHeroImageUrl(publicUrl);
+
+      setHero((current) => ({
+        ...current,
+        id: persistedHero.id ?? current.id,
+        hero_image_url: persistedHero.hero_image_url ?? publicUrl
+      }));
       setUploadMessage(c.uploaded);
     } catch (uploadErrorResult: unknown) {
+      logUploadError("Unable to upload or persist About hero image:", uploadErrorResult);
       setUploadError(uploadErrorResult instanceof Error ? uploadErrorResult.message : c.unableToUploadImage);
     } finally {
       setUploadingKey("");
@@ -809,9 +898,15 @@ function AdminAboutForm() {
 
     try {
       const publicUrl = await uploadAboutImage(file, folder);
-      updateCollectionCard(index, { image_url: publicUrl });
+      const persistedCard = await persistCollectionCardImageUrl(index, publicUrl);
+
+      updateCollectionCard(index, {
+        id: persistedCard.id ?? card.id,
+        image_url: persistedCard.image_url ?? publicUrl
+      });
       setUploadMessage(c.uploaded);
     } catch (uploadErrorResult: unknown) {
+      logUploadError("Unable to upload or persist About collection card image:", uploadErrorResult);
       setUploadError(uploadErrorResult instanceof Error ? uploadErrorResult.message : c.unableToUploadImage);
     } finally {
       setUploadingKey("");
