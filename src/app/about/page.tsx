@@ -13,7 +13,7 @@ import { AboutRoutineTabs } from "@/components/about/AboutRoutineTabs";
 import { AboutSupportModule } from "@/components/about/AboutSupportModule";
 import { SiteShell } from "@/components/layout/SiteShell";
 import { brandName } from "@/data/products";
-import { getPublicAboutPawContent } from "@/lib/about-paw-settings";
+import { getPublicAboutContent } from "@/lib/about-paw-settings";
 import { createSeoMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -67,39 +67,6 @@ const promiseCards: IconCard[] = [
   }
 ];
 
-const categoryLinks = [
-  {
-    title: "Dog Toys",
-    href: "/collections/dog-toys",
-    image: "/images/category-dog-toys.jpg",
-    alt: "Dog toys curated by LUCK CLAWS."
-  },
-  {
-    title: "Cat Toys",
-    href: "/collections/cat-toys",
-    image: "/images/natural-feather-teaser.jpg",
-    alt: "Cat toys curated by LUCK CLAWS."
-  },
-  {
-    title: "Pet Apparel",
-    href: "/collections/pet-apparel",
-    image: "/images/category-pet-apparel.jpg",
-    alt: "Pet apparel curated by LUCK CLAWS."
-  },
-  {
-    title: "Walking Essentials",
-    href: "/collections/walking-essentials",
-    image: "/images/category-walking-essentials.jpg",
-    alt: "Walking essentials curated by LUCK CLAWS."
-  },
-  {
-    title: "Beds & Blankets",
-    href: "/collections/beds-blankets",
-    image: "/images/category-beds-blankets.jpg",
-    alt: "Beds and blankets curated by LUCK CLAWS."
-  }
-];
-
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <span className="inline-flex rounded-full bg-primary-container/20 px-4 py-2 text-xs font-bold uppercase tracking-wide text-primary">
@@ -119,37 +86,37 @@ function RoutineChip({ label, className = "" }: { label: string; className?: str
 }
 
 export default async function AboutPage() {
-  const pawPathContent = await getPublicAboutPawContent();
+  const aboutContent = await getPublicAboutContent();
+  const { hero, pawPath, collectionSection, collectionCards } = aboutContent;
 
   return (
     <SiteShell>
       <section className="section-shell py-10 md:py-16">
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_520px] lg:items-center">
           <AboutReveal>
-            <SectionLabel>About {brandName}</SectionLabel>
+            <SectionLabel>{hero.eyebrow}</SectionLabel>
             <h1 className="mt-6 max-w-4xl font-heading text-4xl font-extrabold leading-tight md:text-6xl">
-              Pet essentials, mapped around real routines.
+              {hero.title}
             </h1>
             <p className="mt-6 max-w-2xl text-base leading-8 text-on-surface-variant md:text-lg">
-              {brandName} helps pet parents move from browsing to choosing with clearer paths for
-              play, walks, rest, comfort, and everyday support.
+              {hero.description}
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <Link
-                href="#paw-path"
+                href={hero.primaryCtaHref}
                 className="group inline-flex items-center justify-center gap-2 rounded-full bg-primary-container px-7 py-3 font-heading text-sm font-bold text-on-primary-container transition hover:bg-[#e08f00]"
               >
-                Shop by Routine
+                {hero.primaryCtaLabel}
                 <ArrowRight
                   aria-hidden
                   className="h-4 w-4 transition group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0"
                 />
               </Link>
               <Link
-                href="/contact"
+                href={hero.secondaryCtaHref}
                 className="inline-flex items-center justify-center rounded-full border border-primary px-7 py-3 font-heading text-sm font-bold text-primary transition hover:bg-primary-container/10"
               >
-                Contact Us
+                {hero.secondaryCtaLabel}
               </Link>
             </div>
           </AboutReveal>
@@ -160,8 +127,8 @@ export default async function AboutPage() {
               <div className="pointer-events-none absolute -bottom-5 left-8 -z-10 h-20 w-20 rounded-full bg-primary-container/20" />
               <div className="relative isolate aspect-[4/3] overflow-hidden rounded-[26px] bg-surface-container [transform:translateZ(0)]">
                 <Image
-                  src="/images/about-dogs-running.jpg"
-                  alt="Pets outside, representing LUCK CLAWS routine-first pet essentials."
+                  src={hero.heroImageUrl}
+                  alt={hero.heroImageAlt}
                   fill
                   priority
                   sizes="(min-width: 1024px) 520px, 100vw"
@@ -177,9 +144,9 @@ export default async function AboutPage() {
                 <RoutineChip label="Comfort" className="bottom-6 right-6" />
               </div>
               <div className="relative mt-4 rounded-[22px] bg-surface-container-low p-5">
-                <p className="font-heading text-xl font-bold">Routine Compass</p>
+                <p className="font-heading text-xl font-bold">{hero.compassTitle}</p>
                 <p className="mt-2 text-sm leading-6 text-on-surface-variant">
-                  A clearer way to shop by play, walk, rest, comfort, and support.
+                  {hero.compassDescription}
                 </p>
               </div>
             </div>
@@ -189,7 +156,7 @@ export default async function AboutPage() {
 
       <AboutReveal>
         <section id="paw-path" className="section-shell scroll-mt-24 py-8 md:py-12">
-          <AboutRoutineTabs content={pawPathContent} />
+          <AboutRoutineTabs content={pawPath} />
         </section>
       </AboutReveal>
 
@@ -226,19 +193,19 @@ export default async function AboutPage() {
           <div className="section-shell">
             <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
               <div className="max-w-3xl">
-                <SectionLabel>Start with a routine</SectionLabel>
+                <SectionLabel>{collectionSection.eyebrow}</SectionLabel>
                 <h2 className="mt-5 font-heading text-3xl font-extrabold leading-tight md:text-5xl">
-                  Start with the routine your pet needs next.
+                  {collectionSection.title}
                 </h2>
                 <p className="mt-4 text-sm leading-7 text-on-surface-variant md:text-base">
-                  Choose the path that matches what your pet needs next.
+                  {collectionSection.subtitle}
                 </p>
               </div>
               <Link
-                href="/collections"
+                href={collectionSection.viewAllHref}
                 className="group inline-flex items-center gap-2 text-sm font-bold text-primary"
               >
-                View all collections
+                {collectionSection.viewAllLabel}
                 <ArrowRight
                   aria-hidden
                   className="h-4 w-4 transition group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0"
@@ -246,7 +213,7 @@ export default async function AboutPage() {
               </Link>
             </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-              {categoryLinks.map((category) => (
+              {collectionCards.map((category) => (
                 <Link
                   key={category.href}
                   href={category.href}
@@ -254,8 +221,8 @@ export default async function AboutPage() {
                 >
                   <div className="relative aspect-[1.08] bg-surface-container">
                     <Image
-                      src={category.image}
-                      alt={category.alt}
+                      src={category.imageUrl}
+                      alt={category.imageAlt}
                       fill
                       sizes="(min-width: 1024px) 220px, 50vw"
                       className="object-cover transition duration-500 group-hover:scale-[1.035] motion-reduce:group-hover:scale-100"

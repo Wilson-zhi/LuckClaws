@@ -35,6 +35,46 @@ export type AboutPawContent = {
   notes: AboutPawNoteContent[];
 };
 
+export type AboutHeroContent = {
+  eyebrow: string;
+  title: string;
+  description: string;
+  primaryCtaLabel: string;
+  primaryCtaHref: string;
+  secondaryCtaLabel: string;
+  secondaryCtaHref: string;
+  heroImageUrl: string;
+  heroImageAlt: string;
+  compassTitle: string;
+  compassDescription: string;
+};
+
+export type AboutCollectionSectionContent = {
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  viewAllLabel: string;
+  viewAllHref: string;
+};
+
+export type AboutCollectionCardContent = {
+  cardKey: string;
+  title: string;
+  categorySlug: string;
+  href: string;
+  imageUrl: string;
+  imageAlt: string;
+  sortOrder: number;
+  enabled: boolean;
+};
+
+export type PublicAboutContent = {
+  hero: AboutHeroContent;
+  pawPath: AboutPawContent;
+  collectionSection: AboutCollectionSectionContent;
+  collectionCards: AboutCollectionCardContent[];
+};
+
 export type AboutIconKey =
   | "paw"
   | "shield"
@@ -65,6 +105,21 @@ export const aboutIconKeys: AboutIconKey[] = [
   "mail",
   "arrow"
 ];
+
+export const fallbackAboutHeroContent: AboutHeroContent = {
+  eyebrow: "About LUCK CLAWS",
+  title: "Pet essentials, mapped around real routines.",
+  description:
+    "LUCK CLAWS helps pet parents move from browsing to choosing with clearer paths for play, walks, rest, comfort, and everyday support.",
+  primaryCtaLabel: "Shop by Routine",
+  primaryCtaHref: "#paw-path",
+  secondaryCtaLabel: "Contact Us",
+  secondaryCtaHref: "/contact",
+  heroImageUrl: "/images/about-dogs-running.jpg",
+  heroImageAlt: "Pets outside, representing LUCK CLAWS routine-first pet essentials.",
+  compassTitle: "Routine Compass",
+  compassDescription: "A clearer way to shop by play, walk, rest, comfort, and support."
+};
 
 export const fallbackAboutPawContent: AboutPawContent = {
   header: {
@@ -182,6 +237,88 @@ export const fallbackAboutPawContent: AboutPawContent = {
   ]
 };
 
+export const fallbackAboutCollectionSectionContent: AboutCollectionSectionContent = {
+  eyebrow: "Start with a routine",
+  title: "Start with the routine your pet needs next.",
+  subtitle: "Choose the path that matches what your pet needs next.",
+  viewAllLabel: "View all collections",
+  viewAllHref: "/collections"
+};
+
+export const fallbackAboutCollectionCards: AboutCollectionCardContent[] = [
+  {
+    cardKey: "dog-toys",
+    title: "Dog Toys",
+    categorySlug: "dog-toys",
+    href: "/collections/dog-toys",
+    imageUrl: "/images/category-dog-toys.jpg",
+    imageAlt: "Dog toys curated by LUCK CLAWS.",
+    sortOrder: 1,
+    enabled: true
+  },
+  {
+    cardKey: "cat-toys",
+    title: "Cat Toys",
+    categorySlug: "cat-toys",
+    href: "/collections/cat-toys",
+    imageUrl: "/images/natural-feather-teaser.jpg",
+    imageAlt: "Cat toys curated by LUCK CLAWS.",
+    sortOrder: 2,
+    enabled: true
+  },
+  {
+    cardKey: "pet-apparel",
+    title: "Pet Apparel",
+    categorySlug: "pet-apparel",
+    href: "/collections/pet-apparel",
+    imageUrl: "/images/category-pet-apparel.jpg",
+    imageAlt: "Pet apparel curated by LUCK CLAWS.",
+    sortOrder: 3,
+    enabled: true
+  },
+  {
+    cardKey: "walking-essentials",
+    title: "Walking Essentials",
+    categorySlug: "walking-essentials",
+    href: "/collections/walking-essentials",
+    imageUrl: "/images/category-walking-essentials.jpg",
+    imageAlt: "Walking essentials curated by LUCK CLAWS.",
+    sortOrder: 4,
+    enabled: true
+  },
+  {
+    cardKey: "beds-blankets",
+    title: "Beds & Blankets",
+    categorySlug: "beds-blankets",
+    href: "/collections/beds-blankets",
+    imageUrl: "/images/category-beds-blankets.jpg",
+    imageAlt: "Beds and blankets curated by LUCK CLAWS.",
+    sortOrder: 5,
+    enabled: true
+  }
+];
+
+export const fallbackPublicAboutContent: PublicAboutContent = {
+  hero: fallbackAboutHeroContent,
+  pawPath: fallbackAboutPawContent,
+  collectionSection: fallbackAboutCollectionSectionContent,
+  collectionCards: fallbackAboutCollectionCards
+};
+
+type AboutHeroRow = {
+  eyebrow?: string | null;
+  title?: string | null;
+  description?: string | null;
+  primary_cta_label?: string | null;
+  primary_cta_href?: string | null;
+  secondary_cta_label?: string | null;
+  secondary_cta_href?: string | null;
+  hero_image_url?: string | null;
+  hero_image_alt?: string | null;
+  compass_title?: string | null;
+  compass_description?: string | null;
+};
+
 type AboutPawSettingsRow = {
   section_label?: string | null;
   title?: string | null;
@@ -213,6 +350,25 @@ type AboutPawNoteRow = {
   enabled?: boolean | null;
 };
 
+type AboutCollectionSectionRow = {
+  eyebrow?: string | null;
+  title?: string | null;
+  subtitle?: string | null;
+  view_all_label?: string | null;
+  view_all_href?: string | null;
+};
+
+type AboutCollectionCardRow = {
+  card_key?: string | null;
+  title?: string | null;
+  category_slug?: string | null;
+  href?: string | null;
+  image_url?: string | null;
+  image_alt?: string | null;
+  sort_order?: number | string | null;
+  enabled?: boolean | null;
+};
+
 function cleanString(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
 }
@@ -237,6 +393,28 @@ export function normalizeAboutIconKey(value: unknown, fallback: AboutIconKey = "
   return aboutIconKeys.includes(cleaned as AboutIconKey) ? (cleaned as AboutIconKey) : fallback;
 }
 
+export function aboutHeroFromRow(row: AboutHeroRow | null | undefined): AboutHeroContent {
+  const fallback = fallbackAboutHeroContent;
+
+  if (!row) {
+    return fallback;
+  }
+
+  return {
+    eyebrow: cleanString(row.eyebrow) || fallback.eyebrow,
+    title: cleanString(row.title) || fallback.title,
+    description: cleanString(row.description) || fallback.description,
+    primaryCtaLabel: cleanString(row.primary_cta_label) || fallback.primaryCtaLabel,
+    primaryCtaHref: cleanString(row.primary_cta_href) || fallback.primaryCtaHref,
+    secondaryCtaLabel: cleanString(row.secondary_cta_label) || fallback.secondaryCtaLabel,
+    secondaryCtaHref: cleanString(row.secondary_cta_href) || fallback.secondaryCtaHref,
+    heroImageUrl: cleanString(row.hero_image_url) || fallback.heroImageUrl,
+    heroImageAlt: cleanString(row.hero_image_alt) || fallback.heroImageAlt,
+    compassTitle: cleanString(row.compass_title) || fallback.compassTitle,
+    compassDescription: cleanString(row.compass_description) || fallback.compassDescription
+  };
+}
+
 export function aboutPawHeaderFromRow(row: AboutPawSettingsRow | null | undefined): AboutPawHeaderContent {
   const fallback = fallbackAboutPawContent.header;
 
@@ -250,6 +428,62 @@ export function aboutPawHeaderFromRow(row: AboutPawSettingsRow | null | undefine
     subtitle: cleanString(row.subtitle) || fallback.subtitle,
     supportingLine: cleanString(row.supporting_line) || fallback.supportingLine
   };
+}
+
+export function aboutCollectionSectionFromRow(
+  row: AboutCollectionSectionRow | null | undefined
+): AboutCollectionSectionContent {
+  const fallback = fallbackAboutCollectionSectionContent;
+
+  if (!row) {
+    return fallback;
+  }
+
+  return {
+    eyebrow: cleanString(row.eyebrow) || fallback.eyebrow,
+    title: cleanString(row.title) || fallback.title,
+    subtitle: cleanString(row.subtitle) || fallback.subtitle,
+    viewAllLabel: cleanString(row.view_all_label) || fallback.viewAllLabel,
+    viewAllHref: cleanString(row.view_all_href) || fallback.viewAllHref
+  };
+}
+
+export function aboutCollectionCardsFromRows(
+  rows: AboutCollectionCardRow[] | null | undefined
+): AboutCollectionCardContent[] {
+  if (!rows?.length) {
+    return fallbackAboutCollectionCards;
+  }
+
+  const normalizedCards = rows
+    .map((row, index): AboutCollectionCardContent | null => {
+      const cardKey = cleanString(row.card_key);
+      const title = cleanString(row.title);
+      const categorySlug = cleanString(row.category_slug);
+      const href = cleanString(row.href);
+
+      if (!cardKey || !title || !href) {
+        return null;
+      }
+
+      const fallbackByKey = fallbackAboutCollectionCards.find((card) => card.cardKey === cardKey);
+
+      return {
+        cardKey,
+        title,
+        categorySlug,
+        href,
+        imageUrl: cleanString(row.image_url) || fallbackByKey?.imageUrl || fallbackAboutCollectionCards[0].imageUrl,
+        imageAlt: cleanString(row.image_alt) || fallbackByKey?.imageAlt || title,
+        sortOrder: numberFromValue(row.sort_order, index + 1),
+        enabled: row.enabled !== false
+      };
+    })
+    .filter((card): card is AboutCollectionCardContent => Boolean(card));
+
+  const enabledCards = sortBySortOrder(normalizedCards.filter((card) => card.enabled));
+
+  return enabledCards.length > 0 ? enabledCards : fallbackAboutCollectionCards;
 }
 
 export function aboutPawRoutesFromRows(rows: AboutPawRouteRow[] | null | undefined): AboutPawRouteContent[] {
@@ -337,5 +571,32 @@ export function aboutPawContentFromRows({
     header: aboutPawHeaderFromRow(settings),
     routes: aboutPawRoutesFromRows(routes),
     notes: aboutPawNotesFromRows(notes)
+  };
+}
+
+export function publicAboutContentFromRows({
+  hero,
+  pawSettings,
+  routes,
+  notes,
+  collectionSection,
+  collectionCards
+}: {
+  hero?: AboutHeroRow | null;
+  pawSettings?: AboutPawSettingsRow | null;
+  routes?: AboutPawRouteRow[] | null;
+  notes?: AboutPawNoteRow[] | null;
+  collectionSection?: AboutCollectionSectionRow | null;
+  collectionCards?: AboutCollectionCardRow[] | null;
+}): PublicAboutContent {
+  return {
+    hero: aboutHeroFromRow(hero),
+    pawPath: aboutPawContentFromRows({
+      settings: pawSettings,
+      routes,
+      notes
+    }),
+    collectionSection: aboutCollectionSectionFromRow(collectionSection),
+    collectionCards: aboutCollectionCardsFromRows(collectionCards)
   };
 }

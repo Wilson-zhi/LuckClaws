@@ -1,17 +1,37 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ChangeEvent } from "react";
 import { AdminGuard, useAdminAuth } from "@/components/admin/AdminGuard";
 import { AdminPageFrame } from "@/components/admin/AdminPageFrame";
 import { useAdminLanguage } from "@/components/admin/admin-language";
 import {
   aboutIconKeys,
+  fallbackAboutCollectionCards,
+  fallbackAboutCollectionSectionContent,
+  fallbackAboutHeroContent,
   fallbackAboutPawContent,
   normalizeAboutIconKey,
+  type AboutCollectionCardContent,
   type AboutIconKey,
   type AboutPawNoteContent,
   type AboutPawRouteContent
 } from "@/lib/about-paw-content";
+import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
+
+type AdminAboutHeroRow = {
+  id: string | null;
+  eyebrow: string | null;
+  title: string | null;
+  description: string | null;
+  primary_cta_label: string | null;
+  primary_cta_href: string | null;
+  secondary_cta_label: string | null;
+  secondary_cta_href: string | null;
+  hero_image_url: string | null;
+  hero_image_alt: string | null;
+  compass_title: string | null;
+  compass_description: string | null;
+};
 
 type AdminAboutSettingsRow = {
   id: string | null;
@@ -45,6 +65,42 @@ type AdminAboutNoteRow = {
   icon_key: string | null;
   sort_order: number | string | null;
   enabled: boolean | null;
+};
+
+type AdminAboutCollectionSectionRow = {
+  id: string | null;
+  eyebrow: string | null;
+  title: string | null;
+  subtitle: string | null;
+  view_all_label: string | null;
+  view_all_href: string | null;
+};
+
+type AdminAboutCollectionCardRow = {
+  id: string | null;
+  card_key: string | null;
+  title: string | null;
+  category_slug: string | null;
+  href: string | null;
+  image_url: string | null;
+  image_alt: string | null;
+  sort_order: number | string | null;
+  enabled: boolean | null;
+};
+
+type EditableHero = {
+  id?: string;
+  eyebrow: string;
+  title: string;
+  description: string;
+  primary_cta_label: string;
+  primary_cta_href: string;
+  secondary_cta_label: string;
+  secondary_cta_href: string;
+  hero_image_url: string;
+  hero_image_alt: string;
+  compass_title: string;
+  compass_description: string;
 };
 
 type EditableSettings = {
@@ -81,29 +137,74 @@ type EditableNote = {
   enabled: boolean;
 };
 
+type EditableCollectionSection = {
+  id?: string;
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  view_all_label: string;
+  view_all_href: string;
+};
+
+type EditableCollectionCard = {
+  id?: string;
+  card_key: string;
+  title: string;
+  category_slug: string;
+  href: string;
+  image_url: string;
+  image_alt: string;
+  sort_order: string;
+  enabled: boolean;
+};
+
+const ABOUT_IMAGE_BUCKET = "about-images";
+const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
+const acceptedImageTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
+
 const inputClass =
   "min-h-12 w-full rounded-md border border-outline-variant bg-white px-4 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary-container/30";
 
 const textareaClass =
   "min-h-28 w-full rounded-md border border-outline-variant bg-white px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary-container/30";
 
+const fileInputClass =
+  "block w-full rounded-md border border-outline-variant bg-white px-4 py-3 text-sm text-on-surface file:mr-4 file:rounded-full file:border-0 file:bg-primary file:px-4 file:py-2 file:font-heading file:text-sm file:font-bold file:text-white hover:file:bg-primary/90";
+
 const copy = {
   zh: {
     title: "关于页面",
-    description: "管理 About 页面 Paw Path Finder 的可编辑内容。",
+    description: "管理 About 页面可编辑内容。",
     loading: "正在加载 About 页面内容...",
     unableToLoad: "无法加载 About 页面内容。",
     unableToSave: "无法保存 About 页面内容。",
     saved: "About 页面内容已保存。",
     validationRequired: "请填写所有必填字段。",
-    headerSection: "Paw Path Finder 标题内容",
-    routesSection: "路线节点",
-    notesSection: "底部路线注释",
+    uploadConfigMissing: "当前构建未配置 Supabase 上传。",
+    chooseValidImage: "请选择 JPEG、PNG 或 WebP 图片。",
+    imageSizeLimit: "图片必须小于或等于 5MB。",
+    unableToUploadImage: "无法上传图片。",
+    uploaded: "图片已上传。",
+    uploading: "正在上传图片...",
+    heroSection: "About Hero",
+    pawSection: "Paw Path Finder",
+    collectionSection: "Routine Collection Cards",
     codeControlledTitle: "由代码控制的内容",
     codeControlled:
-      "路线地图布局、节点位置、路径线条、动画、响应式行为和视觉样式仍由代码控制。这里只编辑文字、链接、图标键、排序和启用状态。",
+      "Hero 布局、路线地图布局、节点位置、路径线条、动画、响应式行为和视觉样式仍由代码控制。这里仅编辑内容、链接、图标键、图片 URL、排序和启用状态。",
+    eyebrow: "眉标",
+    titleField: "标题",
+    descriptionField: "描述",
+    primaryCtaLabel: "主按钮文字",
+    primaryCtaHref: "主按钮链接",
+    secondaryCtaLabel: "次按钮文字",
+    secondaryCtaHref: "次按钮链接",
+    heroImageUrl: "Hero 图片 URL",
+    heroImageAlt: "Hero 图片 Alt",
+    compassTitle: "Compass 标题",
+    compassDescription: "Compass 描述",
+    uploadHeroImage: "上传 Hero 图片",
     sectionLabel: "模块标签",
-    sectionTitle: "标题",
     subtitle: "副标题",
     supportingLine: "辅助说明",
     routeKey: "路线 key",
@@ -115,36 +216,61 @@ const copy = {
     noteText: "说明文字",
     ctaLabel: "主按钮文字",
     ctaHref: "主按钮链接",
-    secondaryCtaLabel: "次按钮文字",
-    secondaryCtaHref: "次按钮链接",
     keyword: "关键词",
     secondaryText: "辅助文字",
+    viewAllLabel: "查看全部文字",
+    viewAllHref: "查看全部链接",
+    cardKey: "卡片 key",
+    categorySlug: "分类 slug",
+    href: "链接",
+    imageUrl: "图片 URL",
+    imageAlt: "图片 Alt",
+    uploadCardImage: "上传卡片图片",
     sortOrder: "排序",
     enabled: "启用",
     disabled: "已停用",
+    addCard: "添加卡片",
     save: "保存 About 内容",
     saving: "保存中...",
-    routeHelper: "已知 key 会使用代码中的固定地图位置；未知 key 会使用安全备用位置。",
-    required: "必填",
+    routeHelper: "已知 route_key 会使用代码中的固定地图位置；未知 key 使用安全备用位置。",
+    uploadHelper: "支持 JPEG、PNG、WebP，最大 5MB。上传成功后会自动填入图片 URL。",
     noRoutes: "暂无路线节点。",
-    noNotes: "暂无路线注释。"
+    noNotes: "暂无路线注释。",
+    noCards: "暂无卡片。"
   },
   en: {
     title: "About Page",
-    description: "Manage editable Paw Path Finder content for the About page.",
+    description: "Manage editable About page content.",
     loading: "Loading About page content...",
     unableToLoad: "Unable to load About page content.",
     unableToSave: "Unable to save About page content.",
     saved: "About page content saved.",
     validationRequired: "Please complete all required fields.",
-    headerSection: "Paw Path Finder Header",
-    routesSection: "Route Nodes",
-    notesSection: "Bottom Route Notes",
+    uploadConfigMissing: "Supabase upload is not configured for this build.",
+    chooseValidImage: "Please choose a JPEG, PNG, or WebP image.",
+    imageSizeLimit: "Image must be 5MB or smaller.",
+    unableToUploadImage: "Unable to upload image.",
+    uploaded: "Image uploaded.",
+    uploading: "Uploading image...",
+    heroSection: "About Hero",
+    pawSection: "Paw Path Finder",
+    collectionSection: "Routine Collection Cards",
     codeControlledTitle: "Code-controlled fields",
     codeControlled:
-      "Route map layout, node positions, path drawing, animation, responsive behavior, and visual design remain controlled by code. This page only edits copy, links, icon keys, sort order, and enabled state.",
+      "Hero layout, route map layout, node positions, path drawing, animation, responsive behavior, and visual design remain controlled by code. This page only edits content, links, icon keys, image URLs, sort order, and enabled state.",
+    eyebrow: "Eyebrow",
+    titleField: "Title",
+    descriptionField: "Description",
+    primaryCtaLabel: "Primary CTA label",
+    primaryCtaHref: "Primary CTA link",
+    secondaryCtaLabel: "Secondary CTA label",
+    secondaryCtaHref: "Secondary CTA link",
+    heroImageUrl: "Hero image URL",
+    heroImageAlt: "Hero image alt",
+    compassTitle: "Compass title",
+    compassDescription: "Compass description",
+    uploadHeroImage: "Upload Hero Image",
     sectionLabel: "Section label",
-    sectionTitle: "Title",
     subtitle: "Subtitle",
     supportingLine: "Supporting line",
     routeKey: "Route key",
@@ -156,19 +282,27 @@ const copy = {
     noteText: "Note text",
     ctaLabel: "Primary CTA label",
     ctaHref: "Primary CTA link",
-    secondaryCtaLabel: "Secondary CTA label",
-    secondaryCtaHref: "Secondary CTA link",
     keyword: "Keyword",
     secondaryText: "Secondary text",
+    viewAllLabel: "View all label",
+    viewAllHref: "View all link",
+    cardKey: "Card key",
+    categorySlug: "Category slug",
+    href: "Link",
+    imageUrl: "Image URL",
+    imageAlt: "Image alt",
+    uploadCardImage: "Upload card image",
     sortOrder: "Sort order",
     enabled: "Enabled",
     disabled: "Disabled",
+    addCard: "Add Card",
     save: "Save About Content",
     saving: "Saving...",
-    routeHelper: "Known keys use fixed map positions in code; unknown keys use safe fallback positions.",
-    required: "Required",
+    routeHelper: "Known route_key values use fixed map positions in code; unknown keys use safe fallback positions.",
+    uploadHelper: "Supports JPEG, PNG, and WebP up to 5MB. A successful upload automatically fills the image URL.",
     noRoutes: "No route nodes.",
-    noNotes: "No route notes."
+    noNotes: "No route notes.",
+    noCards: "No cards."
   }
 } as const;
 
@@ -190,6 +324,46 @@ const iconLabels: Record<AboutIconKey, { zh: string; en: string }> = {
 
 function cleanString(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
+}
+
+function sanitizePathSegment(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9._-]/g, "")
+    .replace(/-+/g, "-")
+    .replace(/^[._-]+|[._-]+$/g, "");
+}
+
+function safeFileName(fileName: string) {
+  return sanitizePathSegment(fileName) || "about-image";
+}
+
+function sortEditableItems<T extends { sort_order: string }>(items: T[]) {
+  return [...items].sort((first, second) => {
+    const firstSort = Number(first.sort_order);
+    const secondSort = Number(second.sort_order);
+
+    return (Number.isFinite(firstSort) ? firstSort : 9999) - (Number.isFinite(secondSort) ? secondSort : 9999);
+  });
+}
+
+function heroFromRow(row: AdminAboutHeroRow | null | undefined): EditableHero {
+  return {
+    id: cleanString(row?.id) || undefined,
+    eyebrow: cleanString(row?.eyebrow) || fallbackAboutHeroContent.eyebrow,
+    title: cleanString(row?.title) || fallbackAboutHeroContent.title,
+    description: cleanString(row?.description) || fallbackAboutHeroContent.description,
+    primary_cta_label: cleanString(row?.primary_cta_label) || fallbackAboutHeroContent.primaryCtaLabel,
+    primary_cta_href: cleanString(row?.primary_cta_href) || fallbackAboutHeroContent.primaryCtaHref,
+    secondary_cta_label: cleanString(row?.secondary_cta_label) || fallbackAboutHeroContent.secondaryCtaLabel,
+    secondary_cta_href: cleanString(row?.secondary_cta_href) || fallbackAboutHeroContent.secondaryCtaHref,
+    hero_image_url: cleanString(row?.hero_image_url) || fallbackAboutHeroContent.heroImageUrl,
+    hero_image_alt: cleanString(row?.hero_image_alt) || fallbackAboutHeroContent.heroImageAlt,
+    compass_title: cleanString(row?.compass_title) || fallbackAboutHeroContent.compassTitle,
+    compass_description: cleanString(row?.compass_description) || fallbackAboutHeroContent.compassDescription
+  };
 }
 
 function settingsFromRow(row: AdminAboutSettingsRow | null | undefined): EditableSettings {
@@ -262,17 +436,74 @@ function noteFromRow(row: AdminAboutNoteRow): EditableNote {
   };
 }
 
-function sortEditableItems<T extends { sort_order: string }>(items: T[]) {
-  return [...items].sort((first, second) => {
-    const firstSort = Number(first.sort_order);
-    const secondSort = Number(second.sort_order);
-
-    return (Number.isFinite(firstSort) ? firstSort : 9999) - (Number.isFinite(secondSort) ? secondSort : 9999);
-  });
+function collectionSectionFromRow(row: AdminAboutCollectionSectionRow | null | undefined): EditableCollectionSection {
+  return {
+    id: cleanString(row?.id) || undefined,
+    eyebrow: cleanString(row?.eyebrow) || fallbackAboutCollectionSectionContent.eyebrow,
+    title: cleanString(row?.title) || fallbackAboutCollectionSectionContent.title,
+    subtitle: cleanString(row?.subtitle) || fallbackAboutCollectionSectionContent.subtitle,
+    view_all_label: cleanString(row?.view_all_label) || fallbackAboutCollectionSectionContent.viewAllLabel,
+    view_all_href: cleanString(row?.view_all_href) || fallbackAboutCollectionSectionContent.viewAllHref
+  };
 }
 
-function requiredFieldsAreValid(settings: EditableSettings, routes: EditableRoute[], notes: EditableNote[]) {
-  const settingsValid =
+function cardFromFallback(card: AboutCollectionCardContent): EditableCollectionCard {
+  return {
+    card_key: card.cardKey,
+    title: card.title,
+    category_slug: card.categorySlug,
+    href: card.href,
+    image_url: card.imageUrl,
+    image_alt: card.imageAlt,
+    sort_order: String(card.sortOrder),
+    enabled: card.enabled
+  };
+}
+
+function cardFromRow(row: AdminAboutCollectionCardRow): EditableCollectionCard {
+  const cardKey = cleanString(row.card_key);
+  const fallback = fallbackAboutCollectionCards.find((card) => card.cardKey === cardKey);
+
+  return {
+    id: cleanString(row.id) || undefined,
+    card_key: cardKey,
+    title: cleanString(row.title) || fallback?.title || "",
+    category_slug: cleanString(row.category_slug) || fallback?.categorySlug || "",
+    href: cleanString(row.href) || fallback?.href || "",
+    image_url: cleanString(row.image_url) || fallback?.imageUrl || "",
+    image_alt: cleanString(row.image_alt) || fallback?.imageAlt || "",
+    sort_order: row.sort_order === null || row.sort_order === undefined ? "" : String(row.sort_order),
+    enabled: row.enabled !== false
+  };
+}
+
+function requiredFieldsAreValid({
+  hero,
+  settings,
+  routes,
+  notes,
+  collectionSection,
+  collectionCards
+}: {
+  hero: EditableHero;
+  settings: EditableSettings;
+  routes: EditableRoute[];
+  notes: EditableNote[];
+  collectionSection: EditableCollectionSection;
+  collectionCards: EditableCollectionCard[];
+}) {
+  const heroValid =
+    hero.eyebrow.trim() &&
+    hero.title.trim() &&
+    hero.description.trim() &&
+    hero.primary_cta_label.trim() &&
+    hero.primary_cta_href.trim() &&
+    hero.secondary_cta_label.trim() &&
+    hero.secondary_cta_href.trim() &&
+    hero.hero_image_alt.trim() &&
+    hero.compass_title.trim() &&
+    hero.compass_description.trim();
+  const pawHeaderValid =
     settings.section_label.trim() &&
     settings.title.trim() &&
     settings.subtitle.trim() &&
@@ -297,8 +528,34 @@ function requiredFieldsAreValid(settings: EditableSettings, routes: EditableRout
       note.sort_order.trim() &&
       Number.isFinite(Number(note.sort_order))
   );
+  const collectionSectionValid =
+    collectionSection.eyebrow.trim() &&
+    collectionSection.title.trim() &&
+    collectionSection.subtitle.trim() &&
+    collectionSection.view_all_label.trim() &&
+    collectionSection.view_all_href.trim();
+  const cardsValid = collectionCards.every(
+    (card) =>
+      card.card_key.trim() &&
+      card.title.trim() &&
+      card.category_slug.trim() &&
+      card.href.trim() &&
+      card.image_alt.trim() &&
+      card.sort_order.trim() &&
+      Number.isFinite(Number(card.sort_order))
+  );
 
-  return Boolean(settingsValid && routes.length > 0 && routesValid && notes.length > 0 && notesValid);
+  return Boolean(
+    heroValid &&
+      pawHeaderValid &&
+      routes.length > 0 &&
+      routesValid &&
+      notes.length > 0 &&
+      notesValid &&
+      collectionSectionValid &&
+      collectionCards.length > 0 &&
+      cardsValid
+  );
 }
 
 function Field({
@@ -354,10 +611,25 @@ function IconSelect({
   );
 }
 
+function ImagePreview({ src, alt }: { src: string; alt: string }) {
+  if (!src) {
+    return null;
+  }
+
+  return (
+    <div className="aspect-[4/3] overflow-hidden rounded-md bg-surface-container-low">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={src} alt={alt || ""} className="h-full w-full object-cover" />
+    </div>
+  );
+}
+
 function AdminAboutForm() {
   const { accessToken } = useAdminAuth();
   const { language } = useAdminLanguage();
   const c = copy[language];
+  const supabase = getSupabaseBrowserClient();
+  const [hero, setHero] = useState<EditableHero>(() => heroFromRow(null));
   const [settings, setSettings] = useState<EditableSettings>(() => settingsFromRow(null));
   const [routes, setRoutes] = useState<EditableRoute[]>(() =>
     fallbackAboutPawContent.routes.map(routeFromFallback)
@@ -365,11 +637,20 @@ function AdminAboutForm() {
   const [notes, setNotes] = useState<EditableNote[]>(() =>
     fallbackAboutPawContent.notes.map(noteFromFallback)
   );
+  const [collectionSection, setCollectionSection] = useState<EditableCollectionSection>(() =>
+    collectionSectionFromRow(null)
+  );
+  const [collectionCards, setCollectionCards] = useState<EditableCollectionCard[]>(() =>
+    fallbackAboutCollectionCards.map(cardFromFallback)
+  );
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [validationError, setValidationError] = useState("");
+  const [uploadingKey, setUploadingKey] = useState("");
+  const [uploadMessage, setUploadMessage] = useState("");
+  const [uploadError, setUploadError] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -381,9 +662,12 @@ function AdminAboutForm() {
     })
       .then(async (response) => {
         const payload = (await response.json()) as {
+          hero?: AdminAboutHeroRow | null;
           settings?: AdminAboutSettingsRow | null;
           routes?: AdminAboutRouteRow[];
           notes?: AdminAboutNoteRow[];
+          collectionSection?: AdminAboutCollectionSectionRow | null;
+          collectionCards?: AdminAboutCollectionCardRow[];
           error?: string;
         };
 
@@ -395,6 +679,7 @@ function AdminAboutForm() {
           return;
         }
 
+        setHero(heroFromRow(payload.hero));
         setSettings(settingsFromRow(payload.settings));
         setRoutes(
           payload.routes?.length
@@ -405,6 +690,12 @@ function AdminAboutForm() {
           payload.notes?.length
             ? sortEditableItems(payload.notes.map(noteFromRow))
             : fallbackAboutPawContent.notes.map(noteFromFallback)
+        );
+        setCollectionSection(collectionSectionFromRow(payload.collectionSection));
+        setCollectionCards(
+          payload.collectionCards?.length
+            ? sortEditableItems(payload.collectionCards.map(cardFromRow))
+            : fallbackAboutCollectionCards.map(cardFromFallback)
         );
       })
       .catch((loadError: unknown) => {
@@ -425,6 +716,10 @@ function AdminAboutForm() {
 
   const enabledRouteCount = useMemo(() => routes.filter((route) => route.enabled).length, [routes]);
   const enabledNoteCount = useMemo(() => notes.filter((note) => note.enabled).length, [notes]);
+  const enabledCardCount = useMemo(
+    () => collectionCards.filter((card) => card.enabled).length,
+    [collectionCards]
+  );
 
   function updateRoute(index: number, updates: Partial<EditableRoute>) {
     setRoutes((currentRoutes) =>
@@ -438,12 +733,122 @@ function AdminAboutForm() {
     );
   }
 
+  function updateCollectionCard(index: number, updates: Partial<EditableCollectionCard>) {
+    setCollectionCards((currentCards) =>
+      currentCards.map((card, cardIndex) => (cardIndex === index ? { ...card, ...updates } : card))
+    );
+  }
+
+  async function uploadAboutImage(file: File, folder: string) {
+    if (!supabase) {
+      throw new Error(c.uploadConfigMissing);
+    }
+
+    if (!acceptedImageTypes.has(file.type)) {
+      throw new Error(c.chooseValidImage);
+    }
+
+    if (file.size > MAX_IMAGE_SIZE_BYTES) {
+      throw new Error(c.imageSizeLimit);
+    }
+
+    const storagePath = `${folder}/${Date.now()}-${safeFileName(file.name)}`;
+    const { error: uploadErrorResult } = await supabase.storage.from(ABOUT_IMAGE_BUCKET).upload(storagePath, file, {
+      cacheControl: "31536000",
+      contentType: file.type,
+      upsert: false
+    });
+
+    if (uploadErrorResult) {
+      throw uploadErrorResult;
+    }
+
+    const { data } = supabase.storage.from(ABOUT_IMAGE_BUCKET).getPublicUrl(storagePath);
+
+    return data.publicUrl;
+  }
+
+  async function handleHeroImageUpload(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0] ?? null;
+    event.target.value = "";
+    setUploadMessage("");
+    setUploadError("");
+
+    if (!file) {
+      return;
+    }
+
+    setUploadingKey("hero");
+
+    try {
+      const publicUrl = await uploadAboutImage(file, "hero");
+      setHero((current) => ({ ...current, hero_image_url: publicUrl }));
+      setUploadMessage(c.uploaded);
+    } catch (uploadErrorResult: unknown) {
+      setUploadError(uploadErrorResult instanceof Error ? uploadErrorResult.message : c.unableToUploadImage);
+    } finally {
+      setUploadingKey("");
+    }
+  }
+
+  async function handleCardImageUpload(index: number, event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0] ?? null;
+    event.target.value = "";
+    setUploadMessage("");
+    setUploadError("");
+
+    if (!file) {
+      return;
+    }
+
+    const card = collectionCards[index];
+    const uploadKey = `card-${index}`;
+    const folder = `collections/${sanitizePathSegment(card.card_key) || "card"}`;
+
+    setUploadingKey(uploadKey);
+
+    try {
+      const publicUrl = await uploadAboutImage(file, folder);
+      updateCollectionCard(index, { image_url: publicUrl });
+      setUploadMessage(c.uploaded);
+    } catch (uploadErrorResult: unknown) {
+      setUploadError(uploadErrorResult instanceof Error ? uploadErrorResult.message : c.unableToUploadImage);
+    } finally {
+      setUploadingKey("");
+    }
+  }
+
+  function addCollectionCard() {
+    setCollectionCards((currentCards) => [
+      ...currentCards,
+      {
+        card_key: `custom-${Date.now()}`,
+        title: "",
+        category_slug: "",
+        href: "/collections",
+        image_url: "",
+        image_alt: "",
+        sort_order: String(currentCards.length + 1),
+        enabled: true
+      }
+    ]);
+  }
+
   async function saveAboutContent() {
     setError("");
     setSuccessMessage("");
     setValidationError("");
 
-    if (!requiredFieldsAreValid(settings, routes, notes)) {
+    if (
+      !requiredFieldsAreValid({
+        hero,
+        settings,
+        routes,
+        notes,
+        collectionSection,
+        collectionCards
+      })
+    ) {
       setValidationError(c.validationRequired);
       return;
     }
@@ -457,6 +862,7 @@ function AdminAboutForm() {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
+        hero,
         settings,
         routes: routes.map((route) => ({
           ...route,
@@ -465,13 +871,21 @@ function AdminAboutForm() {
         notes: notes.map((note) => ({
           ...note,
           sort_order: Number(note.sort_order)
+        })),
+        collectionSection,
+        collectionCards: collectionCards.map((card) => ({
+          ...card,
+          sort_order: Number(card.sort_order)
         }))
       })
     });
     const payload = (await response.json().catch(() => ({}))) as {
+      hero?: AdminAboutHeroRow | null;
       settings?: AdminAboutSettingsRow | null;
       routes?: AdminAboutRouteRow[];
       notes?: AdminAboutNoteRow[];
+      collectionSection?: AdminAboutCollectionSectionRow | null;
+      collectionCards?: AdminAboutCollectionCardRow[];
       error?: string;
     };
 
@@ -481,9 +895,14 @@ function AdminAboutForm() {
       return;
     }
 
+    setHero(heroFromRow(payload.hero));
     setSettings(settingsFromRow(payload.settings));
     setRoutes(payload.routes?.length ? sortEditableItems(payload.routes.map(routeFromRow)) : routes);
     setNotes(payload.notes?.length ? sortEditableItems(payload.notes.map(noteFromRow)) : notes);
+    setCollectionSection(collectionSectionFromRow(payload.collectionSection));
+    setCollectionCards(
+      payload.collectionCards?.length ? sortEditableItems(payload.collectionCards.map(cardFromRow)) : collectionCards
+    );
     setSuccessMessage(c.saved);
     setSaving(false);
   }
@@ -507,53 +926,63 @@ function AdminAboutForm() {
         <p className="mt-3 text-sm leading-6 text-on-surface-variant">{c.codeControlled}</p>
       </section>
 
-      {(error || validationError || successMessage) && (
+      {(error || validationError || successMessage || uploadError || uploadMessage) && (
         <div
           className={`rounded-md p-4 text-sm font-semibold ${
-            successMessage ? "bg-primary-container/20 text-primary" : "bg-error/10 text-error"
+            successMessage || uploadMessage ? "bg-primary-container/20 text-primary" : "bg-error/10 text-error"
           }`}
-          role={successMessage ? "status" : "alert"}
+          role={successMessage || uploadMessage ? "status" : "alert"}
         >
-          {successMessage || validationError || error}
+          {successMessage || uploadMessage || validationError || uploadError || error}
         </div>
       )}
 
       <section className="rounded-lg bg-surface-container-lowest p-5 shadow-soft">
-        <h2 className="font-heading text-xl font-bold">{c.headerSection}</h2>
+        <h2 className="font-heading text-xl font-bold">{c.heroSection}</h2>
         <div className="mt-5 grid gap-4 md:grid-cols-2">
-          <Field
-            label={c.sectionLabel}
-            value={settings.section_label}
-            required
-            onChange={(value) => setSettings((current) => ({ ...current, section_label: value }))}
-          />
-          <Field
-            label={c.sectionTitle}
-            value={settings.title}
-            required
-            onChange={(value) => setSettings((current) => ({ ...current, title: value }))}
-          />
-          <Field
-            label={c.subtitle}
-            value={settings.subtitle}
-            required
-            textarea
-            onChange={(value) => setSettings((current) => ({ ...current, subtitle: value }))}
-          />
-          <Field
-            label={c.supportingLine}
-            value={settings.supporting_line}
-            required
-            textarea
-            onChange={(value) => setSettings((current) => ({ ...current, supporting_line: value }))}
-          />
+          <Field label={c.eyebrow} value={hero.eyebrow} required onChange={(value) => setHero((current) => ({ ...current, eyebrow: value }))} />
+          <Field label={c.titleField} value={hero.title} required onChange={(value) => setHero((current) => ({ ...current, title: value }))} />
+          <Field label={c.descriptionField} value={hero.description} required textarea onChange={(value) => setHero((current) => ({ ...current, description: value }))} />
+          <Field label={c.primaryCtaLabel} value={hero.primary_cta_label} required onChange={(value) => setHero((current) => ({ ...current, primary_cta_label: value }))} />
+          <Field label={c.primaryCtaHref} value={hero.primary_cta_href} required onChange={(value) => setHero((current) => ({ ...current, primary_cta_href: value }))} />
+          <Field label={c.secondaryCtaLabel} value={hero.secondary_cta_label} required onChange={(value) => setHero((current) => ({ ...current, secondary_cta_label: value }))} />
+          <Field label={c.secondaryCtaHref} value={hero.secondary_cta_href} required onChange={(value) => setHero((current) => ({ ...current, secondary_cta_href: value }))} />
+          <Field label={c.heroImageUrl} value={hero.hero_image_url} onChange={(value) => setHero((current) => ({ ...current, hero_image_url: value }))} />
+          <Field label={c.heroImageAlt} value={hero.hero_image_alt} required onChange={(value) => setHero((current) => ({ ...current, hero_image_alt: value }))} />
+          <Field label={c.compassTitle} value={hero.compass_title} required onChange={(value) => setHero((current) => ({ ...current, compass_title: value }))} />
+          <Field label={c.compassDescription} value={hero.compass_description} required textarea onChange={(value) => setHero((current) => ({ ...current, compass_description: value }))} />
+          <div className="grid gap-3">
+            <label className="grid gap-2 text-sm font-semibold text-on-surface">
+              {c.uploadHeroImage}
+              <input
+                accept="image/jpeg,image/png,image/webp"
+                className={fileInputClass}
+                disabled={uploadingKey === "hero"}
+                type="file"
+                onChange={handleHeroImageUpload}
+              />
+            </label>
+            <p className="text-xs font-semibold leading-5 text-on-surface-variant">{c.uploadHelper}</p>
+            {uploadingKey === "hero" && <p className="text-sm font-semibold text-on-surface-variant">{c.uploading}</p>}
+          </div>
+        </div>
+        <div className="mt-5 max-w-sm">
+          <ImagePreview src={hero.hero_image_url} alt={hero.hero_image_alt} />
         </div>
       </section>
 
       <section className="rounded-lg bg-surface-container-lowest p-5 shadow-soft">
-        <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+        <h2 className="font-heading text-xl font-bold">{c.pawSection}</h2>
+        <div className="mt-5 grid gap-4 md:grid-cols-2">
+          <Field label={c.sectionLabel} value={settings.section_label} required onChange={(value) => setSettings((current) => ({ ...current, section_label: value }))} />
+          <Field label={c.titleField} value={settings.title} required onChange={(value) => setSettings((current) => ({ ...current, title: value }))} />
+          <Field label={c.subtitle} value={settings.subtitle} required textarea onChange={(value) => setSettings((current) => ({ ...current, subtitle: value }))} />
+          <Field label={c.supportingLine} value={settings.supporting_line} required textarea onChange={(value) => setSettings((current) => ({ ...current, supporting_line: value }))} />
+        </div>
+
+        <div className="mt-8 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
           <div>
-            <h2 className="font-heading text-xl font-bold">{c.routesSection}</h2>
+            <h3 className="font-heading text-lg font-bold">{c.routeKey}</h3>
             <p className="mt-2 text-sm leading-6 text-on-surface-variant">{c.routeHelper}</p>
           </div>
           <p className="text-sm font-semibold text-on-surface-variant">
@@ -575,90 +1004,30 @@ function AdminAboutForm() {
                     </p>
                   </div>
                   <label className="inline-flex items-center gap-2 text-sm font-bold text-primary">
-                    <input
-                      type="checkbox"
-                      checked={route.enabled}
-                      onChange={(event) => updateRoute(index, { enabled: event.target.checked })}
-                    />
+                    <input type="checkbox" checked={route.enabled} onChange={(event) => updateRoute(index, { enabled: event.target.checked })} />
                     {c.enabled}
                   </label>
                 </div>
                 <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                  <Field
-                    label={c.routeKey}
-                    value={route.route_key}
-                    required
-                    onChange={(value) => updateRoute(index, { route_key: value })}
-                  />
-                  <Field
-                    label={c.label}
-                    value={route.label}
-                    required
-                    onChange={(value) => updateRoute(index, { label: value })}
-                  />
-                  <IconSelect
-                    label={c.iconKey}
-                    value={route.icon_key}
-                    onChange={(value) => updateRoute(index, { icon_key: value })}
-                  />
-                  <Field
-                    label={c.recommendationTitle}
-                    value={route.recommendation_title}
-                    required
-                    onChange={(value) => updateRoute(index, { recommendation_title: value })}
-                  />
-                  <Field
-                    label={c.recommendationDescription}
-                    value={route.recommendation_description}
-                    required
-                    textarea
-                    onChange={(value) => updateRoute(index, { recommendation_description: value })}
-                  />
-                  <Field
-                    label={c.noteText}
-                    value={route.note_text}
-                    required
-                    textarea
-                    onChange={(value) => updateRoute(index, { note_text: value })}
-                  />
-                  <Field
-                    label={c.ctaLabel}
-                    value={route.cta_label}
-                    required
-                    onChange={(value) => updateRoute(index, { cta_label: value })}
-                  />
-                  <Field
-                    label={c.ctaHref}
-                    value={route.cta_href}
-                    required
-                    onChange={(value) => updateRoute(index, { cta_href: value })}
-                  />
-                  <Field
-                    label={c.sortOrder}
-                    value={route.sort_order}
-                    required
-                    onChange={(value) => updateRoute(index, { sort_order: value })}
-                  />
-                  <Field
-                    label={c.secondaryCtaLabel}
-                    value={route.secondary_cta_label}
-                    onChange={(value) => updateRoute(index, { secondary_cta_label: value })}
-                  />
-                  <Field
-                    label={c.secondaryCtaHref}
-                    value={route.secondary_cta_href}
-                    onChange={(value) => updateRoute(index, { secondary_cta_href: value })}
-                  />
+                  <Field label={c.routeKey} value={route.route_key} required onChange={(value) => updateRoute(index, { route_key: value })} />
+                  <Field label={c.label} value={route.label} required onChange={(value) => updateRoute(index, { label: value })} />
+                  <IconSelect label={c.iconKey} value={route.icon_key} onChange={(value) => updateRoute(index, { icon_key: value })} />
+                  <Field label={c.recommendationTitle} value={route.recommendation_title} required onChange={(value) => updateRoute(index, { recommendation_title: value })} />
+                  <Field label={c.recommendationDescription} value={route.recommendation_description} required textarea onChange={(value) => updateRoute(index, { recommendation_description: value })} />
+                  <Field label={c.noteText} value={route.note_text} required textarea onChange={(value) => updateRoute(index, { note_text: value })} />
+                  <Field label={c.ctaLabel} value={route.cta_label} required onChange={(value) => updateRoute(index, { cta_label: value })} />
+                  <Field label={c.ctaHref} value={route.cta_href} required onChange={(value) => updateRoute(index, { cta_href: value })} />
+                  <Field label={c.sortOrder} value={route.sort_order} required onChange={(value) => updateRoute(index, { sort_order: value })} />
+                  <Field label={c.secondaryCtaLabel} value={route.secondary_cta_label} onChange={(value) => updateRoute(index, { secondary_cta_label: value })} />
+                  <Field label={c.secondaryCtaHref} value={route.secondary_cta_href} onChange={(value) => updateRoute(index, { secondary_cta_href: value })} />
                 </div>
               </article>
             ))}
           </div>
         )}
-      </section>
 
-      <section className="rounded-lg bg-surface-container-lowest p-5 shadow-soft">
-        <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
-          <h2 className="font-heading text-xl font-bold">{c.notesSection}</h2>
+        <div className="mt-8 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+          <h3 className="font-heading text-lg font-bold">{c.noteKey}</h3>
           <p className="text-sm font-semibold text-on-surface-variant">
             {enabledNoteCount} / {notes.length} {c.enabled}
           </p>
@@ -680,44 +1049,89 @@ function AdminAboutForm() {
                     </p>
                   </div>
                   <label className="inline-flex items-center gap-2 text-sm font-bold text-primary">
-                    <input
-                      type="checkbox"
-                      checked={note.enabled}
-                      onChange={(event) => updateNote(index, { enabled: event.target.checked })}
-                    />
+                    <input type="checkbox" checked={note.enabled} onChange={(event) => updateNote(index, { enabled: event.target.checked })} />
                     {c.enabled}
                   </label>
                 </div>
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                  <Field
-                    label={c.noteKey}
-                    value={note.note_key}
-                    required
-                    onChange={(value) => updateNote(index, { note_key: value })}
-                  />
-                  <IconSelect
-                    label={c.iconKey}
-                    value={note.icon_key}
-                    onChange={(value) => updateNote(index, { icon_key: value })}
-                  />
-                  <Field
-                    label={c.keyword}
-                    value={note.keyword}
-                    required
-                    onChange={(value) => updateNote(index, { keyword: value })}
-                  />
-                  <Field
-                    label={c.secondaryText}
-                    value={note.secondary_text}
-                    required
-                    onChange={(value) => updateNote(index, { secondary_text: value })}
-                  />
-                  <Field
-                    label={c.sortOrder}
-                    value={note.sort_order}
-                    required
-                    onChange={(value) => updateNote(index, { sort_order: value })}
-                  />
+                  <Field label={c.noteKey} value={note.note_key} required onChange={(value) => updateNote(index, { note_key: value })} />
+                  <IconSelect label={c.iconKey} value={note.icon_key} onChange={(value) => updateNote(index, { icon_key: value })} />
+                  <Field label={c.keyword} value={note.keyword} required onChange={(value) => updateNote(index, { keyword: value })} />
+                  <Field label={c.secondaryText} value={note.secondary_text} required onChange={(value) => updateNote(index, { secondary_text: value })} />
+                  <Field label={c.sortOrder} value={note.sort_order} required onChange={(value) => updateNote(index, { sort_order: value })} />
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className="rounded-lg bg-surface-container-lowest p-5 shadow-soft">
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+          <div>
+            <h2 className="font-heading text-xl font-bold">{c.collectionSection}</h2>
+            <p className="mt-2 text-sm font-semibold text-on-surface-variant">
+              {enabledCardCount} / {collectionCards.length} {c.enabled}
+            </p>
+          </div>
+          <button
+            type="button"
+            className="inline-flex rounded-full border border-primary px-5 py-2 font-heading text-sm font-bold text-primary transition hover:bg-primary-container/10"
+            onClick={addCollectionCard}
+          >
+            {c.addCard}
+          </button>
+        </div>
+        <div className="mt-5 grid gap-4 md:grid-cols-2">
+          <Field label={c.eyebrow} value={collectionSection.eyebrow} required onChange={(value) => setCollectionSection((current) => ({ ...current, eyebrow: value }))} />
+          <Field label={c.titleField} value={collectionSection.title} required onChange={(value) => setCollectionSection((current) => ({ ...current, title: value }))} />
+          <Field label={c.subtitle} value={collectionSection.subtitle} required textarea onChange={(value) => setCollectionSection((current) => ({ ...current, subtitle: value }))} />
+          <Field label={c.viewAllLabel} value={collectionSection.view_all_label} required onChange={(value) => setCollectionSection((current) => ({ ...current, view_all_label: value }))} />
+          <Field label={c.viewAllHref} value={collectionSection.view_all_href} required onChange={(value) => setCollectionSection((current) => ({ ...current, view_all_href: value }))} />
+        </div>
+
+        {collectionCards.length === 0 ? (
+          <p className="mt-5 rounded-md bg-surface-container-low p-4 text-sm text-on-surface-variant">{c.noCards}</p>
+        ) : (
+          <div className="mt-6 grid gap-5">
+            {collectionCards.map((card, index) => (
+              <article key={`${card.id ?? "new"}-${index}`} className="rounded-md border border-outline-variant p-4">
+                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <p className="font-heading text-lg font-bold">{card.title || card.card_key}</p>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-on-surface-variant">
+                      {card.enabled ? c.enabled : c.disabled}
+                    </p>
+                  </div>
+                  <label className="inline-flex items-center gap-2 text-sm font-bold text-primary">
+                    <input type="checkbox" checked={card.enabled} onChange={(event) => updateCollectionCard(index, { enabled: event.target.checked })} />
+                    {c.enabled}
+                  </label>
+                </div>
+                <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                  <Field label={c.cardKey} value={card.card_key} required onChange={(value) => updateCollectionCard(index, { card_key: value })} />
+                  <Field label={c.titleField} value={card.title} required onChange={(value) => updateCollectionCard(index, { title: value })} />
+                  <Field label={c.categorySlug} value={card.category_slug} required onChange={(value) => updateCollectionCard(index, { category_slug: value })} />
+                  <Field label={c.href} value={card.href} required onChange={(value) => updateCollectionCard(index, { href: value })} />
+                  <Field label={c.imageUrl} value={card.image_url} onChange={(value) => updateCollectionCard(index, { image_url: value })} />
+                  <Field label={c.imageAlt} value={card.image_alt} required onChange={(value) => updateCollectionCard(index, { image_alt: value })} />
+                  <Field label={c.sortOrder} value={card.sort_order} required onChange={(value) => updateCollectionCard(index, { sort_order: value })} />
+                  <div className="grid gap-3">
+                    <label className="grid gap-2 text-sm font-semibold text-on-surface">
+                      {c.uploadCardImage}
+                      <input
+                        accept="image/jpeg,image/png,image/webp"
+                        className={fileInputClass}
+                        disabled={uploadingKey === `card-${index}`}
+                        type="file"
+                        onChange={(event) => handleCardImageUpload(index, event)}
+                      />
+                    </label>
+                    {uploadingKey === `card-${index}` && (
+                      <p className="text-sm font-semibold text-on-surface-variant">{c.uploading}</p>
+                    )}
+                  </div>
+                  <ImagePreview src={card.image_url} alt={card.image_alt} />
                 </div>
               </article>
             ))}
@@ -745,7 +1159,7 @@ export function AdminAboutSettings() {
       {() => (
         <AdminPageFrame
           title={{ zh: "关于页面", en: "About Page" }}
-          description={{ zh: "管理 About 页面 Paw Path Finder 内容。", en: "Manage About page Paw Path Finder content." }}
+          description={{ zh: "管理 About 页面内容。", en: "Manage About page content." }}
           layout="wide"
           backLink
         >
