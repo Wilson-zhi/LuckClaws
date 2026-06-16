@@ -3,9 +3,10 @@ import "server-only";
 import {
   fallbackPublicAboutContent,
   publicAboutContentFromRows,
+  type AboutContentDiagnostics,
   type PublicAboutContent
 } from "@/lib/about-paw-content";
-import { getSupabaseAdminClient } from "@/lib/supabase/server";
+import { getSupabasePublicServerClient } from "@/lib/supabase/server";
 
 const aboutHeroColumns =
   "id, section_key, eyebrow, title, description, primary_cta_label, primary_cta_href, secondary_cta_label, secondary_cta_href, hero_image_url, hero_image_alt, compass_title, compass_description";
@@ -18,10 +19,24 @@ const aboutCollectionCardColumns =
   "id, card_key, title, category_slug, href, image_url, image_alt, sort_order, enabled";
 
 export async function getPublicAboutContent(): Promise<PublicAboutContent> {
-  const supabase = getSupabaseAdminClient();
+  const supabase = getSupabasePublicServerClient();
 
   if (!supabase) {
-    return fallbackPublicAboutContent;
+    const fallbackContent = {
+      ...fallbackPublicAboutContent,
+      diagnostics: {
+        ...fallbackPublicAboutContent.diagnostics,
+        errors: {
+          unexpected: "Supabase public server client is not configured."
+        }
+      }
+    };
+
+    if (process.env.NODE_ENV === "development") {
+      console.info("About content source diagnostics:", fallbackContent.diagnostics);
+    }
+
+    return fallbackContent;
   }
 
   try {
@@ -65,39 +80,50 @@ export async function getPublicAboutContent(): Promise<PublicAboutContent> {
         .order("sort_order", { ascending: true, nullsFirst: false })
     ]);
 
-    if (
-      heroResult.error ||
-      settingsResult.error ||
-      routesResult.error ||
-      notesResult.error ||
-      collectionSectionResult.error ||
-      collectionCardsResult.error
-    ) {
+    const queryErrors: AboutContentDiagnostics["errors"] = {
+      hero: heroResult.error?.message,
+      pawSettings: settingsResult.error?.message,
+      routes: routesResult.error?.message,
+      notes: notesResult.error?.message,
+      collectionSection: collectionSectionResult.error?.message,
+      collectionCards: collectionCardsResult.error?.message
+    };
+    const hasQueryErrors = Object.values(queryErrors).some(Boolean);
+
+    if (hasQueryErrors) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Unable to load public About content:", {
-          hero: heroResult.error?.message,
-          pawSettings: settingsResult.error?.message,
-          routes: routesResult.error?.message,
-          notes: notesResult.error?.message,
-          collectionSection: collectionSectionResult.error?.message,
-          collectionCards: collectionCardsResult.error?.message
-        });
+        console.error("Unable to load public About content:", queryErrors);
       }
     }
 
-    return publicAboutContentFromRows({
+    const content = publicAboutContentFromRows({
       hero: heroResult.error ? null : heroResult.data,
       pawSettings: settingsResult.error ? null : settingsResult.data,
       routes: routesResult.error ? null : routesResult.data,
       notes: notesResult.error ? null : notesResult.data,
       collectionSection: collectionSectionResult.error ? null : collectionSectionResult.data,
-      collectionCards: collectionCardsResult.error ? null : collectionCardsResult.data
+      collectionCards: collectionCardsResult.error ? null : collectionCardsResult.data,
+      errors: queryErrors
     });
+
+    if (process.env.NODE_ENV === "development") {
+      console.info("About content source diagnostics:", content.diagnostics);
+    }
+
+    return content;
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
       console.error("Unable to load public About content:", error);
     }
-    return fallbackPublicAboutContent;
+    return {
+      ...fallbackPublicAboutContent,
+      diagnostics: {
+        ...fallbackPublicAboutContent.diagnostics,
+        errors: {
+          unexpected: error instanceof Error ? error.message : "Unexpected About content fetch error."
+        }
+      }
+    };
   }
 }
 

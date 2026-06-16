@@ -2,6 +2,7 @@ import "server-only";
 import { createClient, type SupabaseClient, type User } from "@supabase/supabase-js";
 
 let adminClient: SupabaseClient | null = null;
+let publicServerClient: SupabaseClient | null = null;
 
 function getBearerTokenFromRequest(request: Request) {
   const authorizationHeader = request.headers.get("authorization");
@@ -27,6 +28,27 @@ export function getSupabaseAdminClient() {
   }
 
   return adminClient;
+}
+
+export function getSupabasePublicServerClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey =
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseKey) {
+    return null;
+  }
+
+  if (!publicServerClient) {
+    publicServerClient = createClient(supabaseUrl, supabaseKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    });
+  }
+
+  return publicServerClient;
 }
 
 export function getSupabaseAuthenticatedClientFromRequest(request: Request) {

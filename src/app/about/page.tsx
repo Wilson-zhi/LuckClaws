@@ -88,9 +88,17 @@ function RoutineChip({ label, className = "" }: { label: string; className?: str
 export default async function AboutPage() {
   const aboutContent = await getPublicAboutContent();
   const { hero, pawPath, collectionSection, collectionCards } = aboutContent;
+  const aboutContentSource = aboutContent.diagnostics.source;
 
   return (
     <SiteShell>
+      <div
+        aria-hidden="true"
+        hidden
+        dangerouslySetInnerHTML={{
+          __html: `<!-- about-content-source: ${aboutContentSource} -->`
+        }}
+      />
       <section className="section-shell py-10 md:py-16">
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_520px] lg:items-center">
           <AboutReveal>

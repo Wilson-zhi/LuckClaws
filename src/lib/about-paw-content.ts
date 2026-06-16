@@ -73,6 +73,23 @@ export type PublicAboutContent = {
   pawPath: AboutPawContent;
   collectionSection: AboutCollectionSectionContent;
   collectionCards: AboutCollectionCardContent[];
+  diagnostics: AboutContentDiagnostics;
+};
+
+export type AboutContentSource = "database" | "fallback";
+
+export type AboutContentDiagnostics = {
+  source: AboutContentSource;
+  hero: AboutContentSource;
+  pawPath: AboutContentSource;
+  collectionSection: AboutContentSource;
+  collectionCards: AboutContentSource;
+  errors: Partial<
+    Record<
+      "hero" | "pawSettings" | "routes" | "notes" | "collectionSection" | "collectionCards" | "unexpected",
+      string
+    >
+  >;
 };
 
 export type AboutIconKey =
@@ -302,7 +319,15 @@ export const fallbackPublicAboutContent: PublicAboutContent = {
   hero: fallbackAboutHeroContent,
   pawPath: fallbackAboutPawContent,
   collectionSection: fallbackAboutCollectionSectionContent,
-  collectionCards: fallbackAboutCollectionCards
+  collectionCards: fallbackAboutCollectionCards,
+  diagnostics: {
+    source: "fallback",
+    hero: "fallback",
+    pawPath: "fallback",
+    collectionSection: "fallback",
+    collectionCards: "fallback",
+    errors: {}
+  }
 };
 
 type AboutHeroRow = {
@@ -389,6 +414,90 @@ function sortBySortOrder<T extends { sortOrder: number }>(items: T[]) {
 
 function normalizedLookupKey(value: string) {
   return value.replaceAll("-", "_");
+}
+
+function hasUsableHeroRow(row: AboutHeroRow | null | undefined) {
+  if (!row) {
+    return false;
+  }
+
+  return [
+    row.eyebrow,
+    row.title,
+    row.description,
+    row.primary_cta_label,
+    row.primary_cta_href,
+    row.secondary_cta_label,
+    row.secondary_cta_href,
+    row.hero_image_url,
+    row.hero_image_alt,
+    row.compass_title,
+    row.compass_description
+  ].some((value) => Boolean(cleanString(value)));
+}
+
+function hasUsablePawSettingsRow(row: AboutPawSettingsRow | null | undefined) {
+  if (!row) {
+    return false;
+  }
+
+  return [row.section_label, row.title, row.subtitle, row.supporting_line].some((value) =>
+    Boolean(cleanString(value))
+  );
+}
+
+function hasUsableCollectionSectionRow(row: AboutCollectionSectionRow | null | undefined) {
+  if (!row) {
+    return false;
+  }
+
+  return [row.eyebrow, row.title, row.subtitle, row.view_all_label, row.view_all_href].some((value) =>
+    Boolean(cleanString(value))
+  );
+}
+
+function hasUsableRouteRows(rows: AboutPawRouteRow[] | null | undefined) {
+  return Boolean(
+    rows?.some((row) => {
+      if (row.enabled === false) {
+        return false;
+      }
+
+      return Boolean(
+        cleanString(row.route_key) &&
+          cleanString(row.label) &&
+          cleanString(row.recommendation_title) &&
+          cleanString(row.recommendation_description) &&
+          cleanString(row.note_text) &&
+          cleanString(row.cta_label) &&
+          cleanString(row.cta_href)
+      );
+    })
+  );
+}
+
+function hasUsableNoteRows(rows: AboutPawNoteRow[] | null | undefined) {
+  return Boolean(
+    rows?.some((row) => {
+      if (row.enabled === false) {
+        return false;
+      }
+
+      return Boolean(cleanString(row.note_key) && cleanString(row.keyword) && cleanString(row.secondary_text));
+    })
+  );
+}
+
+function hasUsableCollectionCardRows(rows: AboutCollectionCardRow[] | null | undefined) {
+  return Boolean(
+    rows?.some((row) => {
+      if (row.enabled === false) {
+        return false;
+      }
+
+      return Boolean(cleanString(row.card_key) && cleanString(row.title) && cleanString(row.href));
+    })
+  );
 }
 
 export function normalizeAboutIconKey(value: unknown, fallback: AboutIconKey = "paw"): AboutIconKey {
@@ -586,7 +695,8 @@ export function publicAboutContentFromRows({
   routes,
   notes,
   collectionSection,
-  collectionCards
+  collectionCards,
+  errors = {}
 }: {
   hero?: AboutHeroRow | null;
   pawSettings?: AboutPawSettingsRow | null;
@@ -594,7 +704,27 @@ export function publicAboutContentFromRows({
   notes?: AboutPawNoteRow[] | null;
   collectionSection?: AboutCollectionSectionRow | null;
   collectionCards?: AboutCollectionCardRow[] | null;
+  errors?: AboutContentDiagnostics["errors"];
 }): PublicAboutContent {
+  const heroSource: AboutContentSource = hasUsableHeroRow(hero) ? "database" : "fallback";
+  const pawPathSource: AboutContentSource =
+    hasUsablePawSettingsRow(pawSettings) || hasUsableRouteRows(routes) || hasUsableNoteRows(notes)
+      ? "database"
+      : "fallback";
+  const collectionSectionSource: AboutContentSource = hasUsableCollectionSectionRow(collectionSection)
+    ? "database"
+    : "fallback";
+  const collectionCardsSource: AboutContentSource = hasUsableCollectionCardRows(collectionCards)
+    ? "database"
+    : "fallback";
+  const source: AboutContentSource =
+    heroSource === "database" ||
+    pawPathSource === "database" ||
+    collectionSectionSource === "database" ||
+    collectionCardsSource === "database"
+      ? "database"
+      : "fallback";
+
   return {
     hero: aboutHeroFromRow(hero),
     pawPath: aboutPawContentFromRows({
@@ -603,6 +733,14 @@ export function publicAboutContentFromRows({
       notes
     }),
     collectionSection: aboutCollectionSectionFromRow(collectionSection),
-    collectionCards: aboutCollectionCardsFromRows(collectionCards)
+    collectionCards: aboutCollectionCardsFromRows(collectionCards),
+    diagnostics: {
+      source,
+      hero: heroSource,
+      pawPath: pawPathSource,
+      collectionSection: collectionSectionSource,
+      collectionCards: collectionCardsSource,
+      errors
+    }
   };
 }
