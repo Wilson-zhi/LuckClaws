@@ -39,7 +39,7 @@ const routePositionsByKey: Record<string, string> = {
   walk: "lg:left-[24%] lg:top-[48%]",
   rest: "lg:left-[46%] lg:top-12",
   comfort: "lg:left-[64%] lg:top-[54%]",
-  support: "lg:right-4 lg:top-20"
+  support: "lg:right-1 lg:top-20"
 };
 
 const fallbackRoutePositions = [
@@ -47,7 +47,7 @@ const fallbackRoutePositions = [
   "lg:left-[24%] lg:top-[48%]",
   "lg:left-[46%] lg:top-12",
   "lg:left-[64%] lg:top-[54%]",
-  "lg:right-4 lg:top-20"
+  "lg:right-1 lg:top-20"
 ];
 
 const iconMap: Record<string, LucideIcon> = {
@@ -151,7 +151,7 @@ export function AboutRoutineTabs({ content = fallbackAboutPawContent }: { conten
                 preserveAspectRatio="none"
               >
                 <path
-                  d="M32 60 C150 10 200 210 318 150 C430 90 420 18 540 70 C638 112 630 210 732 120"
+                  d="M32 60 C150 10 200 210 318 150 C430 90 420 18 540 70 C638 112 638 208 744 120"
                   fill="none"
                   stroke="#d6a245"
                   strokeLinecap="round"
@@ -159,7 +159,7 @@ export function AboutRoutineTabs({ content = fallbackAboutPawContent }: { conten
                   opacity="0.18"
                 />
                 <path
-                  d="M32 60 C150 10 200 210 318 150 C430 90 420 18 540 70 C638 112 630 210 732 120"
+                  d="M32 60 C150 10 200 210 318 150 C430 90 420 18 540 70 C638 112 638 208 744 120"
                   fill="none"
                   stroke="#8a5a2b"
                   strokeDasharray="4 26"
