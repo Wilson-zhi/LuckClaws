@@ -11,13 +11,19 @@ type RouteContext = {
 type OrderItemRow = {
   id: string;
   product_id: string | null;
-  product_name: string | null;
+  product_title: string | null;
+  product_slug: string | null;
+  product_image: string | null;
   quantity: number | string | null;
   unit_price: number | string | null;
   line_total: number | string | null;
 };
 
 function productSlugFromItem(item: OrderItemRow, productRows: Map<string, { image_url: string | null }>) {
+  if (item.product_slug) {
+    return item.product_slug;
+  }
+
   if (!item.product_id) {
     return null;
   }
@@ -30,6 +36,10 @@ function productSlugFromItem(item: OrderItemRow, productRows: Map<string, { imag
 }
 
 function productImageFromItem(item: OrderItemRow, productRows: Map<string, { image_url: string | null }>) {
+  if (item.product_image) {
+    return item.product_image;
+  }
+
   if (!item.product_id) {
     return null;
   }
@@ -78,7 +88,7 @@ export async function GET(request: Request, { params }: RouteContext) {
 
   const { data: itemData, error: itemError } = await supabase
     .from("order_items")
-    .select("id, product_id, product_name, quantity, unit_price, line_total")
+    .select("id, product_id, product_title, product_slug, product_image, quantity, unit_price, line_total")
     .eq("order_id", id)
     .order("id", { ascending: true });
 
@@ -109,7 +119,7 @@ export async function GET(request: Request, { params }: RouteContext) {
     order: orderData,
     items: itemRows.map((item) => ({
       id: item.id,
-      product_title: item.product_name,
+      product_title: item.product_title,
       product_slug: productSlugFromItem(item, productRows),
       product_image: productImageFromItem(item, productRows),
       quantity: item.quantity,

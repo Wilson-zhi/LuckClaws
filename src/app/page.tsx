@@ -18,8 +18,8 @@ import {
 } from "lucide-react";
 import { ViewItemListTracker } from "@/components/analytics/EcommerceEventTrackers";
 import { CategoryCard } from "@/components/product/CategoryCard";
-import { ProductCard } from "@/components/product/ProductCard";
-import { HomeFeaturedProduct } from "@/components/sections/HomeFeaturedProduct";
+import { HomeProductDiscovery } from "@/components/sections/HomeProductDiscovery";
+import { HomeRoutineRoute } from "@/components/sections/HomeRoutineRoute";
 import { NewsletterSignup } from "@/components/sections/NewsletterSignup";
 import { CompactTrustBar, type CompactTrustItem } from "@/components/sections/CompactTrustBar";
 import { TrustBadges } from "@/components/sections/TrustBadges";
@@ -64,23 +64,26 @@ function homepageTrustIcon(icon: HomepageTrustBadgeIconKey) {
   return homepageTrustIconMap[icon] ?? ShieldCheck;
 }
 
-const valueHighlights = [
-  {
-    title: "Designed for everyday routines",
-    text: "Products are selected for daily play, walks, rest, and enrichment.",
-    Icon: Sparkles
-  },
-  {
-    title: "Clear shopping paths",
-    text: "Browse by pet need, product category, or current offers without dead-end links.",
-    Icon: ArrowRight
-  },
-  {
-    title: "Support when you need it",
-    text: "Order and product questions can be sent to support@luckclaws.com.",
-    Icon: Heart
+function polishedHeroEyebrow(value: string) {
+  const eyebrow = value.trim();
+  const normalized = eyebrow.toLowerCase();
+
+  if (!eyebrow || normalized.includes("premium pete") || normalized === "premium pet essentials") {
+    return "PREMIUM PET ESSENTIALS";
   }
-];
+
+  return eyebrow;
+}
+
+function homepageTrustLabel(key: string, label: string) {
+  const normalized = `${key} ${label}`.toLowerCase();
+
+  if (normalized.includes("shipping") || normalized.includes("free shipping")) {
+    return freeShippingLabel;
+  }
+
+  return label;
+}
 
 export default async function HomePage() {
   const [{ featuredProduct, featuredProducts, bestSellers, newArrivals }, homepageSettings] = await Promise.all([
@@ -88,10 +91,11 @@ export default async function HomePage() {
     getPublicHomepageSettings()
   ]);
   const { hero, categorySection } = homepageSettings;
+  const heroEyebrow = polishedHeroEyebrow(hero.eyebrow);
   const homepageCategories = await getPublicHomepageCategories(categorySection);
   const topTrustItems: CompactTrustItem[] = homepageSettings.trustBadges.map((badge) => ({
     key: badge.key,
-    label: badge.title,
+    label: homepageTrustLabel(badge.key, badge.title),
     Icon: homepageTrustIcon(badge.icon)
   }));
   const primaryButtonLink = hero.primaryButtonLink || featuredProduct.productUrl;
@@ -117,10 +121,10 @@ export default async function HomePage() {
       <ViewItemListTracker products={featuredProducts} itemListName="Homepage Featured Products" />
       <ViewItemListTracker products={bestSellers} itemListName="Homepage Best Sellers" />
       <ViewItemListTracker products={newArrivals} itemListName="Homepage New Arrivals" />
-      <section className="section-shell grid min-h-[620px] items-center gap-10 py-10 md:grid-cols-2 md:py-16">
+      <section className="section-shell grid min-h-[620px] items-center gap-10 py-10 md:grid-cols-[0.92fr_1.08fr] md:py-16 lg:gap-14">
         <div className="homepage-enter">
           <span className="inline-flex rounded-full bg-primary-container/20 px-4 py-2 text-xs font-bold uppercase tracking-wide text-primary">
-            {hero.eyebrow}
+            {heroEyebrow}
           </span>
           <h1 className="mt-5 max-w-xl font-heading text-4xl font-extrabold leading-tight md:text-6xl">
             {hero.title}
@@ -172,10 +176,14 @@ export default async function HomePage() {
         <CompactTrustBar items={topTrustItems} columns="wide" className="section-shell" />
       </section>
 
+      <HomeRoutineRoute />
+
       {categorySection.enabled && homepageCategories.length > 0 && (
-        <section className="section-shell py-10 md:py-14">
+        <section className="bg-[#F7EBDD] py-12 md:py-16">
+          <div className="section-shell">
           <div className="mb-6 flex items-start justify-between gap-4">
             <div>
+              <p className="text-xs font-bold uppercase tracking-wide text-primary">Shop by collection</p>
               <h2 className="font-heading text-2xl font-bold md:text-3xl">{categorySection.title}</h2>
               {categorySection.subtitle && (
                 <p className="mt-2 max-w-2xl text-sm leading-6 text-on-surface-variant">
@@ -209,105 +217,19 @@ export default async function HomePage() {
               {categoryCtaText} <ArrowRight aria-hidden className="h-4 w-4" />
             </Link>
           )}
+          </div>
         </section>
       )}
 
-      <HomeFeaturedProduct product={featuredProduct} />
-
-      <section className="section-shell py-14 md:py-20">
-        <div className="mb-8 flex items-center justify-between gap-4">
-          <div>
-            <h2 className="font-heading text-3xl font-bold">Featured Products</h2>
-            <p className="mt-2 text-sm text-on-surface-variant">
-              Handpicked pet essentials for play, comfort, walks, and everyday care.
-            </p>
-          </div>
-          <Link href="/collections" className="hidden items-center gap-2 text-sm font-semibold text-primary md:flex">
-            Shop All <ArrowRight aria-hidden className="h-4 w-4" />
-          </Link>
-        </div>
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
-          {featuredProducts.map((product) => (
-            <ProductCard key={product.id} product={product} itemListName="Homepage Featured Products" />
-          ))}
-        </div>
-      </section>
-
-      <section className="bg-surface-container-low py-14 md:py-20">
-        <div className="section-shell">
-          <div className="mb-8 text-center">
-            <h2 className="font-heading text-3xl font-bold">Our Best Sellers</h2>
-            <p className="mt-2 text-sm text-on-surface-variant">
-              A focused selection of toys, apparel, walking gear, and comfort essentials.
-            </p>
-          </div>
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
-            {bestSellers.map((product) => (
-              <ProductCard key={product.id} product={product} itemListName="Homepage Best Sellers" />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="section-shell py-14 md:py-20">
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h2 className="font-heading text-3xl font-bold">New Arrivals</h2>
-            <p className="mt-2 text-sm text-on-surface-variant">
-              Discover the latest premium additions to our collection.
-            </p>
-          </div>
-          <Link href="/collections" className="hidden items-center gap-2 text-sm font-semibold text-primary md:flex">
-            Shop All New <ArrowRight aria-hidden className="h-4 w-4" />
-          </Link>
-        </div>
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
-          {newArrivals.map((product) => (
-            <ProductCard key={product.id} product={product} itemListName="Homepage New Arrivals" />
-          ))}
-        </div>
-      </section>
+      <HomeProductDiscovery
+        featuredProducts={featuredProducts}
+        bestSellers={bestSellers}
+        newArrivals={newArrivals}
+      />
 
       <TrustBadges />
 
-      <section className="section-shell py-14 md:py-20">
-        <div className="mb-8 text-center">
-          <h2 className="font-heading text-3xl font-bold">Built for Easier Shopping</h2>
-          <p className="mt-2 text-sm text-on-surface-variant">
-            Clear product paths, practical details, and support-focused pages for launch.
-          </p>
-        </div>
-        <div className="grid gap-5 md:grid-cols-3">
-          {valueHighlights.map(({ title, text, Icon }) => (
-            <article key={title} className="rounded-md bg-surface-container-lowest p-6 shadow-soft">
-              <span className="grid h-11 w-11 place-items-center rounded-full bg-primary-container/20 text-primary">
-                <Icon aria-hidden className="h-5 w-5" />
-              </span>
-              <h3 className="mt-5 font-heading text-xl font-bold">{title}</h3>
-              <p className="mt-3 text-sm leading-6 text-on-surface-variant">{text}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
       <NewsletterSignup />
-
-      <section className="section-shell pt-14 md:pt-20">
-        <div className="grid gap-4 rounded-lg bg-surface-container-lowest p-6 shadow-soft md:grid-cols-3 md:p-8">
-          <div className="flex items-center gap-4">
-            <Sparkles aria-hidden className="h-8 w-8 text-primary" />
-            <p className="font-heading font-bold">Thoughtful everyday enrichment</p>
-          </div>
-          <div className="flex items-center gap-4">
-            <Truck aria-hidden className="h-8 w-8 text-primary" />
-            <p className="font-heading font-bold">{freeShippingLabel}</p>
-          </div>
-          <div className="flex items-center gap-4">
-            <Award aria-hidden className="h-8 w-8 text-primary" />
-            <p className="font-heading font-bold">Premium feel, pet-first comfort</p>
-          </div>
-        </div>
-      </section>
     </SiteShell>
   );
 }

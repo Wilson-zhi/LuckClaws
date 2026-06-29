@@ -185,7 +185,9 @@ export async function savePayPalOrderToSupabase({
     items.map((item) => ({
       order_id: order.id,
       product_id: item.id,
-      product_name: item.name,
+      product_title: item.name,
+      product_slug: item.id,
+      product_image: item.image,
       quantity: item.quantity,
       unit_price: roundMoney(item.price),
       line_total: roundMoney(item.price * item.quantity)

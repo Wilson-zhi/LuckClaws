@@ -90,22 +90,26 @@ export function NewsletterSignup() {
   const visibleSubmittedEmail = submittedEmail === "__newsletter_honeypot__" ? "" : submittedEmail;
 
   return (
-    <section className="section-shell">
-      <div className="overflow-hidden rounded-lg bg-[#FFF8EF] shadow-lift">
+    <section className="section-shell py-12 md:py-16">
+      <div className="overflow-hidden rounded-lg border border-[#EAD4B8] bg-[#FFF8EF] shadow-lift">
         <div className="grid gap-8 p-6 md:grid-cols-[minmax(0,1fr)_minmax(340px,0.86fr)] md:items-center md:p-10 lg:p-12">
           <div>
             <span className="inline-flex items-center gap-2 rounded-full bg-primary-container/20 px-4 py-2 text-xs font-bold uppercase tracking-wide text-primary">
               <Mail aria-hidden className="h-4 w-4" />
               LUCK CLAWS updates
             </span>
-            <h2 className="mt-5 font-heading text-3xl font-extrabold leading-tight md:text-4xl">Join the Pack</h2>
+            <h2 className="mt-5 max-w-lg font-heading text-3xl font-extrabold leading-tight md:text-4xl">
+              Join the Pack for practical pet routine notes.
+            </h2>
             <p className="mt-3 max-w-xl text-sm leading-6 text-on-surface-variant md:text-base">
-              Get 10% off your first order, plus early access to new drops and pet care tips.
+              Get 10% off your first order, plus focused product updates and everyday care ideas.
             </p>
-            <p className="mt-4 text-sm font-semibold text-primary">No spam. Just pet-friendly updates and offers.</p>
+            <p className="mt-4 text-sm font-semibold text-primary">
+              Use code WELCOME10 after subscribing.
+            </p>
           </div>
 
-          <div className="rounded-md border border-outline-variant/70 bg-white/90 p-4 shadow-soft md:p-5">
+          <div className="rounded-lg border border-outline-variant/70 bg-white/95 p-4 shadow-soft md:p-5">
             {submittedEmail ? (
               <div className="rounded-md bg-surface-container-lowest p-5" role="status" aria-live="polite">
                 <span className="grid h-11 w-11 place-items-center rounded-full bg-primary-container/20 text-primary">

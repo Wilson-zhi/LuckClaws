@@ -1073,12 +1073,20 @@ function fallbackCategoryCard(slug: string) {
   return staticCategoryBySlug.get(slug);
 }
 
+function categoryCardHref(slug: string) {
+  if (slug === "beds-blankets") {
+    return "/collections/beds-and-blankets";
+  }
+
+  return `/collections/${slug}`;
+}
+
 function categoryCardFromMetadata(category: CategoryMetadata): PublicCategoryCard {
   const fallback = fallbackCategoryCard(category.slug);
 
   return {
     name: category.name,
-    href: `/collections/${category.slug}`,
+    href: categoryCardHref(category.slug),
     image: category.imageUrl ?? fallback?.image ?? "/images/category-dog-toys.jpg",
     alt: fallback?.alt ?? `${brandName} ${category.name} category.`
   };

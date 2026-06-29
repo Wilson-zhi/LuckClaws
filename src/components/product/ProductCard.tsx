@@ -94,17 +94,17 @@ export function ProductCard({
   return (
     <article
       className={cn(
-        "group overflow-hidden rounded-lg bg-surface-container-lowest shadow-ambient transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_22px_58px_rgba(25,28,30,0.12)] focus-within:shadow-lift motion-reduce:hover:translate-y-0",
+        "group overflow-hidden rounded-lg border border-outline-variant/60 bg-surface-container-lowest shadow-ambient transition duration-300 hover:-translate-y-1.5 hover:border-primary/45 hover:shadow-[0_22px_58px_rgba(25,28,30,0.12)] focus-within:shadow-lift motion-reduce:hover:translate-y-0",
         compact && "rounded-md"
       )}
     >
       <Link
         href={href}
-        className="relative block aspect-square overflow-hidden bg-surface-container focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        className="relative block aspect-square overflow-hidden bg-[#F7EAD8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
         onClick={() => trackSelectItem(product, itemListName)}
       >
         {(product.badge || product.isNew) && (
-          <span className="absolute left-4 top-4 z-10 rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-primary shadow-soft">
+          <span className="absolute left-4 top-4 z-10 rounded-full border border-white/70 bg-white/95 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-primary shadow-soft">
             {product.badge ?? "New"}
           </span>
         )}
@@ -120,12 +120,12 @@ export function ProductCard({
           fill
           loading="eager"
           sizes="(min-width: 1024px) 280px, 45vw"
-          className="object-cover transition duration-500 group-hover:scale-[1.06]"
+          className="object-cover transition duration-500 group-hover:scale-[1.055]"
         />
       </Link>
       <div className="p-4 md:p-5">
         <div className="flex min-h-[88px] flex-col">
-          <p className="text-[11px] font-semibold uppercase tracking-widest text-on-surface-variant">
+          <p className="text-[11px] font-bold uppercase tracking-widest text-primary/90">
             {product.category}
           </p>
           <Link
