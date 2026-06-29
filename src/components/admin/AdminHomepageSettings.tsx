@@ -51,7 +51,9 @@ const textareaClass =
 
 const HOMEPAGE_IMAGE_BUCKET = "homepage-images";
 const MAX_HOMEPAGE_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
+const MAX_HOMEPAGE_VIDEO_SIZE_BYTES = 80 * 1024 * 1024;
 const acceptedHomepageImageTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
+const acceptedHomepageVideoTypes = new Set(["video/mp4", "video/webm"]);
 
 const iconLabelKeys = {
   truck: "iconTruck",
@@ -108,6 +110,39 @@ const homepageCategorySectionCopy = {
     noActiveCategories: "No active categories are available.",
     selectedCount: "Selected",
     categoryCountUnit: "categories"
+  }
+} as const;
+
+const homepageHeroMediaCopy = {
+  zh: {
+    mediaMode: "首页媒体模式",
+    imageMode: "图片模式",
+    videoMode: "视频模式",
+    heroVideoUrl: "首页视频链接",
+    uploadHeroVideo: "上传首页视频",
+    videoUploadHelper: "支持 MP4、WebM，最大 80MB。上传成功后会自动填入视频链接。",
+    videoUploaded: "首页视频已上传。",
+    unableToUploadVideo: "无法上传首页视频。",
+    chooseValidVideo: "请选择 MP4 或 WebM 视频。",
+    videoSizeLimit: "视频不能超过 80MB。",
+    noHomepageVideo: "暂无首页视频。视频模式下可以上传视频或粘贴视频链接。",
+    heroVideoPreview: "首页视频预览",
+    mediaModeHelper: "图片模式只显示 Hero 图片；视频模式优先显示视频，并使用 Hero 图片作为封面。"
+  },
+  en: {
+    mediaMode: "Homepage media mode",
+    imageMode: "Image mode",
+    videoMode: "Video mode",
+    heroVideoUrl: "Hero video URL",
+    uploadHeroVideo: "Upload hero video",
+    videoUploadHelper: "Supports MP4 and WebM up to 80MB. A successful upload automatically fills the video URL.",
+    videoUploaded: "Homepage video uploaded.",
+    unableToUploadVideo: "Unable to upload homepage video.",
+    chooseValidVideo: "Choose an MP4 or WebM video.",
+    videoSizeLimit: "Video must be 80MB or smaller.",
+    noHomepageVideo: "No homepage video yet. In video mode, upload a video or paste a video URL.",
+    heroVideoPreview: "Hero video preview",
+    mediaModeHelper: "Image mode shows the Hero image only. Video mode shows the video first and uses the Hero image as its poster."
   }
 } as const;
 
@@ -170,6 +205,7 @@ function HeroField({
 function AdminHomepageFormContent() {
   const { t, language } = useAdminLanguage();
   const categoryCopy = homepageCategorySectionCopy[language];
+  const heroMediaCopy = homepageHeroMediaCopy[language];
   const supabase = getSupabaseBrowserClient();
   const [hero, setHero] = useState<HomepageHeroContent>(defaultHomepageHero);
   const [badges, setBadges] = useState<EditableTrustBadge[]>([]);
@@ -180,8 +216,11 @@ function AdminHomepageFormContent() {
   const [saving, setSaving] = useState(false);
   const [savingCategorySection, setSavingCategorySection] = useState(false);
   const [uploadingHeroImage, setUploadingHeroImage] = useState(false);
+  const [uploadingHeroVideo, setUploadingHeroVideo] = useState(false);
   const [uploadMessage, setUploadMessage] = useState("");
   const [uploadError, setUploadError] = useState("");
+  const [videoUploadMessage, setVideoUploadMessage] = useState("");
+  const [videoUploadError, setVideoUploadError] = useState("");
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [categoryLoadError, setCategoryLoadError] = useState("");
@@ -271,6 +310,13 @@ function AdminHomepageFormContent() {
     setHero((currentHero) => ({
       ...currentHero,
       [field]: value
+    }));
+  };
+
+  const updateHeroMediaMode = (mediaMode: HomepageHeroContent["mediaMode"]) => {
+    setHero((currentHero) => ({
+      ...currentHero,
+      mediaMode
     }));
   };
 
@@ -377,6 +423,35 @@ function AdminHomepageFormContent() {
     return data.publicUrl;
   };
 
+  const uploadHomepageVideo = async (file: File) => {
+    if (!supabase) {
+      throw new Error(t("uploadConfigMissing"));
+    }
+
+    if (!acceptedHomepageVideoTypes.has(file.type)) {
+      throw new Error(heroMediaCopy.chooseValidVideo);
+    }
+
+    if (file.size > MAX_HOMEPAGE_VIDEO_SIZE_BYTES) {
+      throw new Error(heroMediaCopy.videoSizeLimit);
+    }
+
+    const storagePath = `homepage/videos/${Date.now()}-${safeFileName(file.name)}`;
+    const { error: uploadErrorResult } = await supabase.storage.from(HOMEPAGE_IMAGE_BUCKET).upload(storagePath, file, {
+      cacheControl: "31536000",
+      contentType: file.type,
+      upsert: false
+    });
+
+    if (uploadErrorResult) {
+      throw uploadErrorResult;
+    }
+
+    const { data } = supabase.storage.from(HOMEPAGE_IMAGE_BUCKET).getPublicUrl(storagePath);
+
+    return data.publicUrl;
+  };
+
   const handleHeroImageUpload = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0] ?? null;
     event.target.value = "";
@@ -400,6 +475,33 @@ function AdminHomepageFormContent() {
       );
     } finally {
       setUploadingHeroImage(false);
+    }
+  };
+
+  const handleHeroVideoUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] ?? null;
+    event.target.value = "";
+    setVideoUploadMessage("");
+    setVideoUploadError("");
+
+    if (!file) {
+      return;
+    }
+
+    setUploadingHeroVideo(true);
+
+    try {
+      const publicUrl = await uploadHomepageVideo(file);
+
+      updateHeroField("videoUrl", publicUrl);
+      updateHeroMediaMode("video");
+      setVideoUploadMessage(heroMediaCopy.videoUploaded);
+    } catch (uploadErrorResult: unknown) {
+      setVideoUploadError(
+        uploadErrorResult instanceof Error ? uploadErrorResult.message : heroMediaCopy.unableToUploadVideo
+      );
+    } finally {
+      setUploadingHeroVideo(false);
     }
   };
 
@@ -537,6 +639,24 @@ function AdminHomepageFormContent() {
             value={hero.secondaryButtonLink}
             onChange={(value) => updateHeroField("secondaryButtonLink", value)}
           />
+          <div className="grid gap-3 rounded-md bg-surface-container-low p-4 md:col-span-2">
+            <label className="grid gap-2 text-sm font-semibold text-on-surface">
+              {heroMediaCopy.mediaMode}
+              <select
+                className={inputClass}
+                value={hero.mediaMode}
+                onChange={(event) =>
+                  updateHeroMediaMode(event.target.value === "video" ? "video" : "image")
+                }
+              >
+                <option value="image">{heroMediaCopy.imageMode}</option>
+                <option value="video">{heroMediaCopy.videoMode}</option>
+              </select>
+            </label>
+            <p className="text-xs font-semibold leading-5 text-on-surface-variant">
+              {heroMediaCopy.mediaModeHelper}
+            </p>
+          </div>
           <div className="grid gap-4 rounded-md bg-surface-container-low p-4 md:col-span-2">
             <label className="grid gap-2 text-sm font-semibold text-on-surface">
               {t("heroImageUrl")}
@@ -587,6 +707,67 @@ function AdminHomepageFormContent() {
             ) : (
               <p className="rounded-md bg-white p-4 text-sm font-semibold text-on-surface-variant">
                 {t("noHomepageImage")}
+              </p>
+            )}
+          </div>
+          <div className="grid gap-4 rounded-md bg-surface-container-low p-4 md:col-span-2">
+            <label className="grid gap-2 text-sm font-semibold text-on-surface">
+              {heroMediaCopy.heroVideoUrl}
+              <input
+                className={inputClass}
+                value={hero.videoUrl}
+                onChange={(event) => updateHeroField("videoUrl", event.target.value)}
+              />
+            </label>
+
+            <div className="grid gap-3">
+              <label className="grid gap-2 text-sm font-semibold text-on-surface">
+                {heroMediaCopy.uploadHeroVideo}
+                <input
+                  accept="video/mp4,video/webm"
+                  className="block w-full rounded-md border border-outline-variant bg-white px-4 py-3 text-sm text-on-surface file:mr-4 file:rounded-full file:border-0 file:bg-primary file:px-4 file:py-2 file:font-heading file:text-sm file:font-bold file:text-white hover:file:bg-primary/90"
+                  disabled={uploadingHeroVideo}
+                  type="file"
+                  onChange={handleHeroVideoUpload}
+                />
+              </label>
+              <p className="text-xs font-semibold leading-5 text-on-surface-variant">
+                {heroMediaCopy.videoUploadHelper}
+              </p>
+              {uploadingHeroVideo && (
+                <p className="text-sm font-semibold text-on-surface-variant">{t("uploadingImage")}</p>
+              )}
+              {videoUploadMessage && (
+                <p className="text-sm font-semibold text-primary" role="status">
+                  {videoUploadMessage}
+                </p>
+              )}
+              {videoUploadError && (
+                <p className="text-sm font-semibold text-error" role="alert">
+                  {videoUploadError}
+                </p>
+              )}
+            </div>
+
+            {hero.videoUrl ? (
+              <div className="grid gap-3 sm:grid-cols-[220px_1fr] sm:items-center">
+                <div className="aspect-video overflow-hidden rounded-md bg-black">
+                  <video
+                    src={hero.videoUrl}
+                    poster={hero.imageUrl || undefined}
+                    className="h-full w-full object-cover"
+                    controls
+                    muted
+                    playsInline
+                  >
+                    {heroMediaCopy.heroVideoPreview}
+                  </video>
+                </div>
+                <p className="break-all text-sm leading-6 text-on-surface-variant">{hero.videoUrl}</p>
+              </div>
+            ) : (
+              <p className="rounded-md bg-white p-4 text-sm font-semibold text-on-surface-variant">
+                {heroMediaCopy.noHomepageVideo}
               </p>
             )}
           </div>

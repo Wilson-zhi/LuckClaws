@@ -10,6 +10,7 @@ type HomePosterHeroProps = {
   subtitle: string;
   imageUrl: string;
   imageAlt: string;
+  videoUrl: string;
   primaryButtonText: string;
   primaryButtonLink: string;
   secondaryButtonText: string;
@@ -58,6 +59,7 @@ export function HomePosterHero({
   subtitle,
   imageUrl,
   imageAlt,
+  videoUrl,
   primaryButtonText,
   primaryButtonLink,
   secondaryButtonText,
@@ -80,7 +82,7 @@ export function HomePosterHero({
             poster={imageUrl}
             aria-hidden="true"
           >
-            <source src="/media/home-hero.mp4" type="video/mp4" />
+            <source src={videoUrl} type={videoUrl.toLowerCase().includes(".webm") ? "video/webm" : "video/mp4"} />
           </video>
         ) : (
           <Image

@@ -136,6 +136,10 @@ function localHeroVideoExists() {
   return existsSync(join(process.cwd(), "public", "media", "home-hero.mp4"));
 }
 
+function localHeroVideoUrl() {
+  return "/media/home-hero.mp4";
+}
+
 function homepageTrustLabel(key: string, label: string) {
   const normalized = `${key} ${label}`.toLowerCase();
 
@@ -157,9 +161,12 @@ export default async function HomePage() {
   const heroSubtitle = polishedHeroSubtitle(hero.subtitle);
   const heroImageUrl = polishedHeroImageUrl(hero.imageUrl);
   const heroImageAlt = polishedHeroImageAlt(hero.imageAlt);
+  const savedHeroVideoUrl = hero.videoUrl.trim();
   const homepageCategories = await getPublicHomepageCategories(categorySection);
   const heroProductTiles = [featuredProduct, ...bestSellers.filter((product) => product.slug !== featuredProduct.slug)].slice(0, 2);
-  const hasHeroVideo = localHeroVideoExists();
+  const fallbackHeroVideoUrl = localHeroVideoExists() ? localHeroVideoUrl() : "";
+  const heroVideoUrl = savedHeroVideoUrl || fallbackHeroVideoUrl;
+  const hasHeroVideo = hero.mediaMode === "video" && Boolean(heroVideoUrl);
   const topTrustItems: CompactTrustItem[] = homepageSettings.trustBadges.map((badge) => ({
     key: badge.key,
     label: homepageTrustLabel(badge.key, badge.title),
@@ -198,6 +205,7 @@ export default async function HomePage() {
         subtitle={heroSubtitle}
         imageUrl={heroImageUrl}
         imageAlt={heroImageAlt}
+        videoUrl={heroVideoUrl}
         primaryButtonText={primaryButtonText}
         primaryButtonLink={primaryButtonLink}
         secondaryButtonText={secondaryButtonText}

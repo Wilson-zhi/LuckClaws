@@ -27,8 +27,10 @@ export type HomepageHeroContent = {
   primaryButtonLink: string;
   secondaryButtonText: string;
   secondaryButtonLink: string;
+  mediaMode: "image" | "video";
   imageUrl: string;
   imageAlt: string;
+  videoUrl: string;
   featuredLabel: string;
   featuredText: string;
 };
@@ -66,8 +68,10 @@ export const defaultHomepageHero: HomepageHeroContent = {
   primaryButtonLink: "/collections",
   secondaryButtonText: "Explore Collections",
   secondaryButtonLink: "/collections",
+  mediaMode: "image",
   imageUrl: "/images/hero-dog-running.jpg",
   imageAlt: "A happy dog running through grass, representing LUCK CLAWS pet essentials.",
+  videoUrl: "",
   featuredLabel: "Featured Pick",
   featuredText: "Everyday enrichment"
 };
@@ -143,6 +147,16 @@ function normalizeHomepageCategorySectionLayout(value: unknown): HomepageCategor
   return homepageCategorySectionLayoutSet.has(layout) ? (layout as HomepageCategorySectionLayout) : "grid_4";
 }
 
+function normalizeHomepageHeroMediaMode(value: unknown, videoUrl: string): HomepageHeroContent["mediaMode"] {
+  const mediaMode = cleanString(value).toLowerCase();
+
+  if (mediaMode === "video" || mediaMode === "image") {
+    return mediaMode;
+  }
+
+  return videoUrl ? "video" : defaultHomepageHero.mediaMode;
+}
+
 function normalizeHomepageCategoryMaxItems(value: unknown) {
   const parsed = numberFromUnknown(value);
 
@@ -173,6 +187,7 @@ export function homepageSettingValueIsActive(value: unknown) {
 
 export function homepageHeroFromValue(value: unknown): HomepageHeroContent {
   const record = recordFromUnknown(value);
+  const videoUrl = stringFromRecord(record, ["videoUrl", "video_url", "heroVideoUrl", "hero_video_url"], defaultHomepageHero.videoUrl);
 
   return {
     eyebrow: stringFromRecord(record, ["eyebrow", "heroEyebrow", "hero_eyebrow"], defaultHomepageHero.eyebrow),
@@ -198,12 +213,14 @@ export function homepageHeroFromValue(value: unknown): HomepageHeroContent {
       ["secondaryButtonHref", "secondary_button_href", "secondaryButtonLink", "secondary_button_link"],
       defaultHomepageHero.secondaryButtonLink
     ),
+    mediaMode: normalizeHomepageHeroMediaMode(record?.mediaMode ?? record?.media_mode, videoUrl),
     imageUrl: stringFromRecord(record, ["imageUrl", "image_url", "heroImageUrl", "hero_image_url"], defaultHomepageHero.imageUrl),
     imageAlt: stringFromRecord(
       record,
       ["imageAlt", "image_alt", "heroImageAlt", "hero_image_alt"],
       defaultHomepageHero.imageAlt
     ),
+    videoUrl,
     featuredLabel: stringFromRecord(
       record,
       ["featuredLabel", "featured_label"],
@@ -266,8 +283,10 @@ export function buildHomepageHeroValue(hero: HomepageHeroContent) {
     secondaryButtonText: hero.secondaryButtonText.trim(),
     secondaryButtonHref: hero.secondaryButtonLink.trim(),
     secondaryButtonLink: hero.secondaryButtonLink.trim(),
+    mediaMode: hero.mediaMode,
     imageUrl: hero.imageUrl.trim(),
     imageAlt: hero.imageAlt.trim(),
+    videoUrl: hero.videoUrl.trim(),
     featuredLabel: hero.featuredLabel.trim(),
     featuredText: hero.featuredText.trim()
   };
