@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
-import Image from "next/image";
-import Link from "next/link";
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import {
-  ArrowRight,
-  Award,
   CheckCircle2,
   Heart,
   Leaf,
@@ -17,9 +15,10 @@ import {
   type LucideIcon
 } from "lucide-react";
 import { ViewItemListTracker } from "@/components/analytics/EcommerceEventTrackers";
-import { HomeFeaturedStory } from "@/components/sections/HomeFeaturedStory";
+import { HomePosterHero } from "@/components/sections/HomePosterHero";
 import { HomeProductDiscovery } from "@/components/sections/HomeProductDiscovery";
 import { HomeRoutineRoute } from "@/components/sections/HomeRoutineRoute";
+import { HomeRoutineStrip } from "@/components/sections/HomeRoutineStrip";
 import { NewsletterSignup } from "@/components/sections/NewsletterSignup";
 import { CompactTrustBar, type CompactTrustItem } from "@/components/sections/CompactTrustBar";
 import { TrustBadges } from "@/components/sections/TrustBadges";
@@ -30,7 +29,6 @@ import { getPublicHomepageSettings } from "@/lib/homepage-settings";
 import { getPublicHomepageCategories, getPublicHomepageProducts } from "@/lib/public-product-data";
 import { absoluteUrl, createSeoMetadata, iconPath } from "@/lib/seo";
 import { freeShippingLabel } from "@/lib/shipping";
-import { formatPrice } from "@/lib/utils";
 
 export const metadata: Metadata = {
   ...createSeoMetadata({
@@ -82,9 +80,10 @@ function polishedHeroTitle(value: string) {
   if (
     !title ||
     title === "Thoughtfully Designed Pet Essentials for Happier Dogs & Cats" ||
-    title === "Pet essentials for play, walks, rest, and everyday comfort."
+    title === "Pet essentials for play, walks, rest, and everyday comfort." ||
+    title === "Pet essentials for everyday routines."
   ) {
-    return "Pet essentials for everyday routines.";
+    return "Everyday pet essentials, styled for real life.";
   }
 
   return title;
@@ -102,6 +101,10 @@ function polishedHeroSubtitle(value: string) {
   }
 
   return subtitle;
+}
+
+function localHeroVideoExists() {
+  return existsSync(join(process.cwd(), "public", "media", "home-hero.mp4"));
 }
 
 function homepageTrustLabel(key: string, label: string) {
@@ -125,18 +128,18 @@ export default async function HomePage() {
   const heroSubtitle = polishedHeroSubtitle(hero.subtitle);
   const homepageCategories = await getPublicHomepageCategories(categorySection);
   const heroProductTiles = [featuredProduct, ...bestSellers.filter((product) => product.slug !== featuredProduct.slug)].slice(0, 2);
+  const hasHeroVideo = localHeroVideoExists();
   const topTrustItems: CompactTrustItem[] = homepageSettings.trustBadges.map((badge) => ({
     key: badge.key,
     label: homepageTrustLabel(badge.key, badge.title),
     Icon: homepageTrustIcon(badge.icon)
   }));
-  const primaryButtonLink =
-    hero.primaryButtonLink && hero.primaryButtonLink !== "/collections" ? hero.primaryButtonLink : "#best-sellers";
-  const secondaryButtonLink =
-    hero.secondaryButtonLink && hero.secondaryButtonLink !== "/collections"
-      ? hero.secondaryButtonLink
-      : "#shop-by-routine";
-  const primaryButtonText = hero.primaryButtonText.trim() || "Shop Best Sellers";
+  const primaryButtonLink = "/collections";
+  const secondaryButtonLink = "#shop-by-routine";
+  const primaryButtonText =
+    hero.primaryButtonText.trim() && hero.primaryButtonText.trim() !== "Shop Best Sellers"
+      ? hero.primaryButtonText.trim()
+      : "Shop the Edit";
   const secondaryButtonText =
     hero.secondaryButtonText.trim() && hero.secondaryButtonText.trim() !== "Explore Collections"
       ? hero.secondaryButtonText.trim()
@@ -158,95 +161,23 @@ export default async function HomePage() {
       />
       <ViewItemListTracker products={[featuredProduct]} itemListName="Homepage Featured Product" />
       <ViewItemListTracker products={bestSellers} itemListName="Homepage Best Sellers" />
-      <section className="section-shell grid min-h-[680px] items-center gap-10 py-10 md:grid-cols-[0.88fr_1.12fr] md:py-16 lg:gap-16">
-        <div className="homepage-enter">
-          <span className="inline-flex rounded-full bg-primary-container/20 px-4 py-2 text-xs font-bold uppercase tracking-wide text-primary">
-            {heroEyebrow}
-          </span>
-          <h1 className="mt-5 max-w-2xl font-heading text-4xl font-extrabold leading-[1.04] tracking-tight text-[#24170E] md:text-6xl">
-            {heroTitle}
-          </h1>
-          <p className="mt-5 max-w-xl text-base leading-7 text-[#6B5540] md:text-lg">
-            {heroSubtitle}
-          </p>
-          <div className="mt-6 flex flex-wrap gap-2 text-xs font-bold text-[#6B4210]">
-            {["Clear product paths", "Secure checkout", "Support when needed"].map((chip) => (
-              <span key={chip} className="rounded-full border border-[#E5C99F] bg-white/70 px-3 py-2 shadow-soft">
-                {chip}
-              </span>
-            ))}
-          </div>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link
-              href={primaryButtonLink}
-              className="group inline-flex items-center gap-2 rounded-full bg-primary-container px-6 py-3 text-sm font-bold text-on-primary-container transition duration-200 hover:-translate-y-0.5 hover:bg-[#C87500] hover:shadow-soft focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:hover:translate-y-0"
-            >
-              {primaryButtonText}
-              <ArrowRight aria-hidden className="h-4 w-4 transition group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0" />
-            </Link>
-            <Link
-              href={secondaryButtonLink}
-              className="rounded-full border border-[#B8976D] bg-white/70 px-6 py-3 text-sm font-bold text-[#4B2E17] transition duration-200 hover:-translate-y-0.5 hover:border-primary hover:bg-white hover:text-primary hover:shadow-soft focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:hover:translate-y-0"
-            >
-              {secondaryButtonText}
-            </Link>
-          </div>
-        </div>
+      <HomePosterHero
+        eyebrow={heroEyebrow}
+        title={heroTitle}
+        subtitle={heroSubtitle}
+        imageUrl={hero.imageUrl}
+        imageAlt={hero.imageAlt}
+        primaryButtonText={primaryButtonText}
+        primaryButtonLink={primaryButtonLink}
+        secondaryButtonText={secondaryButtonText}
+        secondaryButtonLink={secondaryButtonLink}
+        featuredLabel={hero.featuredLabel}
+        featuredText={hero.featuredText}
+        hasVideo={hasHeroVideo}
+        products={heroProductTiles}
+      />
 
-        <div className="homepage-enter homepage-enter-delay-2 relative">
-          <div className="absolute inset-0 rounded-[2rem] bg-[#F4D9AE] md:-inset-5" />
-          <div className="relative overflow-hidden rounded-[2rem] border border-white/80 bg-[#F7EAD8] shadow-lift transition duration-300 hover:-translate-y-1 hover:scale-[1.01] hover:shadow-[0_24px_70px_rgba(68,43,20,0.16)] motion-reduce:hover:translate-y-0 motion-reduce:hover:scale-100">
-            <Image
-              src={hero.imageUrl}
-              alt={hero.imageAlt}
-              width={720}
-              height={760}
-              priority
-              className="h-[460px] w-full object-cover md:h-[620px]"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#28180B]/42 via-transparent to-transparent" />
-          </div>
-          <div className="absolute left-0 top-8 flex -translate-x-4 items-center gap-3 rounded-lg border border-[#E5C99F] bg-white/95 px-4 py-3 shadow-ambient transition duration-300 hover:-translate-x-4 hover:-translate-y-1 hover:shadow-lift motion-reduce:hover:translate-y-0">
-            <span className="grid h-10 w-10 place-items-center rounded-full bg-[#FFF1CF] text-primary">
-              <Award aria-hidden className="h-5 w-5" />
-            </span>
-            <div className="text-sm">
-              <p className="font-bold">{hero.featuredLabel}</p>
-              <p className="text-on-surface-variant">{hero.featuredText}</p>
-            </div>
-          </div>
-          <div className="absolute bottom-5 right-5 grid w-[min(360px,calc(100%-2.5rem))] gap-3">
-            {heroProductTiles.map((product) => (
-              <Link
-                key={product.id}
-                href={product.productUrl}
-                className="group flex items-center gap-3 rounded-xl border border-white/75 bg-white/94 p-3 shadow-ambient transition hover:-translate-y-0.5 hover:shadow-lift focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:hover:translate-y-0"
-              >
-                <span className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-[#F7EAD8]">
-                  <Image
-                    src={product.image}
-                    alt={product.alt}
-                    fill
-                    sizes="64px"
-                    className="object-cover transition duration-300 group-hover:scale-105"
-                  />
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-xs font-bold uppercase tracking-wide text-primary">
-                    {product.category}
-                  </span>
-                  <span className="mt-1 block truncate font-heading text-sm font-bold text-[#24170E]">
-                    {product.name}
-                  </span>
-                </span>
-                <span className="shrink-0 font-heading text-sm font-extrabold text-primary">
-                  {formatPrice(product.price)}
-                </span>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
+      <HomeRoutineStrip />
 
       <section className="bg-[#F3E5D2] py-4">
         <CompactTrustBar items={topTrustItems} columns="wide" className="section-shell" />
@@ -254,9 +185,7 @@ export default async function HomePage() {
 
       <HomeRoutineRoute categories={homepageCategories} />
 
-      <HomeFeaturedStory product={featuredProduct} />
-
-      <HomeProductDiscovery products={bestSellers} />
+      <HomeProductDiscovery featuredProduct={featuredProduct} products={bestSellers} />
 
       <TrustBadges />
 

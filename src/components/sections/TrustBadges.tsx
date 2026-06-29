@@ -1,53 +1,46 @@
-import { Heart, Lock, SearchCheck, ShieldCheck } from "lucide-react";
+import { Heart, Lock, SearchCheck, ShieldCheck, Truck } from "lucide-react";
+import { freeShippingLabel } from "@/lib/shipping";
 
 const badges = [
   {
-    icon: SearchCheck,
-    title: "Clear product details",
-    text: "Useful product information helps you compare routines, materials, sizing, and use cases."
+    icon: Lock,
+    title: "Secure checkout"
   },
   {
-    icon: Lock,
-    title: "Secure checkout",
-    text: "Checkout is designed around clear totals, protected payment, and simple confirmation."
+    icon: SearchCheck,
+    title: "Clear product details"
   },
   {
     icon: ShieldCheck,
-    title: "Damaged or incorrect item support",
-    text: "Contact us within 7 days for damaged, defective, or incorrect items."
+    title: "Damaged or incorrect item support"
   },
   {
     icon: Heart,
-    title: "Support when you need it",
-    text: "Product and order questions can be sent to support@luckclaws.com."
+    title: "Support when needed"
+  },
+  {
+    icon: Truck,
+    title: freeShippingLabel
   }
 ];
 
 export function TrustBadges() {
   return (
-    <section className="section-shell py-12 md:py-16">
-      <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-wide text-primary">Store standards</p>
-          <h2 className="mt-2 font-heading text-3xl font-extrabold">Shopping made clearer</h2>
-        </div>
-        <div className="hidden rounded-full bg-primary-container/20 px-4 py-2 text-sm font-bold text-primary md:inline-flex">
-          Routine-friendly shopping
-        </div>
-      </div>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {badges.map((badge) => (
-          <div
-            key={badge.title}
-            className="rounded-lg border border-outline-variant/70 bg-surface-container-lowest p-5 shadow-soft transition duration-200 hover:-translate-y-1 hover:border-primary/60 hover:shadow-ambient motion-reduce:hover:translate-y-0"
-          >
-            <div className="grid h-12 w-12 place-items-center rounded-full bg-primary-container/20 text-primary">
-              <badge.icon aria-hidden className="h-5 w-5" />
-            </div>
-            <h3 className="mt-4 font-heading font-bold">{badge.title}</h3>
-            <p className="mt-2 text-sm leading-6 text-on-surface-variant">{badge.text}</p>
+    <section className="bg-[#2C1A0D] py-5 text-white">
+      <div className="section-shell">
+        <div className="overflow-x-auto hide-scrollbar">
+          <div className="flex min-w-max items-center gap-3">
+            {badges.map((badge, index) => (
+              <div key={badge.title} className="flex items-center gap-3">
+                <div className="flex items-center gap-3 rounded-full border border-white/14 bg-white/8 px-4 py-3 text-sm font-bold text-white/88">
+                  <badge.icon aria-hidden className="h-4 w-4 text-[#FFD894]" />
+                  {badge.title}
+                </div>
+                {index < badges.length - 1 && <span className="text-[#FFD894]/70" aria-hidden>•</span>}
+              </div>
+            ))}
           </div>
-        ))}
+        </div>
       </div>
     </section>
   );
