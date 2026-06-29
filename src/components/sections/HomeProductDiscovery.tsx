@@ -88,10 +88,10 @@ export function HomeProductDiscovery({
               Product discovery
             </span>
             <h2 className="mt-5 font-heading text-3xl font-extrabold leading-tight md:text-4xl">
-              Shop fewer grids. Find the right routine faster.
+              Everyday favorites, organized by routine.
             </h2>
             <p className="mt-4 text-sm leading-6 text-on-surface-variant md:text-base">
-              Browse curated products by intent: featured picks, proven favorites, or newer arrivals.
+              Browse selected products by intent: featured picks, proven favorites, or newer arrivals.
             </p>
 
             <div

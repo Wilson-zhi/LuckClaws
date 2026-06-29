@@ -75,6 +75,44 @@ function polishedHeroEyebrow(value: string) {
   return eyebrow;
 }
 
+function polishedHeroTitle(value: string) {
+  const title = value.trim();
+
+  if (!title || title === "Thoughtfully Designed Pet Essentials for Happier Dogs & Cats") {
+    return "Pet essentials for play, walks, rest, and everyday comfort.";
+  }
+
+  return title;
+}
+
+function polishedHeroSubtitle(value: string) {
+  const subtitle = value.trim();
+
+  if (
+    !subtitle ||
+    subtitle ===
+      "Shop enrichment toys, cozy apparel, walking essentials, beds, blankets, and everyday favorites made for modern pet parents."
+  ) {
+    return "Shop practical toys, apparel, walking gear, beds, blankets, and pet supplies chosen for real daily routines.";
+  }
+
+  return subtitle;
+}
+
+function polishedCategoryTitle(value: string) {
+  const title = value.trim();
+
+  if (!title || title === "Curated For Every Pet") {
+    return "Shop by routine";
+  }
+
+  return title;
+}
+
+function polishedCategorySubtitle(value: string) {
+  return value.trim() || "Start with what your pet needs next.";
+}
+
 function homepageTrustLabel(key: string, label: string) {
   const normalized = `${key} ${label}`.toLowerCase();
 
@@ -92,14 +130,24 @@ export default async function HomePage() {
   ]);
   const { hero, categorySection } = homepageSettings;
   const heroEyebrow = polishedHeroEyebrow(hero.eyebrow);
+  const heroTitle = polishedHeroTitle(hero.title);
+  const heroSubtitle = polishedHeroSubtitle(hero.subtitle);
+  const categoryTitle = polishedCategoryTitle(categorySection.title);
+  const categorySubtitle = polishedCategorySubtitle(categorySection.subtitle);
   const homepageCategories = await getPublicHomepageCategories(categorySection);
+  const categoryGridClass =
+    homepageCategories.length === 5
+      ? "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5 md:gap-5"
+      : "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 md:gap-6";
   const topTrustItems: CompactTrustItem[] = homepageSettings.trustBadges.map((badge) => ({
     key: badge.key,
     label: homepageTrustLabel(badge.key, badge.title),
     Icon: homepageTrustIcon(badge.icon)
   }));
-  const primaryButtonLink = hero.primaryButtonLink || featuredProduct.productUrl;
+  const primaryButtonLink = hero.primaryButtonLink || "/collections";
   const secondaryButtonLink = hero.secondaryButtonLink || "/collections";
+  const primaryButtonText = hero.primaryButtonText.trim() || "Shop Best Sellers";
+  const secondaryButtonText = hero.secondaryButtonText.trim() || "Explore Collections";
   const categoryCtaText = categorySection.ctaText || "Explore All Collections";
   const categoryCtaHref = categorySection.ctaHref || "/collections";
   const organizationStructuredData = {
@@ -126,31 +174,39 @@ export default async function HomePage() {
           <span className="inline-flex rounded-full bg-primary-container/20 px-4 py-2 text-xs font-bold uppercase tracking-wide text-primary">
             {heroEyebrow}
           </span>
-          <h1 className="mt-5 max-w-xl font-heading text-4xl font-extrabold leading-tight md:text-6xl">
-            {hero.title}
+          <h1 className="mt-5 max-w-2xl font-heading text-4xl font-extrabold leading-[1.04] tracking-tight text-[#24170E] md:text-6xl">
+            {heroTitle}
           </h1>
-          <p className="mt-5 max-w-md text-base leading-7 text-on-surface-variant">
-            {hero.subtitle}
+          <p className="mt-5 max-w-xl text-base leading-7 text-[#6B5540] md:text-lg">
+            {heroSubtitle}
           </p>
+          <div className="mt-6 flex flex-wrap gap-2 text-xs font-bold text-[#6B4210]">
+            {["Clear product paths", "Secure checkout", "Support when needed"].map((chip) => (
+              <span key={chip} className="rounded-full border border-[#E5C99F] bg-white/70 px-3 py-2 shadow-soft">
+                {chip}
+              </span>
+            ))}
+          </div>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
               href={primaryButtonLink}
-              className="rounded-full bg-primary-container px-6 py-3 text-sm font-bold text-on-primary-container transition duration-200 hover:-translate-y-0.5 hover:bg-[#e08f00] hover:shadow-soft focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:hover:translate-y-0"
+              className="group inline-flex items-center gap-2 rounded-full bg-primary-container px-6 py-3 text-sm font-bold text-on-primary-container transition duration-200 hover:-translate-y-0.5 hover:bg-[#C87500] hover:shadow-soft focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:hover:translate-y-0"
             >
-              {hero.primaryButtonText}
+              {primaryButtonText}
+              <ArrowRight aria-hidden className="h-4 w-4 transition group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0" />
             </Link>
             <Link
               href={secondaryButtonLink}
-              className="rounded-full border border-outline-variant bg-white px-6 py-3 text-sm font-bold text-on-surface transition duration-200 hover:-translate-y-0.5 hover:border-primary hover:text-primary hover:shadow-soft focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:hover:translate-y-0"
+              className="rounded-full border border-[#B8976D] bg-white/70 px-6 py-3 text-sm font-bold text-[#4B2E17] transition duration-200 hover:-translate-y-0.5 hover:border-primary hover:bg-white hover:text-primary hover:shadow-soft focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:hover:translate-y-0"
             >
-              {hero.secondaryButtonText}
+              {secondaryButtonText}
             </Link>
           </div>
         </div>
 
         <div className="homepage-enter homepage-enter-delay-2 relative">
-          <div className="absolute inset-0 rounded-xl bg-[#F9E7D0] md:-inset-5" />
-          <div className="relative overflow-hidden rounded-xl bg-surface-container shadow-lift transition duration-300 hover:-translate-y-1 hover:scale-[1.01] hover:shadow-[0_24px_70px_rgba(25,28,30,0.14)] motion-reduce:hover:translate-y-0 motion-reduce:hover:scale-100">
+          <div className="absolute inset-0 rounded-[2rem] bg-[#F4D9AE] md:-inset-5" />
+          <div className="relative overflow-hidden rounded-[2rem] border border-white/80 bg-[#F7EAD8] shadow-lift transition duration-300 hover:-translate-y-1 hover:scale-[1.01] hover:shadow-[0_24px_70px_rgba(68,43,20,0.16)] motion-reduce:hover:translate-y-0 motion-reduce:hover:scale-100">
             <Image
               src={hero.imageUrl}
               alt={hero.imageAlt}
@@ -160,8 +216,8 @@ export default async function HomePage() {
               className="h-[420px] w-full object-cover md:h-[560px]"
             />
           </div>
-          <div className="absolute bottom-8 left-0 flex -translate-x-4 items-center gap-3 rounded-md bg-white px-4 py-3 shadow-ambient transition duration-300 hover:-translate-x-4 hover:-translate-y-1 hover:shadow-lift motion-reduce:hover:translate-y-0">
-            <span className="grid h-10 w-10 place-items-center rounded-full bg-[#EAF1FF] text-tertiary">
+          <div className="absolute bottom-8 left-0 flex -translate-x-4 items-center gap-3 rounded-lg border border-[#E5C99F] bg-white/95 px-4 py-3 shadow-ambient transition duration-300 hover:-translate-x-4 hover:-translate-y-1 hover:shadow-lift motion-reduce:hover:translate-y-0">
+            <span className="grid h-10 w-10 place-items-center rounded-full bg-[#FFF1CF] text-primary">
               <Award aria-hidden className="h-5 w-5" />
             </span>
             <div className="text-sm">
@@ -172,7 +228,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="bg-surface-container-low py-4">
+      <section className="bg-[#F3E5D2] py-4">
         <CompactTrustBar items={topTrustItems} columns="wide" className="section-shell" />
       </section>
 
@@ -181,42 +237,42 @@ export default async function HomePage() {
       {categorySection.enabled && homepageCategories.length > 0 && (
         <section className="bg-[#F7EBDD] py-12 md:py-16">
           <div className="section-shell">
-          <div className="mb-6 flex items-start justify-between gap-4">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wide text-primary">Shop by collection</p>
-              <h2 className="font-heading text-2xl font-bold md:text-3xl">{categorySection.title}</h2>
-              {categorySection.subtitle && (
+            <div className="mb-6 flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wide text-primary">Shop by collection</p>
+                <h2 className="mt-2 font-heading text-3xl font-extrabold tracking-tight md:text-4xl">
+                  {categoryTitle}
+                </h2>
                 <p className="mt-2 max-w-2xl text-sm leading-6 text-on-surface-variant">
-                  {categorySection.subtitle}
+                  {categorySubtitle}
                 </p>
+              </div>
+              {categoryCtaText && categoryCtaHref && (
+                <Link href={categoryCtaHref} className="hidden items-center gap-2 text-sm font-semibold text-primary md:flex">
+                  {categoryCtaText} <ArrowRight aria-hidden className="h-4 w-4" />
+                </Link>
               )}
             </div>
+            {categorySection.layout === "carousel" ? (
+              <div className="-mx-4 flex gap-4 overflow-x-auto px-4 pb-2 md:mx-0 md:px-0">
+                {homepageCategories.map((category) => (
+                  <div key={category.name} className="min-w-[240px] sm:min-w-[280px] md:min-w-[300px]">
+                    <CategoryCard {...category} />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className={categoryGridClass}>
+                {homepageCategories.map((category) => (
+                  <CategoryCard key={category.name} {...category} />
+                ))}
+              </div>
+            )}
             {categoryCtaText && categoryCtaHref && (
-              <Link href={categoryCtaHref} className="hidden items-center gap-2 text-sm font-semibold text-primary md:flex">
+              <Link href={categoryCtaHref} className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-primary md:hidden">
                 {categoryCtaText} <ArrowRight aria-hidden className="h-4 w-4" />
               </Link>
             )}
-          </div>
-          {categorySection.layout === "carousel" ? (
-            <div className="-mx-4 flex gap-4 overflow-x-auto px-4 pb-2 md:mx-0 md:px-0">
-              {homepageCategories.map((category) => (
-                <div key={category.name} className="min-w-[240px] sm:min-w-[280px] md:min-w-[300px]">
-                  <CategoryCard {...category} />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 md:gap-6">
-              {homepageCategories.map((category) => (
-                <CategoryCard key={category.name} {...category} />
-              ))}
-            </div>
-          )}
-          {categoryCtaText && categoryCtaHref && (
-            <Link href={categoryCtaHref} className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-primary md:hidden">
-              {categoryCtaText} <ArrowRight aria-hidden className="h-4 w-4" />
-            </Link>
-          )}
           </div>
         </section>
       )}

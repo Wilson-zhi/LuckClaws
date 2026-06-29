@@ -7,6 +7,13 @@
   background: #f8f9fb;
   --font-heading: "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
   --font-body: "Be Vietnam Pro", "Segoe UI", system-ui, sans-serif;
+  --lc-warm-bg: #fff9ef;
+  --lc-cream: #fff3df;
+  --lc-oatmeal: #f3e5d2;
+  --lc-espresso: #24170e;
+  --lc-brown-muted: #6b5540;
+  --lc-honey: #f59e0b;
+  --lc-soft-border: #e8d6bf;
 }
 
 * {

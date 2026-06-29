@@ -59,11 +59,11 @@ export type HomepageTrustBadgesValue = {
 
 export const defaultHomepageHero: HomepageHeroContent = {
   eyebrow: "Premium Pet Essentials",
-  title: "Thoughtfully Designed Pet Essentials for Happier Dogs & Cats",
+  title: "Pet essentials for play, walks, rest, and everyday comfort.",
   subtitle:
-    "Shop enrichment toys, cozy apparel, walking essentials, beds, blankets, and everyday favorites made for modern pet parents.",
+    "Shop practical toys, apparel, walking gear, beds, blankets, and pet supplies chosen for real daily routines.",
   primaryButtonText: "Shop Best Sellers",
-  primaryButtonLink: "",
+  primaryButtonLink: "/collections",
   secondaryButtonText: "Explore Collections",
   secondaryButtonLink: "/collections",
   imageUrl: "/images/hero-dog-running.jpg",
@@ -81,8 +81,8 @@ export const defaultHomepageTrustBadges: HomepageTrustBadge[] = [
 
 export const defaultHomepageCategorySection: HomepageCategorySectionContent = {
   enabled: true,
-  title: "Curated For Every Pet",
-  subtitle: "",
+  title: "Shop by routine",
+  subtitle: "Start with what your pet needs next.",
   ctaText: "Explore All Collections",
   ctaHref: "/collections",
   layout: "grid_4",

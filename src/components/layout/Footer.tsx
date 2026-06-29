@@ -28,42 +28,56 @@ const footerGroups = [
 
 export function Footer() {
   return (
-    <footer className="mt-20 rounded-t-lg bg-inverse-surface text-inverse-on-surface">
-      <div className="section-shell py-14 md:py-20">
-        <div className="grid gap-12 md:grid-cols-[1.4fr_repeat(4,1fr)]">
-          <div>
-            <Link href="/" className="font-heading text-xl font-bold text-primary-container">
+    <footer className="mt-16 bg-[#2D1B10] text-[#FFF8EF]">
+      <div className="section-shell py-12 md:py-16">
+        <div className="grid gap-10 lg:grid-cols-[1.25fr_1.75fr] lg:gap-14">
+          <div className="max-w-sm">
+            <Link
+              href="/"
+              className="inline-flex rounded-full border border-[#F4D7A5]/30 px-4 py-2 font-heading text-xl font-extrabold text-[#F4B13D] transition hover:border-[#F4B13D] hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F4B13D]"
+            >
               {brandName}
             </Link>
-            <p className="mt-5 max-w-xs text-sm leading-6 text-inverse-on-surface/80">
+            <p className="mt-5 text-sm leading-6 text-[#F7E8D0]/82">
               Practical pet essentials for everyday routines.
             </p>
-            <p className="mt-4 text-sm leading-6 text-inverse-on-surface/80">
-              Support:{" "}
-              <a href="mailto:support@luckclaws.com" className="font-semibold text-primary-container hover:underline">
+            <p className="mt-5 text-sm leading-6 text-[#F7E8D0]/82">
+              Support email:{" "}
+              <a
+                href="mailto:support@luckclaws.com"
+                className="font-semibold text-[#F4B13D] underline-offset-4 transition hover:text-[#FFD58A] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F4B13D]"
+              >
                 support@luckclaws.com
               </a>
             </p>
           </div>
 
-          {footerGroups.map((group) => (
-            <div key={group.title}>
-              <h2 className="font-heading text-sm font-bold uppercase tracking-wide">{group.title}</h2>
-              <ul className="mt-5 space-y-3 text-sm text-inverse-on-surface/80">
-                {group.links.map((link) => (
-                  <li key={link.label}>
-                    <Link href={link.href} className="transition hover:text-primary-container">
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            {footerGroups.map((group) => (
+              <div key={group.title}>
+                <h2 className="font-heading text-sm font-bold uppercase tracking-[0.18em] text-[#F4D7A5]">
+                  {group.title}
+                </h2>
+                <ul className="mt-5 space-y-3 text-sm text-[#F7E8D0]/78">
+                  {group.links.map((link) => (
+                    <li key={link.label}>
+                      <Link
+                        href={link.href}
+                        className="inline-flex transition hover:translate-x-0.5 hover:text-[#F4B13D] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F4B13D] motion-reduce:hover:translate-x-0"
+                      >
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <div className="mt-14 border-t border-white/10 pt-8 text-sm text-inverse-on-surface/70">
-          &copy; 2024 {brandName}
+        <div className="mt-12 flex flex-col gap-3 border-t border-white/10 pt-7 text-sm text-[#F7E8D0]/65 md:flex-row md:items-center md:justify-between">
+          <span>&copy; 2024 {brandName}</span>
+          <span>Warm routine-first shopping for dogs, cats, and daily pet life.</span>
         </div>
       </div>
     </footer>

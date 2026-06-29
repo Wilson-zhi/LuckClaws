@@ -24,7 +24,7 @@ export function CompactTrustBar({ items, columns = "balanced", className = "" }:
       {items.map(({ key, label, Icon }) => (
         <div
           key={key}
-          className="flex min-h-16 items-center gap-3 rounded-md bg-surface-container-lowest px-4 py-3 text-sm font-semibold leading-5 text-on-surface-variant shadow-soft transition duration-200 hover:-translate-y-0.5 hover:bg-white hover:shadow-ambient motion-reduce:hover:translate-y-0"
+          className="flex min-h-16 items-center gap-3 rounded-md border border-[#E8D6BF] bg-white/80 px-4 py-3 text-sm font-semibold leading-5 text-[#5C4834] shadow-soft transition duration-200 hover:-translate-y-0.5 hover:border-primary/50 hover:bg-white hover:shadow-ambient motion-reduce:hover:translate-y-0"
         >
           <Icon aria-hidden className="h-5 w-5 shrink-0 text-primary" />
           <span className="min-w-0 leading-5">{label}</span>

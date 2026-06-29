@@ -10,10 +10,10 @@ export function SiteShell({
   navigationItems?: NavigationItem[];
 }) {
   return (
-    <>
+    <div className="min-h-screen bg-[#FFF9EF] text-[#24170E]">
       <Header initialNavigationItems={navigationItems} />
       <main>{children}</main>
       <Footer />
-    </>
+    </div>
   );
 }

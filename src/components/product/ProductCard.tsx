@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Heart, Plus, Star } from "lucide-react";
+import { ArrowRight, Heart, Plus, Star } from "lucide-react";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
 import { type Product } from "@/data/products";
 import { trackSelectItem } from "@/lib/ga4-ecommerce";
@@ -156,6 +156,14 @@ export function ProductCard({
             <Plus aria-hidden className="h-5 w-5" />
           </AddToCartButton>
         </div>
+        <Link
+          href={href}
+          className="mt-4 inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wide text-primary transition hover:translate-x-0.5 hover:text-[#5B3300] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:hover:translate-x-0"
+          onClick={() => trackSelectItem(product, itemListName)}
+        >
+          View details
+          <ArrowRight aria-hidden className="h-3.5 w-3.5" />
+        </Link>
       </div>
     </article>
   );
