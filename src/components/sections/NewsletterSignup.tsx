@@ -157,7 +157,7 @@ export function NewsletterSignup() {
                     type="email"
                     inputMode="email"
                     autoComplete="email"
-                  placeholder="Email address"
+                    placeholder="Email address"
                     value={email}
                     aria-invalid={Boolean(error)}
                     aria-describedby={describedBy}

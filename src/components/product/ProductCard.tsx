@@ -17,6 +17,47 @@ type ProductCardProps = {
   badgeLabel?: string;
 };
 
+function fallbackProductImage(product: Product) {
+  const normalized = `${product.name} ${product.slug} ${product.category}`.toLowerCase();
+
+  if (normalized.includes("puzzle")) {
+    return "/images/premium-puzzle-feeder.jpg";
+  }
+
+  if (normalized.includes("snuffle")) {
+    return "/images/interactive-snuffle-mat-lifestyle.jpg";
+  }
+
+  if (normalized.includes("cat")) {
+    return "/images/organic-catnip-mouse.jpg";
+  }
+
+  if (normalized.includes("walk") || normalized.includes("leash") || normalized.includes("harness")) {
+    return "/images/category-walking-essentials.jpg";
+  }
+
+  if (normalized.includes("apparel") || normalized.includes("sweater") || normalized.includes("tee")) {
+    return "/images/category-pet-apparel.jpg";
+  }
+
+  if (normalized.includes("bed") || normalized.includes("blanket")) {
+    return "/images/category-beds-blankets.jpg";
+  }
+
+  return "/images/category-dog-toys.jpg";
+}
+
+function productCardImage(product: Product) {
+  const image = product.image.trim();
+  const normalized = image.toLowerCase();
+
+  if (!image || normalized.includes("icon") || normalized.includes("logo")) {
+    return fallbackProductImage(product);
+  }
+
+  return image;
+}
+
 export function ProductCard({
   product,
   featured = false,
@@ -26,6 +67,7 @@ export function ProductCard({
 }: ProductCardProps) {
   const href = getProductPath(product);
   const displayBadge = badgeLabel ?? product.badge;
+  const imageSrc = productCardImage(product);
 
   if (featured) {
     return (
@@ -47,7 +89,7 @@ export function ProductCard({
             <Heart aria-hidden className="h-6 w-6" />
           </span>
           <Image
-            src={product.image}
+            src={imageSrc}
             alt={product.alt}
             fill
             loading="eager"
@@ -115,7 +157,7 @@ export function ProductCard({
           <Heart aria-hidden className="h-5 w-5" />
         </span>
         <Image
-          src={product.image}
+          src={imageSrc}
           alt={product.alt}
           fill
           loading="eager"

@@ -30,9 +30,50 @@ function categoryBenefit(category: PublicCategoryCard) {
   return "For practical daily routines and easier product decisions.";
 }
 
+function fallbackImageForCategory(category: PublicCategoryCard) {
+  const normalized = `${category.name} ${category.href}`.toLowerCase();
+
+  if (normalized.includes("dog")) {
+    return "/images/category-dog-toys.jpg";
+  }
+
+  if (normalized.includes("cat")) {
+    return "/images/organic-catnip-mouse.jpg";
+  }
+
+  if (normalized.includes("walking")) {
+    return "/images/category-walking-essentials.jpg";
+  }
+
+  if (normalized.includes("apparel")) {
+    return "/images/category-pet-apparel.jpg";
+  }
+
+  if (normalized.includes("bed") || normalized.includes("blanket")) {
+    return "/images/category-beds-blankets.jpg";
+  }
+
+  return "/images/hero-dog-running.jpg";
+}
+
+function categoryImage(category: PublicCategoryCard) {
+  const image = category.image.trim();
+  const normalized = image.toLowerCase();
+
+  if (!image || normalized.includes("icon") || normalized.includes("logo")) {
+    return fallbackImageForCategory(category);
+  }
+
+  return image;
+}
+
 function tileClass(index: number, count: number) {
   if (index === 0) {
     return "min-h-[430px] lg:col-span-3 lg:row-span-2";
+  }
+
+  if (count === 4) {
+    return "min-h-[230px] lg:col-span-3";
   }
 
   if (count >= 5 && (index === 1 || index === 2)) {
@@ -87,13 +128,13 @@ export function HomeRoutineRoute({ categories }: { categories: PublicCategoryCar
               aria-label={`Shop ${category.name}`}
             >
               <Image
-                src={category.image}
+                src={categoryImage(category)}
                 alt={category.alt}
                 fill
                 sizes={index === 0 ? "(min-width: 1024px) 640px, 100vw" : "(min-width: 1024px) 420px, 100vw"}
-                className="object-cover opacity-90 transition duration-500 group-hover:scale-[1.045] motion-reduce:group-hover:scale-100"
+                className="object-cover opacity-95 transition duration-500 group-hover:scale-[1.045] motion-reduce:group-hover:scale-100"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#24170E]/88 via-[#24170E]/34 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#24170E]/78 via-[#24170E]/22 to-transparent" />
               <div className="absolute inset-x-5 bottom-5">
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#FFD894]">Routine path</p>
                 <div className="mt-2 flex items-end justify-between gap-4">

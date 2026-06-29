@@ -11,6 +11,46 @@ type HomeProductDiscoveryProps = {
   products: Product[];
 };
 
+function fallbackProductImage(product: Product) {
+  const normalized = `${product.name} ${product.slug} ${product.category}`.toLowerCase();
+
+  if (normalized.includes("puzzle")) {
+    return "/images/premium-puzzle-feeder.jpg";
+  }
+
+  if (normalized.includes("snuffle")) {
+    return "/images/interactive-snuffle-mat-lifestyle.jpg";
+  }
+
+  if (normalized.includes("cat")) {
+    return "/images/organic-catnip-mouse.jpg";
+  }
+
+  if (normalized.includes("walk") || normalized.includes("leash") || normalized.includes("harness")) {
+    return "/images/category-walking-essentials.jpg";
+  }
+
+  if (normalized.includes("apparel") || normalized.includes("sweater") || normalized.includes("tee")) {
+    return "/images/category-pet-apparel.jpg";
+  }
+
+  if (normalized.includes("bed") || normalized.includes("blanket")) {
+    return "/images/category-beds-blankets.jpg";
+  }
+
+  return "/images/category-dog-toys.jpg";
+}
+
+function productStory(product: Product) {
+  const text = (product.shortDescription || product.description || "").trim();
+
+  if (!text || text.length < 40 || /^\d+$/.test(text.replace(/\s+/g, ""))) {
+    return "A practical, polished pick for everyday pet routines, selected to make play, comfort, and product comparison feel simpler.";
+  }
+
+  return text;
+}
+
 export function HomeProductDiscovery({ featuredProduct, products }: HomeProductDiscoveryProps) {
   const href = getProductPath(featuredProduct);
   const supportingProducts = products
@@ -42,9 +82,10 @@ export function HomeProductDiscovery({ featuredProduct, products }: HomeProductD
                 </span>
               )}
               <Image
-                src={featuredProduct.image}
+                src={fallbackProductImage(featuredProduct)}
                 alt={featuredProduct.alt}
                 fill
+                loading="eager"
                 sizes="(min-width: 1024px) 620px, 100vw"
                 className="object-cover transition duration-500 group-hover:scale-[1.045] motion-reduce:group-hover:scale-100"
               />
@@ -63,7 +104,7 @@ export function HomeProductDiscovery({ featuredProduct, products }: HomeProductD
                 </h3>
               </Link>
               <p className="mt-4 text-sm leading-6 text-[#6B5540] md:text-base">
-                {featuredProduct.shortDescription || featuredProduct.description}
+                {productStory(featuredProduct)}
               </p>
               <p className="mt-5 font-heading text-3xl font-extrabold text-primary">
                 {formatPrice(featuredProduct.price)}

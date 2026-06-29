@@ -76,9 +76,11 @@ function polishedHeroEyebrow(value: string) {
 
 function polishedHeroTitle(value: string) {
   const title = value.trim();
+  const normalized = title.toLowerCase();
 
   if (
     !title ||
+    normalized === "thoughtfully designed pet essentials" ||
     title === "Thoughtfully Designed Pet Essentials for Happier Dogs & Cats" ||
     title === "Pet essentials for play, walks, rest, and everyday comfort." ||
     title === "Pet essentials for everyday routines."
@@ -101,6 +103,30 @@ function polishedHeroSubtitle(value: string) {
   }
 
   return subtitle;
+}
+
+function polishedHeroImageUrl(value: string) {
+  const imageUrl = value.trim();
+  const normalized = imageUrl.toLowerCase();
+
+  if (
+    !imageUrl ||
+    normalized.includes("icon") ||
+    normalized.includes("logo") ||
+    normalized.endsWith("/images/hero-dog.jpg")
+  ) {
+    return "/images/hero-dog-running.jpg";
+  }
+
+  return imageUrl;
+}
+
+function polishedHeroImageAlt(value: string) {
+  const imageAlt = value.trim();
+
+  return imageAlt && !imageAlt.toLowerCase().includes("logo")
+    ? imageAlt
+    : "A happy dog running outdoors, styled as a warm LUCK CLAWS pet lifestyle hero image.";
 }
 
 function localHeroVideoExists() {
@@ -126,6 +152,8 @@ export default async function HomePage() {
   const heroEyebrow = polishedHeroEyebrow(hero.eyebrow);
   const heroTitle = polishedHeroTitle(hero.title);
   const heroSubtitle = polishedHeroSubtitle(hero.subtitle);
+  const heroImageUrl = polishedHeroImageUrl(hero.imageUrl);
+  const heroImageAlt = polishedHeroImageAlt(hero.imageAlt);
   const homepageCategories = await getPublicHomepageCategories(categorySection);
   const heroProductTiles = [featuredProduct, ...bestSellers.filter((product) => product.slug !== featuredProduct.slug)].slice(0, 2);
   const hasHeroVideo = localHeroVideoExists();
@@ -165,8 +193,8 @@ export default async function HomePage() {
         eyebrow={heroEyebrow}
         title={heroTitle}
         subtitle={heroSubtitle}
-        imageUrl={hero.imageUrl}
-        imageAlt={hero.imageAlt}
+        imageUrl={heroImageUrl}
+        imageAlt={heroImageAlt}
         primaryButtonText={primaryButtonText}
         primaryButtonLink={primaryButtonLink}
         secondaryButtonText={secondaryButtonText}

@@ -22,6 +22,47 @@ type HomePosterHeroProps = {
 
 const heroBadges = ["Secure checkout", "Support when needed", "Clear product paths"];
 
+function fallbackProductImage(product: Product) {
+  const normalized = `${product.name} ${product.slug} ${product.category}`.toLowerCase();
+
+  if (normalized.includes("snuffle")) {
+    return "/images/interactive-snuffle-mat-lifestyle.jpg";
+  }
+
+  if (normalized.includes("puzzle")) {
+    return "/images/premium-puzzle-feeder.jpg";
+  }
+
+  if (normalized.includes("cat")) {
+    return "/images/organic-catnip-mouse.jpg";
+  }
+
+  if (normalized.includes("walk") || normalized.includes("leash") || normalized.includes("harness")) {
+    return "/images/category-walking-essentials.jpg";
+  }
+
+  if (normalized.includes("apparel") || normalized.includes("sweater") || normalized.includes("tee")) {
+    return "/images/category-pet-apparel.jpg";
+  }
+
+  if (normalized.includes("bed") || normalized.includes("blanket")) {
+    return "/images/category-beds-blankets.jpg";
+  }
+
+  return "/images/category-dog-toys.jpg";
+}
+
+function productImage(product: Product) {
+  const image = product.image.trim();
+  const normalized = image.toLowerCase();
+
+  if (!image || normalized.includes("icon") || normalized.includes("logo")) {
+    return fallbackProductImage(product);
+  }
+
+  return image;
+}
+
 export function HomePosterHero({
   eyebrow,
   title,
@@ -63,7 +104,7 @@ export function HomePosterHero({
           />
         )}
 
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(36,23,14,0.92)_0%,rgba(36,23,14,0.70)_38%,rgba(36,23,14,0.25)_68%,rgba(36,23,14,0.44)_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(30,18,9,0.96)_0%,rgba(30,18,9,0.82)_38%,rgba(30,18,9,0.34)_68%,rgba(30,18,9,0.50)_100%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_74%_26%,rgba(245,158,11,0.26),transparent_34%),radial-gradient(circle_at_22%_84%,rgba(255,249,239,0.18),transparent_28%)]" />
 
         <div className="relative z-10 flex min-h-[720px] flex-col justify-between p-5 md:min-h-[760px] md:p-8 lg:p-10">
@@ -75,7 +116,7 @@ export function HomePosterHero({
               {heroBadges.map((badge) => (
                 <span
                   key={badge}
-                  className="rounded-full border border-white/20 bg-white/14 px-3 py-2 text-xs font-bold text-white/88 backdrop-blur"
+                  className="rounded-full border border-white/30 bg-[#2C1A0D]/62 px-3 py-2 text-xs font-bold text-white shadow-soft backdrop-blur"
                 >
                   {badge}
                 </span>
@@ -89,10 +130,10 @@ export function HomePosterHero({
                 <Award aria-hidden className="h-4 w-4" />
                 {featuredLabel}
               </p>
-              <h1 className="max-w-4xl font-heading text-[clamp(3.25rem,8vw,8.25rem)] font-extrabold leading-[0.88] tracking-[-0.04em] text-white">
+              <h1 className="max-w-4xl font-heading text-[clamp(3.25rem,8vw,8.25rem)] font-extrabold leading-[0.88] tracking-[-0.04em] text-white [text-shadow:0_8px_34px_rgba(0,0,0,0.32)]">
                 {title}
               </h1>
-              <p className="mt-6 max-w-2xl text-base leading-7 text-white/82 md:text-xl md:leading-8">
+              <p className="mt-6 max-w-2xl text-base font-semibold leading-7 text-white [text-shadow:0_4px_18px_rgba(0,0,0,0.48)] md:text-xl md:leading-8">
                 {subtitle}
               </p>
               <p className="mt-4 max-w-xl text-sm font-semibold text-[#FFD894]">{featuredText}</p>
@@ -126,9 +167,10 @@ export function HomePosterHero({
                   >
                     <span className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-[#F7EAD8]">
                       <Image
-                        src={product.image}
+                        src={productImage(product)}
                         alt={product.alt}
                         fill
+                        loading="eager"
                         sizes="64px"
                         className="object-cover transition duration-300 group-hover:scale-105"
                       />
