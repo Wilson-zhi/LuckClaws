@@ -4,6 +4,8 @@ import { ArrowRight } from "lucide-react";
 import { type PublicCategoryCard } from "@/lib/public-product-data";
 import { cn } from "@/lib/utils";
 
+const routineSignals = ["Play", "Walk", "Rest", "Comfort", "Support"];
+
 function categoryBenefit(category: PublicCategoryCard) {
   const normalized = `${category.name} ${category.href}`.toLowerCase();
 
@@ -59,8 +61,17 @@ function fallbackImageForCategory(category: PublicCategoryCard) {
 function categoryImage(category: PublicCategoryCard) {
   const image = category.image.trim();
   const normalized = image.toLowerCase();
+  const categoryScope = `${category.name} ${category.href}`.toLowerCase();
 
-  if (!image || normalized.includes("icon") || normalized.includes("logo")) {
+  if (
+    !image ||
+    normalized.includes("icon") ||
+    normalized.includes("logo") ||
+    (categoryScope.includes("cat") && normalized.includes("dog-toys")) ||
+    (categoryScope.includes("apparel") && normalized.includes("dog-toys")) ||
+    (categoryScope.includes("walking") && normalized.includes("dog-toys")) ||
+    (categoryScope.includes("bed") && normalized.includes("dog-toys"))
+  ) {
     return fallbackImageForCategory(category);
   }
 
@@ -68,12 +79,12 @@ function categoryImage(category: PublicCategoryCard) {
 }
 
 function tileClass(index: number, count: number) {
-  if (index === 0) {
-    return "min-h-[430px] lg:col-span-3 lg:row-span-2";
+  if (count === 4) {
+    return index < 2 ? "min-h-[390px] lg:col-span-3" : "min-h-[260px] lg:col-span-3";
   }
 
-  if (count === 4) {
-    return "min-h-[230px] lg:col-span-3";
+  if (index === 0) {
+    return "min-h-[430px] lg:col-span-3 lg:row-span-2";
   }
 
   if (count >= 5 && (index === 1 || index === 2)) {
@@ -95,17 +106,27 @@ export function HomeRoutineRoute({ categories }: { categories: PublicCategoryCar
   const visibleCategories = categories.slice(0, 5);
 
   return (
-    <section id="shop-by-routine" className="bg-[#FFF9EF] py-12 md:py-16">
+    <section id="shop-by-routine" className="bg-[#FFF9EF] py-14 md:py-20">
       <div className="section-shell">
-        <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div className="mb-8 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Editorial lookbook</p>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Routine lookbook</p>
             <h2 className="mt-2 font-heading text-3xl font-extrabold tracking-tight md:text-5xl">
-              Shop by routine
+              Start with the moment, then shop with intent.
             </h2>
             <p className="mt-3 max-w-2xl text-base leading-7 text-[#6B5540]">
-              Choose the moment first, then the product.
+              A clearer path through toys, walks, rest, comfort, and support.
             </p>
+            <div className="mt-5 flex flex-wrap items-center gap-2 text-xs font-extrabold uppercase tracking-wide text-[#6B4A2F]">
+              {routineSignals.map((signal, index) => (
+                <span key={signal} className="inline-flex items-center gap-2">
+                  <span className="rounded-full border border-[#E0C39C] bg-[#FFF8ED] px-3 py-1.5">
+                    {signal}
+                  </span>
+                  {index < routineSignals.length - 1 && <span className="text-primary/70">/</span>}
+                </span>
+              ))}
+            </div>
           </div>
           <Link
             href="/collections"
@@ -132,9 +153,9 @@ export function HomeRoutineRoute({ categories }: { categories: PublicCategoryCar
                 alt={category.alt}
                 fill
                 sizes={index === 0 ? "(min-width: 1024px) 640px, 100vw" : "(min-width: 1024px) 420px, 100vw"}
-                className="object-cover opacity-95 transition duration-500 group-hover:scale-[1.045] motion-reduce:group-hover:scale-100"
+                className="object-cover object-center opacity-100 transition duration-500 group-hover:scale-[1.045] motion-reduce:group-hover:scale-100"
               />
-              <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(36,23,14,0.84)_0%,rgba(36,23,14,0.44)_42%,rgba(36,23,14,0.08)_100%)]" />
+              <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(36,23,14,0.78)_0%,rgba(36,23,14,0.28)_42%,rgba(36,23,14,0.04)_100%)]" />
               <div className="absolute inset-x-5 bottom-5">
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#FFD894] [text-shadow:0_2px_10px_rgba(0,0,0,0.38)]">
                   Routine path
