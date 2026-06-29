@@ -99,13 +99,13 @@ export function NewsletterSignup() {
               LUCK CLAWS updates
             </span>
             <h2 className="mt-5 max-w-lg font-heading text-3xl font-extrabold leading-tight md:text-4xl">
-              Join the Pack for practical pet routine notes.
+              Join the Pack
             </h2>
             <p className="mt-3 max-w-xl text-sm leading-6 text-on-surface-variant md:text-base">
-              Get 10% off your first order, plus focused product updates and everyday care ideas.
+              Get updates, new arrivals, and pet-friendly offers.
             </p>
             <p className="mt-4 text-sm font-semibold text-primary">
-              Use code WELCOME10 after subscribing.
+              Get 10% off your first order with WELCOME10.
             </p>
           </div>
 
@@ -134,8 +134,8 @@ export function NewsletterSignup() {
               </div>
             ) : (
               <form className="grid gap-3" noValidate onSubmit={handleSubmit} aria-label="Newsletter signup">
-                <label className="hidden" htmlFor="newsletter-company" aria-hidden="true">
-                  Company
+                <label className="sr-only" htmlFor="newsletter-company">
+                  Leave this field blank
                 </label>
                 <input
                   id="newsletter-company"
@@ -157,7 +157,7 @@ export function NewsletterSignup() {
                     type="email"
                     inputMode="email"
                     autoComplete="email"
-                    placeholder="Enter your email address"
+                  placeholder="Email address"
                     value={email}
                     aria-invalid={Boolean(error)}
                     aria-describedby={describedBy}
@@ -179,7 +179,7 @@ export function NewsletterSignup() {
                     disabled={submitting}
                     className="inline-flex min-h-[52px] w-full items-center justify-center rounded-full bg-primary-container px-6 py-3 font-heading text-sm font-bold text-on-primary-container transition hover:-translate-y-0.5 hover:bg-[#e08f00] hover:shadow-soft focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:hover:translate-y-0 sm:w-auto"
                   >
-                    {submitting ? "Joining..." : "Get 10% Off"}
+                    {submitting ? "Joining..." : "Join the Pack"}
                   </button>
                 </div>
                 {error && (

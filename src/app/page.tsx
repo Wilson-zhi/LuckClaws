@@ -17,7 +17,7 @@ import {
   type LucideIcon
 } from "lucide-react";
 import { ViewItemListTracker } from "@/components/analytics/EcommerceEventTrackers";
-import { CategoryCard } from "@/components/product/CategoryCard";
+import { HomeFeaturedStory } from "@/components/sections/HomeFeaturedStory";
 import { HomeProductDiscovery } from "@/components/sections/HomeProductDiscovery";
 import { HomeRoutineRoute } from "@/components/sections/HomeRoutineRoute";
 import { NewsletterSignup } from "@/components/sections/NewsletterSignup";
@@ -30,6 +30,7 @@ import { getPublicHomepageSettings } from "@/lib/homepage-settings";
 import { getPublicHomepageCategories, getPublicHomepageProducts } from "@/lib/public-product-data";
 import { absoluteUrl, createSeoMetadata, iconPath } from "@/lib/seo";
 import { freeShippingLabel } from "@/lib/shipping";
+import { formatPrice } from "@/lib/utils";
 
 export const metadata: Metadata = {
   ...createSeoMetadata({
@@ -78,8 +79,12 @@ function polishedHeroEyebrow(value: string) {
 function polishedHeroTitle(value: string) {
   const title = value.trim();
 
-  if (!title || title === "Thoughtfully Designed Pet Essentials for Happier Dogs & Cats") {
-    return "Pet essentials for play, walks, rest, and everyday comfort.";
+  if (
+    !title ||
+    title === "Thoughtfully Designed Pet Essentials for Happier Dogs & Cats" ||
+    title === "Pet essentials for play, walks, rest, and everyday comfort."
+  ) {
+    return "Pet essentials for everyday routines.";
   }
 
   return title;
@@ -93,24 +98,10 @@ function polishedHeroSubtitle(value: string) {
     subtitle ===
       "Shop enrichment toys, cozy apparel, walking essentials, beds, blankets, and everyday favorites made for modern pet parents."
   ) {
-    return "Shop practical toys, apparel, walking gear, beds, blankets, and pet supplies chosen for real daily routines.";
+    return "Shop toys, apparel, walking gear, beds, blankets, and everyday pet supplies chosen for play, walks, rest, and comfort.";
   }
 
   return subtitle;
-}
-
-function polishedCategoryTitle(value: string) {
-  const title = value.trim();
-
-  if (!title || title === "Curated For Every Pet") {
-    return "Shop by routine";
-  }
-
-  return title;
-}
-
-function polishedCategorySubtitle(value: string) {
-  return value.trim() || "Start with what your pet needs next.";
 }
 
 function homepageTrustLabel(key: string, label: string) {
@@ -124,7 +115,7 @@ function homepageTrustLabel(key: string, label: string) {
 }
 
 export default async function HomePage() {
-  const [{ featuredProduct, featuredProducts, bestSellers, newArrivals }, homepageSettings] = await Promise.all([
+  const [{ featuredProduct, bestSellers }, homepageSettings] = await Promise.all([
     getPublicHomepageProducts(),
     getPublicHomepageSettings()
   ]);
@@ -132,24 +123,24 @@ export default async function HomePage() {
   const heroEyebrow = polishedHeroEyebrow(hero.eyebrow);
   const heroTitle = polishedHeroTitle(hero.title);
   const heroSubtitle = polishedHeroSubtitle(hero.subtitle);
-  const categoryTitle = polishedCategoryTitle(categorySection.title);
-  const categorySubtitle = polishedCategorySubtitle(categorySection.subtitle);
   const homepageCategories = await getPublicHomepageCategories(categorySection);
-  const categoryGridClass =
-    homepageCategories.length === 5
-      ? "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5 md:gap-5"
-      : "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 md:gap-6";
+  const heroProductTiles = [featuredProduct, ...bestSellers.filter((product) => product.slug !== featuredProduct.slug)].slice(0, 2);
   const topTrustItems: CompactTrustItem[] = homepageSettings.trustBadges.map((badge) => ({
     key: badge.key,
     label: homepageTrustLabel(badge.key, badge.title),
     Icon: homepageTrustIcon(badge.icon)
   }));
-  const primaryButtonLink = hero.primaryButtonLink || "/collections";
-  const secondaryButtonLink = hero.secondaryButtonLink || "/collections";
+  const primaryButtonLink =
+    hero.primaryButtonLink && hero.primaryButtonLink !== "/collections" ? hero.primaryButtonLink : "#best-sellers";
+  const secondaryButtonLink =
+    hero.secondaryButtonLink && hero.secondaryButtonLink !== "/collections"
+      ? hero.secondaryButtonLink
+      : "#shop-by-routine";
   const primaryButtonText = hero.primaryButtonText.trim() || "Shop Best Sellers";
-  const secondaryButtonText = hero.secondaryButtonText.trim() || "Explore Collections";
-  const categoryCtaText = categorySection.ctaText || "Explore All Collections";
-  const categoryCtaHref = categorySection.ctaHref || "/collections";
+  const secondaryButtonText =
+    hero.secondaryButtonText.trim() && hero.secondaryButtonText.trim() !== "Explore Collections"
+      ? hero.secondaryButtonText.trim()
+      : "Shop by Routine";
   const organizationStructuredData = {
     "@context": "https://schema.org",
     "@type": "Organization",
@@ -166,10 +157,8 @@ export default async function HomePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationStructuredData) }}
       />
       <ViewItemListTracker products={[featuredProduct]} itemListName="Homepage Featured Product" />
-      <ViewItemListTracker products={featuredProducts} itemListName="Homepage Featured Products" />
       <ViewItemListTracker products={bestSellers} itemListName="Homepage Best Sellers" />
-      <ViewItemListTracker products={newArrivals} itemListName="Homepage New Arrivals" />
-      <section className="section-shell grid min-h-[620px] items-center gap-10 py-10 md:grid-cols-[0.92fr_1.08fr] md:py-16 lg:gap-14">
+      <section className="section-shell grid min-h-[680px] items-center gap-10 py-10 md:grid-cols-[0.88fr_1.12fr] md:py-16 lg:gap-16">
         <div className="homepage-enter">
           <span className="inline-flex rounded-full bg-primary-container/20 px-4 py-2 text-xs font-bold uppercase tracking-wide text-primary">
             {heroEyebrow}
@@ -213,10 +202,11 @@ export default async function HomePage() {
               width={720}
               height={760}
               priority
-              className="h-[420px] w-full object-cover md:h-[560px]"
+              className="h-[460px] w-full object-cover md:h-[620px]"
             />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#28180B]/42 via-transparent to-transparent" />
           </div>
-          <div className="absolute bottom-8 left-0 flex -translate-x-4 items-center gap-3 rounded-lg border border-[#E5C99F] bg-white/95 px-4 py-3 shadow-ambient transition duration-300 hover:-translate-x-4 hover:-translate-y-1 hover:shadow-lift motion-reduce:hover:translate-y-0">
+          <div className="absolute left-0 top-8 flex -translate-x-4 items-center gap-3 rounded-lg border border-[#E5C99F] bg-white/95 px-4 py-3 shadow-ambient transition duration-300 hover:-translate-x-4 hover:-translate-y-1 hover:shadow-lift motion-reduce:hover:translate-y-0">
             <span className="grid h-10 w-10 place-items-center rounded-full bg-[#FFF1CF] text-primary">
               <Award aria-hidden className="h-5 w-5" />
             </span>
@@ -225,6 +215,36 @@ export default async function HomePage() {
               <p className="text-on-surface-variant">{hero.featuredText}</p>
             </div>
           </div>
+          <div className="absolute bottom-5 right-5 grid w-[min(360px,calc(100%-2.5rem))] gap-3">
+            {heroProductTiles.map((product) => (
+              <Link
+                key={product.id}
+                href={product.productUrl}
+                className="group flex items-center gap-3 rounded-xl border border-white/75 bg-white/94 p-3 shadow-ambient transition hover:-translate-y-0.5 hover:shadow-lift focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:hover:translate-y-0"
+              >
+                <span className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-[#F7EAD8]">
+                  <Image
+                    src={product.image}
+                    alt={product.alt}
+                    fill
+                    sizes="64px"
+                    className="object-cover transition duration-300 group-hover:scale-105"
+                  />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-xs font-bold uppercase tracking-wide text-primary">
+                    {product.category}
+                  </span>
+                  <span className="mt-1 block truncate font-heading text-sm font-bold text-[#24170E]">
+                    {product.name}
+                  </span>
+                </span>
+                <span className="shrink-0 font-heading text-sm font-extrabold text-primary">
+                  {formatPrice(product.price)}
+                </span>
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -232,56 +252,11 @@ export default async function HomePage() {
         <CompactTrustBar items={topTrustItems} columns="wide" className="section-shell" />
       </section>
 
-      <HomeRoutineRoute />
+      <HomeRoutineRoute categories={homepageCategories} />
 
-      {categorySection.enabled && homepageCategories.length > 0 && (
-        <section className="bg-[#F7EBDD] py-12 md:py-16">
-          <div className="section-shell">
-            <div className="mb-6 flex items-start justify-between gap-4">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-wide text-primary">Shop by collection</p>
-                <h2 className="mt-2 font-heading text-3xl font-extrabold tracking-tight md:text-4xl">
-                  {categoryTitle}
-                </h2>
-                <p className="mt-2 max-w-2xl text-sm leading-6 text-on-surface-variant">
-                  {categorySubtitle}
-                </p>
-              </div>
-              {categoryCtaText && categoryCtaHref && (
-                <Link href={categoryCtaHref} className="hidden items-center gap-2 text-sm font-semibold text-primary md:flex">
-                  {categoryCtaText} <ArrowRight aria-hidden className="h-4 w-4" />
-                </Link>
-              )}
-            </div>
-            {categorySection.layout === "carousel" ? (
-              <div className="-mx-4 flex gap-4 overflow-x-auto px-4 pb-2 md:mx-0 md:px-0">
-                {homepageCategories.map((category) => (
-                  <div key={category.name} className="min-w-[240px] sm:min-w-[280px] md:min-w-[300px]">
-                    <CategoryCard {...category} />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className={categoryGridClass}>
-                {homepageCategories.map((category) => (
-                  <CategoryCard key={category.name} {...category} />
-                ))}
-              </div>
-            )}
-            {categoryCtaText && categoryCtaHref && (
-              <Link href={categoryCtaHref} className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-primary md:hidden">
-                {categoryCtaText} <ArrowRight aria-hidden className="h-4 w-4" />
-              </Link>
-            )}
-          </div>
-        </section>
-      )}
+      <HomeFeaturedStory product={featuredProduct} />
 
-      <HomeProductDiscovery
-        featuredProducts={featuredProducts}
-        bestSellers={bestSellers}
-        newArrivals={newArrivals}
-      />
+      <HomeProductDiscovery products={bestSellers} />
 
       <TrustBadges />
 
