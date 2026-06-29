@@ -7,10 +7,13 @@ import {
   homepageCategorySectionSettingKey,
   homepageHeroFromValue,
   homepageHeroSettingKey,
+  homepageStorySectionFromValue,
+  homepageStorySectionSettingKey,
   homepageTrustBadgesFromValue,
   homepageTrustBadgesSettingKey,
   type HomepageCategorySectionContent,
   type HomepageHeroContent,
+  type HomepageStorySectionContent,
   type HomepageTrustBadge
 } from "@/lib/homepage-content";
 
@@ -24,6 +27,7 @@ export type PublicHomepageSettings = {
   hero: HomepageHeroContent;
   trustBadges: HomepageTrustBadge[];
   categorySection: HomepageCategorySectionContent;
+  storySection: HomepageStorySectionContent;
 };
 
 let homepagePublicClient: SupabaseClient | null = null;
@@ -67,7 +71,12 @@ async function fetchRowsWithSelect(selectColumns: string, activeOnly = false) {
   let query = supabase
     .from("homepage_settings")
     .select(selectColumns)
-    .in("key", [homepageHeroSettingKey, homepageTrustBadgesSettingKey, homepageCategorySectionSettingKey]);
+    .in("key", [
+      homepageHeroSettingKey,
+      homepageTrustBadgesSettingKey,
+      homepageCategorySectionSettingKey,
+      homepageStorySectionSettingKey
+    ]);
 
   if (activeOnly) {
     query = query.eq("status", "active");
@@ -110,10 +119,12 @@ export async function getPublicHomepageSettings(): Promise<PublicHomepageSetting
   const categorySectionRow = rows.find(
     (row) => row.key === homepageCategorySectionSettingKey && rowIsActive(row)
   );
+  const storySectionRow = rows.find((row) => row.key === homepageStorySectionSettingKey && rowIsActive(row));
 
   return {
     hero: homepageHeroFromValue(heroRow?.value),
     trustBadges: homepageTrustBadgesFromValue(trustBadgesRow?.value),
-    categorySection: homepageCategorySectionFromValue(categorySectionRow?.value)
+    categorySection: homepageCategorySectionFromValue(categorySectionRow?.value),
+    storySection: homepageStorySectionFromValue(storySectionRow?.value)
   };
 }

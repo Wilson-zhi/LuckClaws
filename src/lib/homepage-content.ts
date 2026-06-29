@@ -3,6 +3,7 @@ import { freeShippingLabel } from "@/lib/shipping";
 export const homepageHeroSettingKey = "home_hero";
 export const homepageTrustBadgesSettingKey = "home_trust_badges";
 export const homepageCategorySectionSettingKey = "home_category_section";
+export const homepageStorySectionSettingKey = "home_story_section";
 
 export const homepageTrustBadgeIconKeys = [
   "truck",
@@ -54,6 +55,38 @@ export type HomepageCategorySectionContent = {
   selectedCategorySlugs: string[];
 };
 
+export const homepageStoryIconKeys = [
+  "route",
+  "search",
+  "heart",
+  "shield",
+  "check",
+  "sparkles",
+  "truck",
+  "package",
+  "leaf",
+  "lock"
+] as const;
+
+export type HomepageStoryIconKey = (typeof homepageStoryIconKeys)[number];
+
+export type HomepageStoryItem = {
+  key: string;
+  icon: HomepageStoryIconKey;
+  title: string;
+  text: string;
+};
+
+export type HomepageStorySectionContent = {
+  enabled: boolean;
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  items: HomepageStoryItem[];
+  ctaLabel: string;
+  ctaHref: string;
+};
+
 export type HomepageTrustBadgesValue = {
   active: boolean;
   items: HomepageTrustBadge[];
@@ -94,8 +127,39 @@ export const defaultHomepageCategorySection: HomepageCategorySectionContent = {
   selectedCategorySlugs: ["dog-toys", "cat-toys", "pet-apparel", "walking-essentials"]
 };
 
+export const defaultHomepageStorySection: HomepageStorySectionContent = {
+  enabled: true,
+  eyebrow: "Why LUCK CLAWS",
+  title: "Built around everyday pet routines.",
+  subtitle:
+    "We organize pet essentials by real moments, so shopping feels clearer from the first click.",
+  items: [
+    {
+      key: "routine-first-shopping",
+      icon: "route",
+      title: "Routine-first shopping",
+      text: "Start with play, walks, rest, comfort, or support instead of scrolling through everything."
+    },
+    {
+      key: "clear-product-details",
+      icon: "search",
+      title: "Clear product details",
+      text: "Compare use cases, pricing, and product paths before checkout."
+    },
+    {
+      key: "support-when-needed",
+      icon: "heart",
+      title: "Support when needed",
+      text: "Questions about products or orders can go straight to support."
+    }
+  ],
+  ctaLabel: "Explore Collections",
+  ctaHref: "/collections"
+};
+
 const homepageTrustBadgeIconSet = new Set<string>(homepageTrustBadgeIconKeys);
 const homepageCategorySectionLayoutSet = new Set<string>(["grid_4", "carousel"]);
+const homepageStoryIconSet = new Set<string>(homepageStoryIconKeys);
 
 function cleanString(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
@@ -139,6 +203,12 @@ export function normalizeHomepageTrustBadgeIconKey(value: unknown): HomepageTrus
   const icon = cleanString(value);
 
   return homepageTrustBadgeIconSet.has(icon) ? (icon as HomepageTrustBadgeIconKey) : "shield";
+}
+
+export function normalizeHomepageStoryIconKey(value: unknown): HomepageStoryIconKey {
+  const icon = cleanString(value);
+
+  return homepageStoryIconSet.has(icon) ? (icon as HomepageStoryIconKey) : "heart";
 }
 
 function normalizeHomepageCategorySectionLayout(value: unknown): HomepageCategorySectionLayout {
@@ -271,6 +341,38 @@ export function homepageCategorySectionFromValue(value: unknown): HomepageCatego
   };
 }
 
+export function homepageStorySectionFromValue(value: unknown): HomepageStorySectionContent {
+  const record = recordFromUnknown(value);
+  const items = arrayFromUnknown(record?.items)
+    .map((item, index): HomepageStoryItem | null => {
+      const itemRecord = recordFromUnknown(item);
+      const title = stringFromRecord(itemRecord, ["title"], "");
+      const text = stringFromRecord(itemRecord, ["text", "description"], "");
+
+      if (!itemRecord || !title || !text) {
+        return null;
+      }
+
+      return {
+        key: cleanString(itemRecord.key) || `story-item-${index + 1}`,
+        icon: normalizeHomepageStoryIconKey(itemRecord.icon),
+        title,
+        text
+      };
+    })
+    .filter((item): item is HomepageStoryItem => Boolean(item));
+
+  return {
+    enabled: record?.enabled === false ? false : defaultHomepageStorySection.enabled,
+    eyebrow: stringFromRecord(record, ["eyebrow", "label"], defaultHomepageStorySection.eyebrow),
+    title: stringFromRecord(record, ["title"], defaultHomepageStorySection.title),
+    subtitle: stringFromRecord(record, ["subtitle", "description"], defaultHomepageStorySection.subtitle),
+    items: items.length > 0 ? items : defaultHomepageStorySection.items,
+    ctaLabel: stringFromRecord(record, ["ctaLabel", "cta_label"], defaultHomepageStorySection.ctaLabel),
+    ctaHref: stringFromRecord(record, ["ctaHref", "cta_href"], defaultHomepageStorySection.ctaHref)
+  };
+}
+
 export function buildHomepageHeroValue(hero: HomepageHeroContent) {
   return {
     active: true,
@@ -316,5 +418,25 @@ export function buildHomepageCategorySectionValue(categorySection: HomepageCateg
     layout: normalizeHomepageCategorySectionLayout(categorySection.layout),
     maxItems: normalizeHomepageCategoryMaxItems(categorySection.maxItems),
     selectedCategorySlugs: categorySection.selectedCategorySlugs.map((slug) => slug.trim()).filter(Boolean)
+  };
+}
+
+export function buildHomepageStorySectionValue(storySection: HomepageStorySectionContent) {
+  return {
+    active: true,
+    enabled: storySection.enabled,
+    eyebrow: storySection.eyebrow.trim(),
+    title: storySection.title.trim(),
+    subtitle: storySection.subtitle.trim(),
+    items: storySection.items
+      .map((item, index) => ({
+        key: item.key.trim() || `story-item-${index + 1}`,
+        icon: normalizeHomepageStoryIconKey(item.icon),
+        title: item.title.trim(),
+        text: item.text.trim()
+      }))
+      .filter((item) => item.title && item.text),
+    ctaLabel: storySection.ctaLabel.trim(),
+    ctaHref: storySection.ctaHref.trim()
   };
 }

@@ -7,20 +7,29 @@ import { type AdminLabelKey, useAdminLanguage } from "@/components/admin/admin-l
 import {
   buildHomepageCategorySectionValue,
   buildHomepageHeroValue,
+  buildHomepageStorySectionValue,
   buildHomepageTrustBadgesValue,
   defaultHomepageCategorySection,
   defaultHomepageHero,
+  defaultHomepageStorySection,
   homepageCategorySectionFromValue,
   homepageCategorySectionSettingKey,
   homepageHeroFromValue,
   homepageHeroSettingKey,
+  homepageStoryIconKeys,
+  homepageStorySectionFromValue,
+  homepageStorySectionSettingKey,
   homepageTrustBadgeIconKeys,
   homepageTrustBadgesFromValue,
   homepageTrustBadgesSettingKey,
   normalizeHomepageTrustBadgeIconKey,
+  normalizeHomepageStoryIconKey,
   type HomepageCategorySectionContent,
   type HomepageCategorySectionLayout,
   type HomepageHeroContent,
+  type HomepageStoryIconKey,
+  type HomepageStoryItem,
+  type HomepageStorySectionContent,
   type HomepageTrustBadge,
   type HomepageTrustBadgeIconKey
 } from "@/lib/homepage-content";
@@ -32,6 +41,10 @@ type HomepageSettingRow = {
 };
 
 type EditableTrustBadge = HomepageTrustBadge & {
+  id: string;
+};
+
+type EditableStoryItem = HomepageStoryItem & {
   id: string;
 };
 
@@ -146,6 +159,60 @@ const homepageHeroMediaCopy = {
   }
 } as const;
 
+const homepageStorySectionCopy = {
+  zh: {
+    title: "首页品牌承诺模块",
+    description: "编辑首页的品牌说明、购买理由和导购承诺。",
+    showSection: "显示该模块",
+    eyebrow: "小标题",
+    sectionTitle: "标题",
+    subtitle: "说明文字",
+    ctaLabel: "按钮文字",
+    ctaHref: "按钮链接",
+    items: "内容卡片",
+    itemIcon: "图标",
+    itemTitle: "卡片标题",
+    itemText: "卡片说明",
+    addItem: "添加卡片",
+    noItems: "暂无卡片。前台会使用安全备用内容。",
+    save: "保存品牌承诺模块",
+    saved: "品牌承诺模块已保存。",
+    unableToSave: "无法保存品牌承诺模块。"
+  },
+  en: {
+    title: "Homepage Brand Promise",
+    description: "Edit the homepage brand story, purchase reasons, and shopping promises.",
+    showSection: "Show this section",
+    eyebrow: "Eyebrow",
+    sectionTitle: "Title",
+    subtitle: "Subtitle",
+    ctaLabel: "Button text",
+    ctaHref: "Button link",
+    items: "Content cards",
+    itemIcon: "Icon",
+    itemTitle: "Card title",
+    itemText: "Card text",
+    addItem: "Add card",
+    noItems: "No cards. The storefront will use safe fallback content.",
+    save: "Save brand promise",
+    saved: "Brand promise section saved.",
+    unableToSave: "Unable to save brand promise section."
+  }
+} as const;
+
+const storyIconLabels = {
+  route: { zh: "路线", en: "Route" },
+  search: { zh: "搜索", en: "Search" },
+  heart: { zh: "爱心", en: "Heart" },
+  shield: { zh: "盾牌", en: "Shield" },
+  check: { zh: "确认", en: "Check" },
+  sparkles: { zh: "闪光", en: "Sparkles" },
+  truck: { zh: "卡车", en: "Truck" },
+  package: { zh: "包裹", en: "Package" },
+  leaf: { zh: "叶子", en: "Leaf" },
+  lock: { zh: "锁", en: "Lock" }
+} as const satisfies Record<HomepageStoryIconKey, { zh: string; en: string }>;
+
 function createBadgeId() {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
     return crypto.randomUUID();
@@ -157,6 +224,13 @@ function createBadgeId() {
 function editableBadgesFromValue(value: unknown): EditableTrustBadge[] {
   return homepageTrustBadgesFromValue(value).map((badge) => ({
     ...badge,
+    id: createBadgeId()
+  }));
+}
+
+function editableStoryItemsFromValue(value: unknown): EditableStoryItem[] {
+  return homepageStorySectionFromValue(value).items.map((item) => ({
+    ...item,
     id: createBadgeId()
   }));
 }
@@ -206,15 +280,21 @@ function AdminHomepageFormContent() {
   const { t, language } = useAdminLanguage();
   const categoryCopy = homepageCategorySectionCopy[language];
   const heroMediaCopy = homepageHeroMediaCopy[language];
+  const storyCopy = homepageStorySectionCopy[language];
   const supabase = getSupabaseBrowserClient();
   const [hero, setHero] = useState<HomepageHeroContent>(defaultHomepageHero);
   const [badges, setBadges] = useState<EditableTrustBadge[]>([]);
+  const [storySection, setStorySection] = useState<HomepageStorySectionContent>(defaultHomepageStorySection);
+  const [storyItems, setStoryItems] = useState<EditableStoryItem[]>(
+    defaultHomepageStorySection.items.map((item) => ({ ...item, id: createBadgeId() }))
+  );
   const [categorySection, setCategorySection] =
     useState<HomepageCategorySectionContent>(defaultHomepageCategorySection);
   const [activeCategories, setActiveCategories] = useState<HomepageCategoryRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [savingCategorySection, setSavingCategorySection] = useState(false);
+  const [savingStorySection, setSavingStorySection] = useState(false);
   const [uploadingHeroImage, setUploadingHeroImage] = useState(false);
   const [uploadingHeroVideo, setUploadingHeroVideo] = useState(false);
   const [uploadMessage, setUploadMessage] = useState("");
@@ -226,6 +306,8 @@ function AdminHomepageFormContent() {
   const [categoryLoadError, setCategoryLoadError] = useState("");
   const [categorySaveError, setCategorySaveError] = useState("");
   const [categorySuccessMessage, setCategorySuccessMessage] = useState("");
+  const [storySaveError, setStorySaveError] = useState("");
+  const [storySuccessMessage, setStorySuccessMessage] = useState("");
 
   useEffect(() => {
     if (!supabase) {
@@ -243,7 +325,12 @@ function AdminHomepageFormContent() {
           browserSupabase
             .from("homepage_settings")
             .select("key, value")
-            .in("key", [homepageHeroSettingKey, homepageTrustBadgesSettingKey, homepageCategorySectionSettingKey]),
+            .in("key", [
+              homepageHeroSettingKey,
+              homepageTrustBadgesSettingKey,
+              homepageCategorySectionSettingKey,
+              homepageStorySectionSettingKey
+            ]),
           browserSupabase
             .from("product_categories")
             .select("name, slug, status, sort_order, show_on_home")
@@ -264,6 +351,8 @@ function AdminHomepageFormContent() {
         setHero(homepageHeroFromValue(rowsByKey.get(homepageHeroSettingKey)));
         setBadges(editableBadgesFromValue(rowsByKey.get(homepageTrustBadgesSettingKey)));
         setCategorySection(homepageCategorySectionFromValue(rowsByKey.get(homepageCategorySectionSettingKey)));
+        setStorySection(homepageStorySectionFromValue(rowsByKey.get(homepageStorySectionSettingKey)));
+        setStoryItems(editableStoryItemsFromValue(rowsByKey.get(homepageStorySectionSettingKey)));
 
         if (categoriesResult.error) {
           setCategoryLoadError(categoryCopy.unableToLoadCategories);
@@ -278,6 +367,8 @@ function AdminHomepageFormContent() {
           setHero(defaultHomepageHero);
           setBadges(editableBadgesFromValue(undefined));
           setCategorySection(defaultHomepageCategorySection);
+          setStorySection(defaultHomepageStorySection);
+          setStoryItems(defaultHomepageStorySection.items.map((item) => ({ ...item, id: createBadgeId() })));
           setActiveCategories([]);
         }
       } finally {
@@ -330,6 +421,68 @@ function AdminHomepageFormContent() {
       ...currentCategorySection,
       [field]: value
     }));
+  };
+
+  const updateStorySectionField = (
+    field: keyof Omit<HomepageStorySectionContent, "items">,
+    value: string | boolean
+  ) => {
+    setStorySaveError("");
+    setStorySuccessMessage("");
+    setStorySection((currentStorySection) => ({
+      ...currentStorySection,
+      [field]: value
+    }));
+  };
+
+  const updateStoryItem = (id: string, field: keyof HomepageStoryItem, value: string) => {
+    setStorySaveError("");
+    setStorySuccessMessage("");
+    setStoryItems((currentItems) =>
+      currentItems.map((item) =>
+        item.id === id
+          ? {
+              ...item,
+              [field]: field === "icon" ? normalizeHomepageStoryIconKey(value) : value
+            }
+          : item
+      )
+    );
+  };
+
+  const addStoryItem = () => {
+    setStoryItems((currentItems) => [
+      ...currentItems,
+      {
+        id: createBadgeId(),
+        key: `story-item-${currentItems.length + 1}`,
+        icon: "heart",
+        title: "",
+        text: ""
+      }
+    ]);
+  };
+
+  const removeStoryItem = (id: string) => {
+    setStoryItems((currentItems) => currentItems.filter((item) => item.id !== id));
+  };
+
+  const moveStoryItem = (id: string, direction: "up" | "down") => {
+    setStoryItems((currentItems) => {
+      const index = currentItems.findIndex((item) => item.id === id);
+      const nextIndex = direction === "up" ? index - 1 : index + 1;
+
+      if (index < 0 || nextIndex < 0 || nextIndex >= currentItems.length) {
+        return currentItems;
+      }
+
+      const nextItems = [...currentItems];
+      const [movedItem] = nextItems.splice(index, 1);
+
+      nextItems.splice(nextIndex, 0, movedItem);
+
+      return nextItems;
+    });
   };
 
   const toggleSelectedCategorySlug = (slug: string, checked: boolean) => {
@@ -572,6 +725,48 @@ function AdminHomepageFormContent() {
     }
 
     setCategorySuccessMessage(categoryCopy.saved);
+  };
+
+  const saveStorySection = async () => {
+    if (!supabase) {
+      setStorySaveError(t("supabaseMissing"));
+      return;
+    }
+
+    setSavingStorySection(true);
+    setStorySaveError("");
+    setStorySuccessMessage("");
+
+    const storyValue: HomepageStorySectionContent = {
+      ...storySection,
+      items: storyItems.map((item) => ({
+        key: item.key,
+        icon: item.icon,
+        title: item.title,
+        text: item.text
+      }))
+    };
+
+    const { error: saveError } = await supabase.from("homepage_settings").upsert(
+      [
+        {
+          key: homepageStorySectionSettingKey,
+          status: "active",
+          value: buildHomepageStorySectionValue(storyValue)
+        }
+      ],
+      { onConflict: "key" }
+    );
+
+    setSavingStorySection(false);
+
+    if (saveError) {
+      setStorySaveError(saveError.message || storyCopy.unableToSave);
+      return;
+    }
+
+    setStorySection(storyValue);
+    setStorySuccessMessage(storyCopy.saved);
   };
 
   const handleBadgeIconChange = (id: string) => (event: ChangeEvent<HTMLSelectElement>) => {
@@ -1003,6 +1198,162 @@ function AdminHomepageFormContent() {
             onClick={saveCategorySection}
           >
             {savingCategorySection ? t("saving") : categoryCopy.save}
+          </button>
+        </div>
+      </section>
+
+      <section className="ambient-card p-6 md:p-8">
+        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <div>
+            <h2 className="font-heading text-2xl font-bold text-on-surface">{storyCopy.title}</h2>
+            <p className="mt-2 text-sm leading-6 text-on-surface-variant">{storyCopy.description}</p>
+          </div>
+          <button
+            type="button"
+            className="inline-flex w-fit rounded-full bg-primary px-5 py-3 font-heading text-sm font-bold text-white transition hover:bg-primary/90"
+            onClick={addStoryItem}
+          >
+            {storyCopy.addItem}
+          </button>
+        </div>
+
+        <div className="mt-6 grid gap-5">
+          <label className="flex items-center gap-3 rounded-md bg-surface-container-low p-4 text-sm font-semibold text-on-surface">
+            <input
+              type="checkbox"
+              checked={storySection.enabled}
+              className="h-5 w-5 rounded border-outline-variant text-primary focus:ring-primary"
+              onChange={(event) => updateStorySectionField("enabled", event.target.checked)}
+            />
+            {storyCopy.showSection}
+          </label>
+
+          <div className="grid gap-5 md:grid-cols-2">
+            <HeroField
+              label={storyCopy.eyebrow}
+              value={storySection.eyebrow}
+              onChange={(value) => updateStorySectionField("eyebrow", value)}
+            />
+            <HeroField
+              label={storyCopy.sectionTitle}
+              value={storySection.title}
+              onChange={(value) => updateStorySectionField("title", value)}
+            />
+            <div className="md:col-span-2">
+              <HeroField
+                textarea
+                label={storyCopy.subtitle}
+                value={storySection.subtitle}
+                onChange={(value) => updateStorySectionField("subtitle", value)}
+              />
+            </div>
+            <HeroField
+              label={storyCopy.ctaLabel}
+              value={storySection.ctaLabel}
+              onChange={(value) => updateStorySectionField("ctaLabel", value)}
+            />
+            <HeroField
+              label={storyCopy.ctaHref}
+              value={storySection.ctaHref}
+              onChange={(value) => updateStorySectionField("ctaHref", value)}
+            />
+          </div>
+
+          <div className="rounded-md bg-surface-container-low p-4">
+            <h3 className="font-heading text-lg font-bold text-on-surface">{storyCopy.items}</h3>
+            {storyItems.length === 0 ? (
+              <p className="mt-4 rounded-md bg-white p-4 text-sm font-semibold text-on-surface-variant">
+                {storyCopy.noItems}
+              </p>
+            ) : (
+              <div className="mt-4 grid gap-4">
+                {storyItems.map((item, index) => (
+                  <div key={item.id} className="rounded-md border border-outline-variant bg-white p-4">
+                    <div className="grid gap-4 md:grid-cols-[180px_minmax(0,1fr)]">
+                      <label className="grid gap-2 text-sm font-semibold text-on-surface">
+                        {storyCopy.itemIcon}
+                        <select
+                          className={inputClass}
+                          value={item.icon}
+                          onChange={(event) => updateStoryItem(item.id, "icon", event.target.value)}
+                        >
+                          {homepageStoryIconKeys.map((icon) => (
+                            <option key={icon} value={icon}>
+                              {storyIconLabels[icon][language]}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+
+                      <label className="grid gap-2 text-sm font-semibold text-on-surface">
+                        {storyCopy.itemTitle}
+                        <input
+                          className={inputClass}
+                          value={item.title}
+                          onChange={(event) => updateStoryItem(item.id, "title", event.target.value)}
+                        />
+                      </label>
+
+                      <label className="grid gap-2 text-sm font-semibold text-on-surface md:col-span-2">
+                        {storyCopy.itemText}
+                        <textarea
+                          className={textareaClass}
+                          value={item.text}
+                          onChange={(event) => updateStoryItem(item.id, "text", event.target.value)}
+                        />
+                      </label>
+                    </div>
+
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        className="rounded-full border border-outline-variant bg-white px-4 py-2 text-xs font-bold text-on-surface-variant transition hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
+                        disabled={index === 0}
+                        onClick={() => moveStoryItem(item.id, "up")}
+                      >
+                        {t("moveUp")}
+                      </button>
+                      <button
+                        type="button"
+                        className="rounded-full border border-outline-variant bg-white px-4 py-2 text-xs font-bold text-on-surface-variant transition hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
+                        disabled={index === storyItems.length - 1}
+                        onClick={() => moveStoryItem(item.id, "down")}
+                      >
+                        {t("moveDown")}
+                      </button>
+                      <button
+                        type="button"
+                        className="rounded-full border border-error/40 bg-white px-4 py-2 text-xs font-bold text-error transition hover:bg-error/10"
+                        onClick={() => removeStoryItem(item.id)}
+                      >
+                        {t("remove")}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {storySaveError && (
+            <div className="rounded-md bg-error/10 p-4 text-sm font-semibold text-error" role="alert">
+              {storySaveError}
+            </div>
+          )}
+
+          {storySuccessMessage && (
+            <div className="rounded-md bg-primary-container/15 p-4 text-sm font-semibold text-primary" role="status">
+              {storySuccessMessage}
+            </div>
+          )}
+
+          <button
+            type="button"
+            disabled={savingStorySection}
+            className="inline-flex w-fit rounded-full bg-primary px-7 py-3 font-heading font-bold text-white transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
+            onClick={saveStorySection}
+          >
+            {savingStorySection ? t("saving") : storyCopy.save}
           </button>
         </div>
       </section>

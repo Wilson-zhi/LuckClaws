@@ -19,6 +19,7 @@ import { HomePosterHero } from "@/components/sections/HomePosterHero";
 import { HomeProductDiscovery } from "@/components/sections/HomeProductDiscovery";
 import { HomeRoutineRoute } from "@/components/sections/HomeRoutineRoute";
 import { HomeRoutineStrip } from "@/components/sections/HomeRoutineStrip";
+import { HomeStorySection } from "@/components/sections/HomeStorySection";
 import { NewsletterSignup } from "@/components/sections/NewsletterSignup";
 import { CompactTrustBar, type CompactTrustItem } from "@/components/sections/CompactTrustBar";
 import { TrustBadges } from "@/components/sections/TrustBadges";
@@ -155,7 +156,7 @@ export default async function HomePage() {
     getPublicHomepageProducts(),
     getPublicHomepageSettings()
   ]);
-  const { hero, categorySection } = homepageSettings;
+  const { hero, categorySection, storySection } = homepageSettings;
   const heroEyebrow = polishedHeroEyebrow(hero.eyebrow);
   const heroTitle = polishedHeroTitle(hero.title);
   const heroSubtitle = polishedHeroSubtitle(hero.subtitle);
@@ -223,6 +224,8 @@ export default async function HomePage() {
       </section>
 
       <HomeRoutineRoute categories={homepageCategories} />
+
+      <HomeStorySection story={storySection} />
 
       <HomeProductDiscovery featuredProduct={featuredProduct} products={bestSellers} />
 
