@@ -52,17 +52,6 @@ function fallbackProductImage(product: Product) {
   return "/images/category-dog-toys.jpg";
 }
 
-function productImage(product: Product) {
-  const image = product.image.trim();
-  const normalized = image.toLowerCase();
-
-  if (!image || normalized.includes("icon") || normalized.includes("logo")) {
-    return fallbackProductImage(product);
-  }
-
-  return image;
-}
-
 export function HomePosterHero({
   eyebrow,
   title,
@@ -79,11 +68,11 @@ export function HomePosterHero({
   products
 }: HomePosterHeroProps) {
   return (
-    <section className="section-shell py-4 md:py-7">
-      <div className="homepage-enter relative min-h-[720px] overflow-hidden rounded-[2.25rem] bg-[#2C1A0D] shadow-lift md:min-h-[760px]">
+    <section className="relative isolate overflow-hidden bg-[#2C1A0D]">
+      <div className="homepage-enter relative min-h-[calc(100svh-72px)] overflow-hidden bg-[#2C1A0D] shadow-lift md:min-h-[calc(100svh-88px)]">
         {hasVideo ? (
           <video
-            className="homepage-poster-media absolute inset-0 h-full w-full object-cover"
+            className="homepage-poster-media absolute inset-0 h-full w-full object-cover object-center"
             autoPlay
             muted
             loop
@@ -100,14 +89,15 @@ export function HomePosterHero({
             fill
             priority
             sizes="100vw"
-            className="homepage-poster-media object-cover"
+            className="homepage-poster-media object-cover object-center"
           />
         )}
 
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(30,18,9,0.96)_0%,rgba(30,18,9,0.82)_38%,rgba(30,18,9,0.34)_68%,rgba(30,18,9,0.50)_100%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_74%_26%,rgba(245,158,11,0.26),transparent_34%),radial-gradient(circle_at_22%_84%,rgba(255,249,239,0.18),transparent_28%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(24,13,6,0.96)_0%,rgba(24,13,6,0.78)_36%,rgba(24,13,6,0.30)_66%,rgba(24,13,6,0.54)_100%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_76%_18%,rgba(245,158,11,0.23),transparent_30%),radial-gradient(circle_at_18%_86%,rgba(255,249,239,0.18),transparent_24%)]" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#2C1A0D]/90 to-transparent" />
 
-        <div className="relative z-10 flex min-h-[720px] flex-col justify-between p-5 md:min-h-[760px] md:p-8 lg:p-10">
+        <div className="relative z-10 mx-auto flex min-h-[calc(100svh-72px)] max-w-[1600px] flex-col justify-between px-5 py-6 sm:px-8 md:min-h-[calc(100svh-88px)] md:px-10 md:py-8 lg:px-16 xl:px-20">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <span className="inline-flex rounded-full border border-white/25 bg-white/14 px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-[#FFD894] backdrop-blur">
               {eyebrow}
@@ -124,16 +114,16 @@ export function HomePosterHero({
             </div>
           </div>
 
-          <div className="grid gap-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(320px,0.48fr)] lg:items-end">
-            <div className="max-w-4xl">
+          <div className="grid gap-8 pb-12 lg:grid-cols-[minmax(0,0.95fr)_minmax(330px,0.42fr)] lg:items-end lg:pb-16">
+            <div className="max-w-5xl">
               <p className="mb-5 inline-flex items-center gap-2 rounded-full bg-primary-container px-4 py-2 text-xs font-extrabold uppercase tracking-wide text-on-primary-container shadow-soft">
                 <Award aria-hidden className="h-4 w-4" />
                 {featuredLabel}
               </p>
-              <h1 className="max-w-4xl font-heading text-[clamp(3.25rem,8vw,8.25rem)] font-extrabold leading-[0.88] tracking-[-0.04em] text-white [text-shadow:0_8px_34px_rgba(0,0,0,0.32)]">
+              <h1 className="max-w-5xl font-heading text-[clamp(3.35rem,8.6vw,9.6rem)] font-extrabold leading-[0.86] tracking-[-0.045em] text-white [text-shadow:0_8px_34px_rgba(0,0,0,0.34)]">
                 {title}
               </h1>
-              <p className="mt-6 max-w-2xl text-base font-semibold leading-7 text-white [text-shadow:0_4px_18px_rgba(0,0,0,0.48)] md:text-xl md:leading-8">
+              <p className="mt-6 max-w-2xl text-base font-semibold leading-7 text-white [text-shadow:0_4px_18px_rgba(0,0,0,0.50)] md:text-xl md:leading-8">
                 {subtitle}
               </p>
               <p className="mt-4 max-w-xl text-sm font-semibold text-[#FFD894]">{featuredText}</p>
@@ -158,7 +148,7 @@ export function HomePosterHero({
             </div>
 
             {products.length > 0 && (
-              <div className="grid gap-3 rounded-[1.5rem] border border-white/20 bg-white/14 p-3 backdrop-blur-md">
+              <div className="grid gap-3 rounded-[1.5rem] border border-white/18 bg-[#2C1A0D]/30 p-3 shadow-lift backdrop-blur-md">
                 {products.map((product) => (
                   <Link
                     key={product.id}
@@ -167,7 +157,7 @@ export function HomePosterHero({
                   >
                     <span className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-[#F7EAD8]">
                       <Image
-                        src={productImage(product)}
+                        src={fallbackProductImage(product)}
                         alt={product.alt}
                         fill
                         loading="eager"

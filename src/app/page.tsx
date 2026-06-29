@@ -83,9 +83,10 @@ function polishedHeroTitle(value: string) {
     normalized === "thoughtfully designed pet essentials" ||
     title === "Thoughtfully Designed Pet Essentials for Happier Dogs & Cats" ||
     title === "Pet essentials for play, walks, rest, and everyday comfort." ||
-    title === "Pet essentials for everyday routines."
+    title === "Pet essentials for everyday routines." ||
+    title === "Everyday pet essentials, styled for real life."
   ) {
-    return "Everyday pet essentials, styled for real life.";
+    return "Pet essentials for daily rituals.";
   }
 
   return title;
@@ -97,9 +98,11 @@ function polishedHeroSubtitle(value: string) {
   if (
     !subtitle ||
     subtitle ===
+      "Shop toys, apparel, walking gear, beds, blankets, and everyday pet supplies chosen for play, walks, rest, and comfort." ||
+    subtitle ===
       "Shop enrichment toys, cozy apparel, walking essentials, beds, blankets, and everyday favorites made for modern pet parents."
   ) {
-    return "Shop toys, apparel, walking gear, beds, blankets, and everyday pet supplies chosen for play, walks, rest, and comfort.";
+    return "Toys, walking gear, apparel, beds, and thoughtful everyday picks for dogs, cats, and the homes they live in.";
   }
 
   return subtitle;
@@ -171,7 +174,7 @@ export default async function HomePage() {
   const secondaryButtonText =
     hero.secondaryButtonText.trim() && hero.secondaryButtonText.trim() !== "Explore Collections"
       ? hero.secondaryButtonText.trim()
-      : "Shop by Routine";
+      : "Find a Routine";
   const organizationStructuredData = {
     "@context": "https://schema.org",
     "@type": "Organization",

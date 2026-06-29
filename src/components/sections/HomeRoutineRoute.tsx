@@ -134,20 +134,24 @@ export function HomeRoutineRoute({ categories }: { categories: PublicCategoryCar
                 sizes={index === 0 ? "(min-width: 1024px) 640px, 100vw" : "(min-width: 1024px) 420px, 100vw"}
                 className="object-cover opacity-95 transition duration-500 group-hover:scale-[1.045] motion-reduce:group-hover:scale-100"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#24170E]/78 via-[#24170E]/22 to-transparent" />
+              <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(36,23,14,0.84)_0%,rgba(36,23,14,0.44)_42%,rgba(36,23,14,0.08)_100%)]" />
               <div className="absolute inset-x-5 bottom-5">
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#FFD894]">Routine path</p>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#FFD894] [text-shadow:0_2px_10px_rgba(0,0,0,0.38)]">
+                  Routine path
+                </p>
                 <div className="mt-2 flex items-end justify-between gap-4">
                   <div>
                     <h3
                       className={cn(
-                        "font-heading font-extrabold leading-tight text-white",
+                        "font-heading font-extrabold leading-tight text-white [text-shadow:0_4px_18px_rgba(0,0,0,0.42)]",
                         index === 0 ? "text-4xl md:text-5xl" : "text-2xl"
                       )}
                     >
                       {category.name}
                     </h3>
-                    <p className="mt-2 max-w-md text-sm leading-6 text-white/82">{categoryBenefit(category)}</p>
+                    <p className="mt-2 max-w-md text-sm font-medium leading-6 text-white/92 [text-shadow:0_3px_14px_rgba(0,0,0,0.44)]">
+                      {categoryBenefit(category)}
+                    </p>
                   </div>
                   <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-white/92 text-[#2C1A0D] transition group-hover:translate-x-0.5 group-hover:bg-primary-container group-hover:text-on-primary-container motion-reduce:group-hover:translate-x-0">
                     <ArrowRight aria-hidden className="h-5 w-5" />
