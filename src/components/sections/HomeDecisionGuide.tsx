@@ -37,30 +37,32 @@ export function HomeDecisionGuide({ guide }: { guide: HomepageDecisionGuideConte
   return (
     <section
       id="shop-by-routine"
-      className="scroll-mt-24 bg-[linear-gradient(180deg,#F3E5D2_0%,#FFF9EF_16%,#FFF9EF_84%,#F7EAD8_100%)] py-8 md:py-10 xl:py-12"
+      className="scroll-mt-24 bg-[linear-gradient(180deg,#F3E5D2_0%,#FFF9EF_16%,#FFF9EF_84%,#F7EAD8_100%)] py-6 md:py-7 xl:py-8"
     >
       <div className="section-shell">
-        <div className="grid gap-7 lg:grid-cols-[0.76fr_1.24fr] lg:items-center">
-          <div className="max-w-xl">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">{guide.eyebrow}</p>
-            <h2 className="mt-3 max-w-xl font-heading text-4xl font-extrabold leading-[0.98] tracking-tight md:text-5xl xl:text-[4.2rem]">
-              {guide.title}
-            </h2>
-            <p className="mt-4 max-w-xl text-base font-medium leading-7 text-[#6B5540]">
-              {guide.subtitle}
-            </p>
+        <div className="grid gap-7 lg:h-[min(640px,calc(100svh-132px))] lg:grid-cols-[0.78fr_1.22fr] lg:items-stretch">
+          <div className="flex max-w-xl flex-col lg:h-full lg:max-w-none lg:rounded-[2rem] lg:border lg:border-[#E5C9A4] lg:bg-white/36 lg:p-5 lg:shadow-[0_24px_70px_rgba(92,60,30,0.09)] lg:backdrop-blur">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">{guide.eyebrow}</p>
+              <h2 className="mt-3 max-w-xl font-heading text-4xl font-extrabold leading-[0.98] tracking-tight md:text-5xl xl:text-[3.32rem] 2xl:text-[3.75rem]">
+                {guide.title}
+              </h2>
+              <p className="mt-3 max-w-xl text-sm font-medium leading-6 text-[#6B5540] 2xl:text-base 2xl:leading-7">
+                {guide.subtitle}
+              </p>
+            </div>
 
-            <div className="mt-5 max-w-xl rounded-[1.35rem] border border-[#E5C9A4] bg-white/68 p-4 shadow-soft backdrop-blur">
-              <div className="flex items-center justify-between gap-4 border-b border-[#E5C9A4] pb-3">
-                <p className="font-heading text-lg font-extrabold text-[#2C1A0D]">{guide.stepsTitle}</p>
+            <div className="mt-4 flex max-w-xl flex-col rounded-[1.35rem] border border-[#E5C9A4] bg-white/68 p-3.5 shadow-soft backdrop-blur lg:flex-1">
+              <div className="flex items-center justify-between gap-4 border-b border-[#E5C9A4] pb-2.5">
+                <p className="font-heading text-base font-extrabold text-[#2C1A0D] 2xl:text-lg">{guide.stepsTitle}</p>
                 <span className="rounded-full bg-primary-container/20 px-3 py-1 text-xs font-extrabold uppercase tracking-[0.14em] text-primary">
                   {guide.stepsBadge}
                 </span>
               </div>
-              <ol className="mt-3 grid gap-2.5">
+              <ol className="mt-3 grid gap-2 lg:flex-1 lg:content-center 2xl:gap-2.5">
                 {guide.steps.map((step) => (
-                  <li key={step.number} className="grid grid-cols-[auto_minmax(0,1fr)] gap-3">
-                    <span className="grid h-9 w-9 place-items-center rounded-full border border-[#E0C39C] bg-[#FFF8ED] font-heading text-xs font-extrabold text-primary">
+                  <li key={step.number} className="grid grid-cols-[auto_minmax(0,1fr)] gap-2.5">
+                    <span className="grid h-8 w-8 place-items-center rounded-full border border-[#E0C39C] bg-[#FFF8ED] font-heading text-[11px] font-extrabold text-primary 2xl:h-9 2xl:w-9 2xl:text-xs">
                       {step.number}
                     </span>
                     <span>
@@ -76,16 +78,16 @@ export function HomeDecisionGuide({ guide }: { guide: HomepageDecisionGuideConte
               </ol>
             </div>
 
-            <div className="mt-3 flex max-w-xl flex-wrap gap-2 text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#6B4A2F]">
+            <div className="mt-3 flex max-w-xl flex-wrap gap-1.5 text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#6B4A2F]">
               {guide.routineTags.map((tag) => (
-                <span key={tag} className="rounded-full border border-[#E5C9A4] bg-[#FFF8ED]/78 px-3 py-1.5">
+                <span key={tag} className="rounded-full border border-[#E5C9A4] bg-[#FFF8ED]/78 px-3 py-1">
                   {tag}
                 </span>
               ))}
             </div>
           </div>
 
-          <div className="grid rounded-[2rem] border border-[#E5C9A4] bg-white/42 p-3 shadow-[0_28px_80px_rgba(92,60,30,0.12)] backdrop-blur lg:h-[calc(100svh-180px)] lg:min-h-[520px] lg:max-h-[610px] lg:grid-rows-[auto_minmax(0,1fr)]">
+          <div className="grid rounded-[2rem] border border-[#E5C9A4] bg-white/42 p-3 shadow-[0_28px_80px_rgba(92,60,30,0.12)] backdrop-blur lg:h-full lg:grid-rows-[auto_minmax(0,1fr)]">
             <div
               className="grid grid-cols-[repeat(4,minmax(150px,1fr))] gap-2 overflow-x-auto pb-1 hide-scrollbar"
               role="tablist"
@@ -156,16 +158,16 @@ export function HomeDecisionGuide({ guide }: { guide: HomepageDecisionGuideConte
                 </div>
               </div>
 
-              <div className="flex min-h-0 flex-col justify-between gap-4 p-5 xl:p-6 2xl:p-7">
+              <div className="flex min-h-0 flex-col justify-between gap-3 p-5 xl:p-5 2xl:p-6">
                 <div>
                   <p className="inline-flex items-center gap-2 rounded-full border border-[#FFD894]/28 bg-[#FFD894]/12 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.18em] text-[#FFD894]">
                     <SearchCheck aria-hidden className="h-4 w-4" />
                     Guided choice
                   </p>
-                  <h3 className="mt-3 max-w-xl font-heading text-[2rem] font-extrabold leading-[1.03] md:text-[2.05rem] xl:text-[2.28rem] 2xl:text-[2.72rem]">
+                  <h3 className="mt-3 max-w-xl font-heading text-[2rem] font-extrabold leading-[1.03] md:text-[2.05rem] xl:text-[2.02rem] 2xl:text-[2.22rem]">
                     {activeOption.title}
                   </h3>
-                  <p className="mt-3 max-w-2xl text-sm font-medium leading-6 text-white/76 2xl:text-base 2xl:leading-7">
+                  <p className="mt-2.5 max-w-2xl text-sm font-medium leading-6 text-white/76 2xl:text-base 2xl:leading-7">
                     {activeOption.description}
                   </p>
                 </div>
