@@ -120,15 +120,15 @@ export function HomeProductDiscovery({ featuredProduct, products }: HomeProductD
   return (
     <section
       id="best-sellers"
-      className="bg-[linear-gradient(180deg,#F3E5D2_0%,#F3E5D2_82%,#2C1A0D_100%)] pb-24 pt-14 md:pb-28 md:pt-20"
+      className="bg-[linear-gradient(180deg,#F3E5D2_0%,#F3E5D2_82%,#2C1A0D_100%)] pb-16 pt-12 md:pb-20 md:pt-16"
     >
       <div className="section-shell">
-        <div className="mb-8 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div className="max-w-3xl">
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">
               {activeTabContent.eyebrow}
             </p>
-            <h2 className="mt-2 font-heading text-3xl font-extrabold leading-tight tracking-tight md:text-5xl">
+            <h2 className="mt-2 font-heading text-3xl font-extrabold leading-tight tracking-tight md:text-4xl xl:text-5xl">
               {activeTabContent.title}
             </h2>
             <p className="mt-3 max-w-2xl text-sm font-medium leading-6 text-[#6B5540] md:text-base">
@@ -153,11 +153,11 @@ export function HomeProductDiscovery({ featuredProduct, products }: HomeProductD
           </div>
         </div>
 
-        <div className="grid gap-5 lg:grid-cols-[1.12fr_0.88fr]">
-          <article className="grid overflow-hidden rounded-[2rem] border border-[#E3C9A8] bg-[#FFF9EF] shadow-lift md:grid-cols-[0.95fr_1.05fr] lg:grid-cols-1">
+        <div className="grid gap-5 lg:grid-cols-[0.98fr_1.02fr]">
+          <article className="grid overflow-hidden rounded-[2rem] border border-[#E3C9A8] bg-[#FFF9EF] shadow-lift md:grid-cols-[0.95fr_1.05fr]">
             <Link
               href={href}
-              className="group relative min-h-[360px] overflow-hidden bg-[#F7EAD8] md:min-h-[460px]"
+              className="group relative min-h-[300px] overflow-hidden bg-[#F7EAD8] md:min-h-[360px]"
             >
               {activeProduct.badge && (
                 <span className="absolute left-5 top-5 z-10 rounded-full border border-white/70 bg-white/95 px-4 py-2 text-xs font-bold uppercase tracking-wide text-primary shadow-soft">
@@ -174,7 +174,7 @@ export function HomeProductDiscovery({ featuredProduct, products }: HomeProductD
               />
             </Link>
 
-            <div className="p-6 md:p-8">
+            <div className="p-6 md:p-7">
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">
                 {activeProduct.category}
               </p>
@@ -182,17 +182,17 @@ export function HomeProductDiscovery({ featuredProduct, products }: HomeProductD
                 href={href}
                 className="mt-3 block focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               >
-                <h3 className="font-heading text-3xl font-extrabold leading-tight tracking-tight text-[#24170E] md:text-4xl">
+                <h3 className="font-heading text-3xl font-extrabold leading-tight tracking-tight text-[#24170E] md:text-[2.35rem]">
                   {activeProduct.name}
                 </h3>
               </Link>
-              <p className="mt-4 text-sm leading-6 text-[#6B5540] md:text-base">
+              <p className="mt-3 text-sm leading-6 text-[#6B5540]">
                 {productStory(activeProduct)}
               </p>
-              <p className="mt-5 font-heading text-3xl font-extrabold text-primary">
+              <p className="mt-4 font-heading text-3xl font-extrabold text-primary">
                 {formatPrice(activeProduct.price)}
               </p>
-              <ul className="mt-6 grid gap-3">
+              <ul className="mt-4 grid gap-2">
                 {benefits.map((benefit) => (
                   <li key={benefit} className="flex gap-3 text-sm font-semibold leading-6 text-[#4E3928]">
                     <CheckCircle2 aria-hidden className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
@@ -202,7 +202,7 @@ export function HomeProductDiscovery({ featuredProduct, products }: HomeProductD
               </ul>
               <Link
                 href={href}
-                className="group mt-7 inline-flex items-center gap-2 rounded-full bg-primary-container px-6 py-3 text-sm font-extrabold text-on-primary-container transition hover:-translate-y-0.5 hover:bg-[#C87500] hover:shadow-soft focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:hover:translate-y-0"
+                className="group mt-5 inline-flex items-center gap-2 rounded-full bg-primary-container px-6 py-3 text-sm font-extrabold text-on-primary-container transition hover:-translate-y-0.5 hover:bg-[#C87500] hover:shadow-soft focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:hover:translate-y-0"
               >
                 View Product
                 <ArrowRight
@@ -214,9 +214,9 @@ export function HomeProductDiscovery({ featuredProduct, products }: HomeProductD
           </article>
 
           {supportingProducts.length > 0 && (
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-2">
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-4">
               {supportingProducts.map((product) => (
-                <ProductCard key={product.id} product={product} itemListName="Homepage Everyday Edit" />
+                <ProductCard key={product.id} product={product} compact itemListName="Homepage Everyday Edit" />
               ))}
             </div>
           )}

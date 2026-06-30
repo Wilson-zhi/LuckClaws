@@ -142,7 +142,10 @@ export function ProductCard({
     >
       <Link
         href={href}
-        className="relative block aspect-square overflow-hidden bg-[#F7EAD8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        className={cn(
+          "relative block aspect-square overflow-hidden bg-[#F7EAD8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
+          compact && "aspect-[1.12]"
+        )}
         onClick={() => trackSelectItem(product, itemListName)}
       >
         {(product.badge || product.isNew) && (
@@ -165,14 +168,17 @@ export function ProductCard({
           className="object-cover transition duration-500 group-hover:scale-[1.055]"
         />
       </Link>
-      <div className="p-4 md:p-5">
-        <div className="flex min-h-[88px] flex-col">
+      <div className={cn("p-4 md:p-5", compact && "md:p-4")}>
+        <div className={cn("flex min-h-[88px] flex-col", compact && "min-h-[74px]")}>
           <p className="text-[11px] font-bold uppercase tracking-widest text-primary/90">
             {product.category}
           </p>
           <Link
             href={href}
-            className="mt-1 line-clamp-2 font-heading text-base font-bold transition hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary md:text-lg"
+            className={cn(
+              "mt-1 line-clamp-2 font-heading text-base font-bold transition hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary md:text-lg",
+              compact && "md:text-base"
+            )}
             onClick={() => trackSelectItem(product, itemListName)}
           >
             {product.name}
@@ -185,7 +191,7 @@ export function ProductCard({
             </p>
           )}
         </div>
-        <div className="mt-4 flex items-center justify-between gap-3">
+        <div className={cn("mt-4 flex items-center justify-between gap-3", compact && "mt-3")}>
           <div className="flex items-baseline gap-2">
             <p className="font-semibold text-on-surface">{formatPrice(product.price)}</p>
             {product.regularPrice && (
@@ -200,7 +206,10 @@ export function ProductCard({
         </div>
         <Link
           href={href}
-          className="mt-4 inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wide text-primary transition hover:translate-x-0.5 hover:text-[#5B3300] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:hover:translate-x-0"
+          className={cn(
+            "mt-4 inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wide text-primary transition hover:translate-x-0.5 hover:text-[#5B3300] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:hover:translate-x-0",
+            compact && "mt-3"
+          )}
           onClick={() => trackSelectItem(product, itemListName)}
         >
           View details

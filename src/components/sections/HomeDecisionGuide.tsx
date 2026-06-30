@@ -37,27 +37,27 @@ export function HomeDecisionGuide({ guide }: { guide: HomepageDecisionGuideConte
   return (
     <section
       id="shop-by-routine"
-      className="bg-[linear-gradient(180deg,#F3E5D2_0%,#FFF9EF_18%,#FFF9EF_82%,#F7EAD8_100%)] py-16 md:py-24"
+      className="scroll-mt-24 bg-[linear-gradient(180deg,#F3E5D2_0%,#FFF9EF_18%,#FFF9EF_82%,#F7EAD8_100%)] py-10 md:py-12 2xl:py-16"
     >
       <div className="section-shell">
         <div className="grid gap-8 lg:grid-cols-[0.78fr_1.22fr] lg:items-start">
           <div className="lg:sticky lg:top-28">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">{guide.eyebrow}</p>
-            <h2 className="mt-3 max-w-xl font-heading text-4xl font-extrabold leading-[0.98] tracking-tight md:text-6xl">
+            <h2 className="mt-3 max-w-xl font-heading text-4xl font-extrabold leading-[0.98] tracking-tight md:text-5xl xl:text-6xl">
               {guide.title}
             </h2>
             <p className="mt-5 max-w-xl text-base font-medium leading-7 text-[#6B5540]">
               {guide.subtitle}
             </p>
 
-            <div className="mt-9 max-w-xl rounded-[1.75rem] border border-[#E5C9A4] bg-white/64 p-5 shadow-soft backdrop-blur">
-              <div className="flex items-center justify-between gap-4 border-b border-[#E5C9A4] pb-4">
+            <div className="mt-6 max-w-xl rounded-[1.5rem] border border-[#E5C9A4] bg-white/64 p-4 shadow-soft backdrop-blur 2xl:mt-7 2xl:p-5">
+              <div className="flex items-center justify-between gap-4 border-b border-[#E5C9A4] pb-3">
                 <p className="font-heading text-lg font-extrabold text-[#2C1A0D]">{guide.stepsTitle}</p>
                 <span className="rounded-full bg-primary-container/20 px-3 py-1 text-xs font-extrabold uppercase tracking-[0.14em] text-primary">
                   {guide.stepsBadge}
                 </span>
               </div>
-              <ol className="mt-5 grid gap-4">
+              <ol className="mt-4 grid gap-3">
                 {guide.steps.map((step) => (
                   <li key={step.number} className="grid grid-cols-[auto_minmax(0,1fr)] gap-4">
                     <span className="grid h-10 w-10 place-items-center rounded-full border border-[#E0C39C] bg-[#FFF8ED] font-heading text-xs font-extrabold text-primary">
@@ -84,7 +84,11 @@ export function HomeDecisionGuide({ guide }: { guide: HomepageDecisionGuideConte
           </div>
 
           <div className="grid gap-5">
-            <div className="grid gap-3 sm:grid-cols-2" role="tablist" aria-label="Shopping routine advisor">
+            <div
+              className="grid auto-rows-[64px] gap-3 sm:grid-cols-2 md:auto-rows-[66px] 2xl:auto-rows-[76px]"
+              role="tablist"
+              aria-label="Shopping routine advisor"
+            >
               {guideOptions.map(({ key, label, icon }) => {
                 const isActive = key === activeOption.key;
                 const Icon = guideIcon(icon);
@@ -95,16 +99,16 @@ export function HomeDecisionGuide({ guide }: { guide: HomepageDecisionGuideConte
                     type="button"
                     role="tab"
                     aria-selected={isActive}
-                    className={`group flex min-h-[88px] items-center justify-between gap-4 rounded-[1.25rem] border px-4 text-left shadow-soft transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:transition-none ${
+                    className={`group flex h-full min-h-0 items-center justify-between gap-4 overflow-hidden rounded-[1.25rem] border px-4 text-left shadow-soft transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:transition-none ${
                       isActive
                         ? "border-primary bg-[#2C1A0D] text-white"
                         : "border-[#E5C9A4] bg-white/82 text-[#4E3928] hover:-translate-y-0.5 hover:border-primary/50 hover:bg-white hover:shadow-lift motion-reduce:hover:translate-y-0"
                     }`}
                     onClick={() => setActiveKey(key)}
                   >
-                    <span className="flex items-center gap-3">
+                    <span className="flex min-w-0 items-center gap-3">
                       <span
-                        className={`grid h-11 w-11 place-items-center rounded-full transition ${
+                        className={`grid h-10 w-10 shrink-0 place-items-center rounded-full transition 2xl:h-11 2xl:w-11 ${
                           isActive
                             ? "bg-[#FFD894] text-[#2C1A0D]"
                             : "bg-primary-container/20 text-primary group-hover:bg-primary-container"
@@ -112,11 +116,20 @@ export function HomeDecisionGuide({ guide }: { guide: HomepageDecisionGuideConte
                       >
                         <Icon aria-hidden className="h-5 w-5" />
                       </span>
-                      <span className="font-heading text-base font-extrabold">{label}</span>
+                      <span
+                        className="min-w-0 overflow-hidden font-heading text-sm font-extrabold leading-tight 2xl:text-base"
+                        style={{
+                          display: "-webkit-box",
+                          WebkitBoxOrient: "vertical",
+                          WebkitLineClamp: 2
+                        }}
+                      >
+                        {label}
+                      </span>
                     </span>
                     <ArrowRight
                       aria-hidden
-                      className={`h-4 w-4 transition group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0 ${
+                      className={`h-4 w-4 shrink-0 transition group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0 ${
                         isActive ? "text-[#FFD894]" : "text-primary"
                       }`}
                     />
@@ -126,10 +139,10 @@ export function HomeDecisionGuide({ guide }: { guide: HomepageDecisionGuideConte
             </div>
 
             <article
-              className="grid overflow-hidden rounded-[2rem] border border-[#E4C8A3] bg-[#2C1A0D] text-white shadow-lift md:min-h-[560px] md:grid-cols-[0.9fr_1.1fr]"
+              className="grid overflow-hidden rounded-[2rem] border border-[#E4C8A3] bg-[#2C1A0D] text-white shadow-lift md:h-[450px] md:grid-cols-[0.9fr_1.1fr] 2xl:h-[500px]"
               aria-live="polite"
             >
-              <div className="relative min-h-[280px] overflow-hidden md:min-h-[560px]">
+              <div className="relative min-h-[280px] overflow-hidden md:h-full md:min-h-0">
                 <Image
                   key={activeOption.image}
                   src={activeOption.image}
@@ -147,26 +160,26 @@ export function HomeDecisionGuide({ guide }: { guide: HomepageDecisionGuideConte
                 </div>
               </div>
 
-              <div className="flex min-h-full flex-col justify-between gap-8 p-6 md:p-8 lg:p-10">
+              <div className="flex min-h-full flex-col justify-between gap-5 overflow-hidden p-6 md:p-6 2xl:p-8">
                 <div>
                   <p className="inline-flex items-center gap-2 rounded-full border border-[#FFD894]/28 bg-[#FFD894]/12 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.18em] text-[#FFD894]">
                     <SearchCheck aria-hidden className="h-4 w-4" />
                     Guided choice
                   </p>
-                  <h3 className="mt-5 max-w-xl font-heading text-3xl font-extrabold leading-tight md:text-[3.25rem]">
+                  <h3 className="mt-4 max-w-xl font-heading text-3xl font-extrabold leading-tight md:text-[2.05rem] 2xl:text-[2.8rem]">
                     {activeOption.title}
                   </h3>
-                  <p className="mt-5 max-w-2xl text-base font-medium leading-7 text-white/76">
+                  <p className="mt-3 max-w-2xl text-sm font-medium leading-6 text-white/76 2xl:text-base 2xl:leading-7">
                     {activeOption.description}
                   </p>
                 </div>
 
-                <div className="grid gap-5">
+                <div className="grid gap-4">
                   <ul className="grid gap-2 sm:grid-cols-3">
                     {activeOption.details.map((detail) => (
                       <li
                         key={detail}
-                        className="rounded-[1rem] border border-white/12 bg-white/[0.07] px-4 py-3 text-sm font-bold leading-5 text-white/82"
+                        className="rounded-[0.9rem] border border-white/12 bg-white/[0.07] px-3 py-2 text-xs font-bold leading-5 text-white/82 2xl:px-4 2xl:py-3 2xl:text-sm"
                       >
                         {detail}
                       </li>
@@ -178,7 +191,7 @@ export function HomeDecisionGuide({ guide }: { guide: HomepageDecisionGuideConte
                       <Link
                         key={link.href}
                         href={link.href}
-                        className={`group inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-extrabold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FFD894] ${
+                        className={`group inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-extrabold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FFD894] 2xl:px-5 2xl:py-3 ${
                           index === 0
                             ? "bg-[#FFD894] text-[#2C1A0D] hover:bg-primary-container hover:shadow-soft"
                             : "border border-white/24 bg-white/10 text-white hover:bg-white hover:text-[#2C1A0D]"

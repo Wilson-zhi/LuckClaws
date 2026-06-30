@@ -80,22 +80,34 @@ function categoryImage(category: PublicCategoryCard) {
 
 function tileClass(index: number, count: number) {
   if (count === 4) {
-    return index < 2 ? "min-h-[390px] lg:col-span-3" : "min-h-[260px] lg:col-span-3";
+    return "min-h-[280px] lg:min-h-[340px]";
   }
 
   if (index === 0) {
-    return "min-h-[430px] lg:col-span-3 lg:row-span-2";
+    return "min-h-[360px] lg:col-span-2";
   }
 
   if (count >= 5 && (index === 1 || index === 2)) {
-    return "min-h-[260px] lg:col-span-3";
+    return "min-h-[300px]";
   }
 
   if (count >= 5) {
-    return "min-h-[240px] lg:col-span-3";
+    return "min-h-[280px]";
   }
 
-  return "min-h-[230px] lg:col-span-2";
+  return "min-h-[260px]";
+}
+
+function categoryGridClass(count: number) {
+  if (count === 4) {
+    return "lg:grid-cols-4";
+  }
+
+  if (count >= 5) {
+    return "lg:grid-cols-5";
+  }
+
+  return "lg:grid-cols-3";
 }
 
 export function HomeRoutineRoute({ categories }: { categories: PublicCategoryCard[] }) {
@@ -108,13 +120,13 @@ export function HomeRoutineRoute({ categories }: { categories: PublicCategoryCar
   return (
     <section
       id="routine-lookbook"
-      className="bg-[linear-gradient(180deg,#F3E5D2_0%,#FFF9EF_16%,#FFF9EF_84%,#F7EAD8_100%)] py-16 md:py-24"
+      className="bg-[linear-gradient(180deg,#F3E5D2_0%,#FFF9EF_16%,#FFF9EF_84%,#F7EAD8_100%)] py-12 md:py-16"
     >
       <div className="section-shell">
-        <div className="mb-8 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Routine lookbook</p>
-            <h2 className="mt-2 font-heading text-3xl font-extrabold tracking-tight md:text-5xl">
+            <h2 className="mt-2 font-heading text-3xl font-extrabold tracking-tight md:text-4xl xl:text-5xl">
               Browse the edited routine paths.
             </h2>
             <p className="mt-3 max-w-2xl text-base leading-7 text-[#6B5540]">
@@ -140,7 +152,7 @@ export function HomeRoutineRoute({ categories }: { categories: PublicCategoryCar
           </Link>
         </div>
 
-        <div className="grid auto-rows-[minmax(220px,auto)] gap-4 lg:grid-cols-6">
+        <div className={cn("grid auto-rows-[minmax(220px,auto)] gap-4", categoryGridClass(visibleCategories.length))}>
           {visibleCategories.map((category, index) => (
             <Link
               key={category.href}
