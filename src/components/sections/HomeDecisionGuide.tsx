@@ -90,6 +90,24 @@ const guideOptions: GuideOption[] = [
   }
 ];
 
+const advisorSteps = [
+  {
+    number: "01",
+    title: "Pick the routine",
+    text: "Start with the moment your pet is in right now."
+  },
+  {
+    number: "02",
+    title: "Compare a shorter path",
+    text: "See the most relevant categories before opening a grid."
+  },
+  {
+    number: "03",
+    title: "Shop with context",
+    text: "Move into product pages with clearer expectations."
+  }
+];
+
 export function HomeDecisionGuide() {
   const [activeKey, setActiveKey] = useState(guideOptions[0].key);
   const activeOption = useMemo(
@@ -112,6 +130,37 @@ export function HomeDecisionGuide() {
             <p className="mt-5 max-w-xl text-base font-medium leading-7 text-[#6B5540]">
               Start with what your pet needs today, then follow a shorter path to the products that make sense.
             </p>
+
+            <div className="mt-9 max-w-xl rounded-[1.75rem] border border-[#E5C9A4] bg-white/64 p-5 shadow-soft backdrop-blur">
+              <div className="flex items-center justify-between gap-4 border-b border-[#E5C9A4] pb-4">
+                <p className="font-heading text-lg font-extrabold text-[#2C1A0D]">How the route works</p>
+                <span className="rounded-full bg-primary-container/20 px-3 py-1 text-xs font-extrabold uppercase tracking-[0.14em] text-primary">
+                  3 steps
+                </span>
+              </div>
+              <ol className="mt-5 grid gap-4">
+                {advisorSteps.map((step) => (
+                  <li key={step.number} className="grid grid-cols-[auto_minmax(0,1fr)] gap-4">
+                    <span className="grid h-10 w-10 place-items-center rounded-full border border-[#E0C39C] bg-[#FFF8ED] font-heading text-xs font-extrabold text-primary">
+                      {step.number}
+                    </span>
+                    <span>
+                      <span className="block font-heading text-base font-extrabold text-[#2C1A0D]">
+                        {step.title}
+                      </span>
+                      <span className="mt-1 block text-sm font-medium leading-6 text-[#6B5540]">{step.text}</span>
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+
+            <div className="mt-4 flex max-w-xl flex-wrap gap-2 text-xs font-extrabold uppercase tracking-[0.14em] text-[#6B4A2F]">
+              <span className="rounded-full border border-[#E5C9A4] bg-[#FFF8ED]/78 px-3 py-2">Play</span>
+              <span className="rounded-full border border-[#E5C9A4] bg-[#FFF8ED]/78 px-3 py-2">Walk</span>
+              <span className="rounded-full border border-[#E5C9A4] bg-[#FFF8ED]/78 px-3 py-2">Rest</span>
+              <span className="rounded-full border border-[#E5C9A4] bg-[#FFF8ED]/78 px-3 py-2">Support</span>
+            </div>
           </div>
 
           <div className="grid gap-5">
@@ -125,7 +174,7 @@ export function HomeDecisionGuide() {
                     type="button"
                     role="tab"
                     aria-selected={isActive}
-                    className={`group flex min-h-[76px] items-center justify-between gap-4 rounded-[1.25rem] border px-4 text-left shadow-soft transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:transition-none ${
+                    className={`group flex min-h-[88px] items-center justify-between gap-4 rounded-[1.25rem] border px-4 text-left shadow-soft transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:transition-none ${
                       isActive
                         ? "border-primary bg-[#2C1A0D] text-white"
                         : "border-[#E5C9A4] bg-white/82 text-[#4E3928] hover:-translate-y-0.5 hover:border-primary/50 hover:bg-white hover:shadow-lift motion-reduce:hover:translate-y-0"
@@ -156,10 +205,10 @@ export function HomeDecisionGuide() {
             </div>
 
             <article
-              className="grid overflow-hidden rounded-[2rem] border border-[#E4C8A3] bg-[#2C1A0D] text-white shadow-lift md:grid-cols-[0.86fr_1.14fr]"
+              className="grid overflow-hidden rounded-[2rem] border border-[#E4C8A3] bg-[#2C1A0D] text-white shadow-lift md:min-h-[560px] md:grid-cols-[0.9fr_1.1fr]"
               aria-live="polite"
             >
-              <div className="relative min-h-[280px] overflow-hidden md:min-h-[430px]">
+              <div className="relative min-h-[280px] overflow-hidden md:min-h-[560px]">
                 <Image
                   key={activeOption.image}
                   src={activeOption.image}
@@ -177,13 +226,13 @@ export function HomeDecisionGuide() {
                 </div>
               </div>
 
-              <div className="flex flex-col justify-between gap-8 p-6 md:p-8">
+              <div className="flex min-h-full flex-col justify-between gap-8 p-6 md:p-8 lg:p-10">
                 <div>
                   <p className="inline-flex items-center gap-2 rounded-full border border-[#FFD894]/28 bg-[#FFD894]/12 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.18em] text-[#FFD894]">
                     <SearchCheck aria-hidden className="h-4 w-4" />
                     Guided choice
                   </p>
-                  <h3 className="mt-5 max-w-xl font-heading text-3xl font-extrabold leading-tight md:text-5xl">
+                  <h3 className="mt-5 max-w-xl font-heading text-3xl font-extrabold leading-tight md:text-[3.25rem]">
                     {activeOption.title}
                   </h3>
                   <p className="mt-5 max-w-2xl text-base font-medium leading-7 text-white/76">
