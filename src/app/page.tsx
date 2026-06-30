@@ -15,6 +15,7 @@ import {
   type LucideIcon
 } from "lucide-react";
 import { ViewItemListTracker } from "@/components/analytics/EcommerceEventTrackers";
+import { HomeDecisionGuide } from "@/components/sections/HomeDecisionGuide";
 import { HomePosterHero } from "@/components/sections/HomePosterHero";
 import { HomeProductDiscovery } from "@/components/sections/HomeProductDiscovery";
 import { HomeRoutineRoute } from "@/components/sections/HomeRoutineRoute";
@@ -222,6 +223,8 @@ export default async function HomePage() {
       <section className="bg-[linear-gradient(180deg,#3B2616_0%,#8A6743_38%,#F3E5D2_100%)] pb-7 pt-8">
         <CompactTrustBar items={topTrustItems} columns="wide" className="section-shell" />
       </section>
+
+      <HomeDecisionGuide />
 
       <HomeRoutineRoute categories={homepageCategories} />
 

@@ -107,7 +107,7 @@ export function HomeRoutineRoute({ categories }: { categories: PublicCategoryCar
 
   return (
     <section
-      id="shop-by-routine"
+      id="routine-lookbook"
       className="bg-[linear-gradient(180deg,#F3E5D2_0%,#FFF9EF_16%,#FFF9EF_84%,#F7EAD8_100%)] py-16 md:py-24"
     >
       <div className="section-shell">
@@ -115,10 +115,10 @@ export function HomeRoutineRoute({ categories }: { categories: PublicCategoryCar
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Routine lookbook</p>
             <h2 className="mt-2 font-heading text-3xl font-extrabold tracking-tight md:text-5xl">
-              Start with the moment, then shop with intent.
+              Browse the edited routine paths.
             </h2>
             <p className="mt-3 max-w-2xl text-base leading-7 text-[#6B5540]">
-              A clearer path through toys, walks, rest, comfort, and support.
+              Move from the guide into clear collection paths for play, walks, rest, comfort, and support.
             </p>
             <div className="mt-5 flex flex-wrap items-center gap-2 text-xs font-extrabold uppercase tracking-wide text-[#6B4A2F]">
               {routineSignals.map((signal, index) => (
@@ -155,6 +155,7 @@ export function HomeRoutineRoute({ categories }: { categories: PublicCategoryCar
                 src={categoryImage(category)}
                 alt={category.alt}
                 fill
+                loading={index < 4 ? "eager" : "lazy"}
                 sizes={index === 0 ? "(min-width: 1024px) 640px, 100vw" : "(min-width: 1024px) 420px, 100vw"}
                 className="object-cover object-center opacity-100 transition duration-500 group-hover:scale-[1.045] motion-reduce:group-hover:scale-100"
               />
