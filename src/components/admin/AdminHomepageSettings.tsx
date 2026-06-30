@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
 import { AdminGuard } from "@/components/admin/AdminGuard";
+import { AdminHomepageAdvancedSettings } from "@/components/admin/AdminHomepageAdvancedSettings";
 import { AdminPageFrame } from "@/components/admin/AdminPageFrame";
 import { type AdminLabelKey, useAdminLanguage } from "@/components/admin/admin-language";
 import {
@@ -1380,7 +1381,10 @@ export function AdminHomepageSettings() {
           description={{ zh: "管理首页内容和信任标识。", en: "Manage homepage hero content and trust badges." }}
           backLink
         >
-          <AdminHomepageFormContent />
+          <div className="space-y-6">
+            <AdminHomepageFormContent />
+            <AdminHomepageAdvancedSettings />
+          </div>
         </AdminPageFrame>
       )}
     </AdminGuard>

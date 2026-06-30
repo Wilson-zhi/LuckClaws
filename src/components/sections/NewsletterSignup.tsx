@@ -2,13 +2,14 @@
 
 import { type FormEvent, useState } from "react";
 import { CheckCircle2, Mail } from "lucide-react";
+import type { HomepageNewsletterContent } from "@/lib/homepage-content";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 function isValidEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
-export function NewsletterSignup() {
+export function NewsletterSignup({ content }: { content: HomepageNewsletterContent }) {
   const [email, setEmail] = useState("");
   const [honeypot, setHoneypot] = useState("");
   const [error, setError] = useState("");
@@ -67,7 +68,7 @@ export function NewsletterSignup() {
 
     if (insertError) {
       if (insertError.code === "23505") {
-        setMessage("You're already in the pack.");
+        setMessage(content.duplicateMessage);
         setSubmittedEmail("");
         return;
       }
@@ -79,6 +80,10 @@ export function NewsletterSignup() {
 
     setSubmittedEmail(normalizedEmail);
   };
+
+  if (!content.enabled) {
+    return null;
+  }
 
   const editEmail = () => {
     setSubmittedEmail("");
@@ -97,17 +102,15 @@ export function NewsletterSignup() {
             <div>
               <span className="inline-flex items-center gap-2 rounded-full bg-primary-container/20 px-4 py-2 text-xs font-bold uppercase tracking-wide text-primary">
                 <Mail aria-hidden className="h-4 w-4" />
-                LUCK CLAWS updates
+                {content.eyebrow}
               </span>
               <h2 className="mt-5 max-w-lg font-heading text-3xl font-extrabold leading-tight md:text-4xl">
-                Better routines, fewer random buys.
+                {content.title}
               </h2>
               <p className="mt-3 max-w-xl text-sm leading-6 text-on-surface-variant md:text-base">
-                Get new arrivals, routine-first product edits, and occasional offers from LUCK CLAWS.
+                {content.subtitle}
               </p>
-              <p className="mt-4 text-sm font-semibold text-primary">
-                Get 10% off your first order with WELCOME10.
-              </p>
+              {content.offerText && <p className="mt-4 text-sm font-semibold text-primary">{content.offerText}</p>}
             </div>
 
             <div className="rounded-lg border border-outline-variant/70 bg-white/95 p-4 shadow-soft md:p-5">
@@ -116,9 +119,9 @@ export function NewsletterSignup() {
                   <span className="grid h-11 w-11 place-items-center rounded-full bg-primary-container/20 text-primary">
                     <CheckCircle2 aria-hidden className="h-6 w-6" />
                   </span>
-                  <h3 className="mt-4 font-heading text-2xl font-bold text-on-surface">You&apos;re in the pack!</h3>
+                  <h3 className="mt-4 font-heading text-2xl font-bold text-on-surface">{content.successTitle}</h3>
                   <p className="mt-2 text-sm leading-6 text-on-surface-variant">
-                    Thanks for joining LUCK CLAWS. Use code WELCOME10 for 10% off your first order.
+                    {content.successMessage}
                   </p>
                   {visibleSubmittedEmail && (
                     <p className="mt-3 break-all text-xs font-semibold text-on-surface-variant">
@@ -130,7 +133,7 @@ export function NewsletterSignup() {
                     className="mt-5 inline-flex rounded-full border border-primary px-5 py-2.5 font-heading text-sm font-bold text-primary transition hover:-translate-y-0.5 hover:bg-primary-container/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:hover:translate-y-0"
                     onClick={editEmail}
                   >
-                    Use another email
+                    {content.editButtonText}
                   </button>
                 </div>
               ) : (
@@ -150,7 +153,7 @@ export function NewsletterSignup() {
                   onChange={(event) => setHoneypot(event.target.value)}
                 />
                 <label className="sr-only" htmlFor="newsletter-email">
-                  Email address
+                  {content.placeholder}
                 </label>
                 <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
                   <input
@@ -158,7 +161,7 @@ export function NewsletterSignup() {
                     type="email"
                     inputMode="email"
                     autoComplete="email"
-                    placeholder="Email address"
+                    placeholder={content.placeholder}
                     value={email}
                     aria-invalid={Boolean(error)}
                     aria-describedby={describedBy}
@@ -180,7 +183,7 @@ export function NewsletterSignup() {
                     disabled={submitting}
                     className="inline-flex min-h-[52px] w-full items-center justify-center rounded-full bg-primary-container px-6 py-3 font-heading text-sm font-bold text-on-primary-container transition hover:-translate-y-0.5 hover:bg-[#e08f00] hover:shadow-soft focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:hover:translate-y-0 sm:w-auto"
                   >
-                    {submitting ? "Joining..." : "Join the Pack"}
+                    {submitting ? content.submittingText : content.buttonText}
                   </button>
                 </div>
                 {error && (
@@ -194,7 +197,7 @@ export function NewsletterSignup() {
                   </p>
                 )}
                 <p id="newsletter-note" className="text-xs leading-5 text-on-surface-variant">
-                  No spam. Just pet-friendly updates and offers.
+                  {content.noteText}
                 </p>
               </form>
             )}

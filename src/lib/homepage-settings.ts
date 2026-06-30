@@ -3,16 +3,25 @@ import "server-only";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 import {
+  homepageDecisionGuideFromValue,
+  homepageDecisionGuideSettingKey,
   homepageCategorySectionFromValue,
   homepageCategorySectionSettingKey,
   homepageHeroFromValue,
   homepageHeroSettingKey,
+  homepageNewsletterFromValue,
+  homepageNewsletterSettingKey,
+  homepageServicePromisesFromValue,
+  homepageServicePromisesSettingKey,
   homepageStorySectionFromValue,
   homepageStorySectionSettingKey,
   homepageTrustBadgesFromValue,
   homepageTrustBadgesSettingKey,
   type HomepageCategorySectionContent,
+  type HomepageDecisionGuideContent,
   type HomepageHeroContent,
+  type HomepageNewsletterContent,
+  type HomepageServicePromisesContent,
   type HomepageStorySectionContent,
   type HomepageTrustBadge
 } from "@/lib/homepage-content";
@@ -28,6 +37,9 @@ export type PublicHomepageSettings = {
   trustBadges: HomepageTrustBadge[];
   categorySection: HomepageCategorySectionContent;
   storySection: HomepageStorySectionContent;
+  decisionGuide: HomepageDecisionGuideContent;
+  servicePromises: HomepageServicePromisesContent;
+  newsletter: HomepageNewsletterContent;
 };
 
 let homepagePublicClient: SupabaseClient | null = null;
@@ -75,7 +87,10 @@ async function fetchRowsWithSelect(selectColumns: string, activeOnly = false) {
       homepageHeroSettingKey,
       homepageTrustBadgesSettingKey,
       homepageCategorySectionSettingKey,
-      homepageStorySectionSettingKey
+      homepageStorySectionSettingKey,
+      homepageDecisionGuideSettingKey,
+      homepageServicePromisesSettingKey,
+      homepageNewsletterSettingKey
     ]);
 
   if (activeOnly) {
@@ -120,11 +135,17 @@ export async function getPublicHomepageSettings(): Promise<PublicHomepageSetting
     (row) => row.key === homepageCategorySectionSettingKey && rowIsActive(row)
   );
   const storySectionRow = rows.find((row) => row.key === homepageStorySectionSettingKey && rowIsActive(row));
+  const decisionGuideRow = rows.find((row) => row.key === homepageDecisionGuideSettingKey && rowIsActive(row));
+  const servicePromisesRow = rows.find((row) => row.key === homepageServicePromisesSettingKey && rowIsActive(row));
+  const newsletterRow = rows.find((row) => row.key === homepageNewsletterSettingKey && rowIsActive(row));
 
   return {
     hero: homepageHeroFromValue(heroRow?.value),
     trustBadges: homepageTrustBadgesFromValue(trustBadgesRow?.value),
     categorySection: homepageCategorySectionFromValue(categorySectionRow?.value),
-    storySection: homepageStorySectionFromValue(storySectionRow?.value)
+    storySection: homepageStorySectionFromValue(storySectionRow?.value),
+    decisionGuide: homepageDecisionGuideFromValue(decisionGuideRow?.value),
+    servicePromises: homepageServicePromisesFromValue(servicePromisesRow?.value),
+    newsletter: homepageNewsletterFromValue(newsletterRow?.value)
   };
 }

@@ -157,7 +157,7 @@ export default async function HomePage() {
     getPublicHomepageProducts(),
     getPublicHomepageSettings()
   ]);
-  const { hero, categorySection, storySection } = homepageSettings;
+  const { hero, categorySection, storySection, decisionGuide, servicePromises, newsletter } = homepageSettings;
   const heroEyebrow = polishedHeroEyebrow(hero.eyebrow);
   const heroTitle = polishedHeroTitle(hero.title);
   const heroSubtitle = polishedHeroSubtitle(hero.subtitle);
@@ -224,7 +224,7 @@ export default async function HomePage() {
         <CompactTrustBar items={topTrustItems} columns="wide" className="section-shell" />
       </section>
 
-      <HomeDecisionGuide />
+      <HomeDecisionGuide guide={decisionGuide} />
 
       <HomeRoutineRoute categories={homepageCategories} />
 
@@ -232,9 +232,9 @@ export default async function HomePage() {
 
       <HomeProductDiscovery featuredProduct={featuredProduct} products={bestSellers} />
 
-      <TrustBadges />
+      <TrustBadges section={servicePromises} />
 
-      <NewsletterSignup />
+      <NewsletterSignup content={newsletter} />
     </SiteShell>
   );
 }

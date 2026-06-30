@@ -4,116 +4,35 @@ import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState, type ComponentType } from "react";
 import { ArrowRight, Bed, HelpCircle, PawPrint, Route, SearchCheck } from "lucide-react";
+import type {
+  HomepageDecisionGuideContent,
+  HomepageDecisionGuideIconKey
+} from "@/lib/homepage-content";
 
-type GuideLink = {
-  label: string;
-  href: string;
-};
+const decisionGuideIconMap = {
+  paw: PawPrint,
+  route: Route,
+  bed: Bed,
+  help: HelpCircle,
+  search: SearchCheck,
+  heart: PawPrint
+} as const satisfies Record<HomepageDecisionGuideIconKey, ComponentType<{ className?: string; "aria-hidden"?: boolean }>>;
 
-type GuideOption = {
-  key: string;
-  label: string;
-  eyebrow: string;
-  title: string;
-  description: string;
-  image: string;
-  imageAlt: string;
-  Icon: ComponentType<{ className?: string; "aria-hidden"?: boolean }>;
-  details: string[];
-  links: GuideLink[];
-};
+function guideIcon(icon: HomepageDecisionGuideIconKey) {
+  return decisionGuideIconMap[icon] ?? PawPrint;
+}
 
-const guideOptions: GuideOption[] = [
-  {
-    key: "play",
-    label: "Energy to spend",
-    eyebrow: "Play path",
-    title: "Start with toys that make daily energy easier to direct.",
-    description:
-      "For chewing, chasing, sniffing, pouncing, and curious pets who need a better outlet before the day gets noisy.",
-    image: "/images/category-dog-toys.jpg",
-    imageAlt: "Dog toys styled on a warm neutral background.",
-    Icon: PawPrint,
-    details: ["Good for enrichment", "Dog and cat paths", "Simple product comparison"],
-    links: [
-      { label: "Dog Toys", href: "/collections/dog-toys" },
-      { label: "Cat Toys", href: "/collections/cat-toys" }
-    ]
-  },
-  {
-    key: "walk",
-    label: "Heading outside",
-    eyebrow: "Walk path",
-    title: "Choose out-the-door essentials before adding extras.",
-    description:
-      "For daily walks, quick errands, and weather shifts where comfort, movement, and practical gear matter first.",
-    image: "/images/category-walking-essentials.jpg",
-    imageAlt: "Walking essentials arranged as a warm lifestyle product scene.",
-    Icon: Route,
-    details: ["Walking gear first", "Apparel when useful", "Clear route to checkout"],
-    links: [
-      { label: "Walking Essentials", href: "/collections/walking-essentials" },
-      { label: "Pet Apparel", href: "/collections/pet-apparel" }
-    ]
-  },
-  {
-    key: "rest",
-    label: "A calmer home",
-    eyebrow: "Rest path",
-    title: "Build a softer corner for rest, recovery, and slower routines.",
-    description:
-      "For pets who need a better place to settle, warmer textures, or a more comfortable home routine.",
-    image: "/images/category-beds-blankets.jpg",
-    imageAlt: "Soft pet bedding and blanket texture in a calm home setting.",
-    Icon: Bed,
-    details: ["Rest-focused products", "Soft everyday textures", "Less visual noise"],
-    links: [
-      { label: "Beds & Blankets", href: "/collections/beds-and-blankets" },
-      { label: "Explore Collections", href: "/collections" }
-    ]
-  },
-  {
-    key: "support",
-    label: "Need help choosing",
-    eyebrow: "Support path",
-    title: "Use support as part of the shopping path, not an afterthought.",
-    description:
-      "For product questions, order questions, or moments where you want a clearer next step before buying.",
-    image: "/images/about-partners.jpg",
-    imageAlt: "A warm pet lifestyle moment representing customer support and practical guidance.",
-    Icon: HelpCircle,
-    details: ["Product questions", "Order support", "Straightforward next steps"],
-    links: [
-      { label: "Contact Us", href: "/contact" },
-      { label: "FAQ", href: "/faq" }
-    ]
-  }
-];
-
-const advisorSteps = [
-  {
-    number: "01",
-    title: "Pick the routine",
-    text: "Start with the moment your pet is in right now."
-  },
-  {
-    number: "02",
-    title: "Compare a shorter path",
-    text: "See the most relevant categories before opening a grid."
-  },
-  {
-    number: "03",
-    title: "Shop with context",
-    text: "Move into product pages with clearer expectations."
-  }
-];
-
-export function HomeDecisionGuide() {
-  const [activeKey, setActiveKey] = useState(guideOptions[0].key);
+export function HomeDecisionGuide({ guide }: { guide: HomepageDecisionGuideContent }) {
+  const guideOptions = guide.options;
+  const [activeKey, setActiveKey] = useState(guideOptions[0]?.key ?? "");
   const activeOption = useMemo(
     () => guideOptions.find((option) => option.key === activeKey) ?? guideOptions[0],
-    [activeKey]
+    [activeKey, guideOptions]
   );
+
+  if (!guide.enabled || !activeOption) {
+    return null;
+  }
 
   return (
     <section
@@ -123,23 +42,23 @@ export function HomeDecisionGuide() {
       <div className="section-shell">
         <div className="grid gap-8 lg:grid-cols-[0.78fr_1.22fr] lg:items-start">
           <div className="lg:sticky lg:top-28">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">Routine advisor</p>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">{guide.eyebrow}</p>
             <h2 className="mt-3 max-w-xl font-heading text-4xl font-extrabold leading-[0.98] tracking-tight md:text-6xl">
-              Choose by moment, not by aisle.
+              {guide.title}
             </h2>
             <p className="mt-5 max-w-xl text-base font-medium leading-7 text-[#6B5540]">
-              Start with what your pet needs today, then follow a shorter path to the products that make sense.
+              {guide.subtitle}
             </p>
 
             <div className="mt-9 max-w-xl rounded-[1.75rem] border border-[#E5C9A4] bg-white/64 p-5 shadow-soft backdrop-blur">
               <div className="flex items-center justify-between gap-4 border-b border-[#E5C9A4] pb-4">
-                <p className="font-heading text-lg font-extrabold text-[#2C1A0D]">How the route works</p>
+                <p className="font-heading text-lg font-extrabold text-[#2C1A0D]">{guide.stepsTitle}</p>
                 <span className="rounded-full bg-primary-container/20 px-3 py-1 text-xs font-extrabold uppercase tracking-[0.14em] text-primary">
-                  3 steps
+                  {guide.stepsBadge}
                 </span>
               </div>
               <ol className="mt-5 grid gap-4">
-                {advisorSteps.map((step) => (
+                {guide.steps.map((step) => (
                   <li key={step.number} className="grid grid-cols-[auto_minmax(0,1fr)] gap-4">
                     <span className="grid h-10 w-10 place-items-center rounded-full border border-[#E0C39C] bg-[#FFF8ED] font-heading text-xs font-extrabold text-primary">
                       {step.number}
@@ -156,17 +75,19 @@ export function HomeDecisionGuide() {
             </div>
 
             <div className="mt-4 flex max-w-xl flex-wrap gap-2 text-xs font-extrabold uppercase tracking-[0.14em] text-[#6B4A2F]">
-              <span className="rounded-full border border-[#E5C9A4] bg-[#FFF8ED]/78 px-3 py-2">Play</span>
-              <span className="rounded-full border border-[#E5C9A4] bg-[#FFF8ED]/78 px-3 py-2">Walk</span>
-              <span className="rounded-full border border-[#E5C9A4] bg-[#FFF8ED]/78 px-3 py-2">Rest</span>
-              <span className="rounded-full border border-[#E5C9A4] bg-[#FFF8ED]/78 px-3 py-2">Support</span>
+              {guide.routineTags.map((tag) => (
+                <span key={tag} className="rounded-full border border-[#E5C9A4] bg-[#FFF8ED]/78 px-3 py-2">
+                  {tag}
+                </span>
+              ))}
             </div>
           </div>
 
           <div className="grid gap-5">
             <div className="grid gap-3 sm:grid-cols-2" role="tablist" aria-label="Shopping routine advisor">
-              {guideOptions.map(({ key, label, Icon }) => {
+              {guideOptions.map(({ key, label, icon }) => {
                 const isActive = key === activeOption.key;
+                const Icon = guideIcon(icon);
 
                 return (
                   <button
