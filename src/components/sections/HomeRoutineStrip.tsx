@@ -17,7 +17,7 @@ const routineItems: RoutineStripItem[] = [
 
 export function HomeRoutineStrip() {
   return (
-    <section className="-mt-px bg-[linear-gradient(180deg,#2C1A0D_0%,#2C1A0D_62%,#3B2616_100%)] pb-7 pt-5 text-white">
+    <section className="-mt-px hidden bg-[linear-gradient(180deg,#2C1A0D_0%,#2C1A0D_62%,#3B2616_100%)] pb-7 pt-5 text-white md:block">
       <div className="section-shell">
         <div className="grid gap-4 rounded-[1.5rem] border border-white/12 bg-white/[0.07] p-3 shadow-lift backdrop-blur md:grid-cols-[220px_minmax(0,1fr)] md:items-center">
           <div className="px-2 md:px-4">
