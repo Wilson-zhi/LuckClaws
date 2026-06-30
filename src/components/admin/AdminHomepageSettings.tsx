@@ -854,15 +854,6 @@ function AdminHomepageFormContent() {
             </p>
           </div>
           <div className="grid gap-4 rounded-md bg-surface-container-low p-4 md:col-span-2">
-            <label className="grid gap-2 text-sm font-semibold text-on-surface">
-              {t("heroImageUrl")}
-              <input
-                className={inputClass}
-                value={hero.imageUrl}
-                onChange={(event) => updateHeroField("imageUrl", event.target.value)}
-              />
-            </label>
-
             <div className="grid gap-3">
               <label className="grid gap-2 text-sm font-semibold text-on-surface">
                 {t("uploadHomepageImage")}
@@ -898,7 +889,10 @@ function AdminHomepageFormContent() {
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={hero.imageUrl} alt={hero.imageAlt || t("heroImagePreview")} className="h-full w-full object-cover" />
                 </div>
-                <p className="break-all text-sm leading-6 text-on-surface-variant">{hero.imageUrl}</p>
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">{t("heroImageUrl")}</p>
+                  <p className="mt-1 break-all text-sm leading-6 text-on-surface-variant">{hero.imageUrl}</p>
+                </div>
               </div>
             ) : (
               <p className="rounded-md bg-white p-4 text-sm font-semibold text-on-surface-variant">

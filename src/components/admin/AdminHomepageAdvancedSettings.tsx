@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
+import { type ChangeEvent, useEffect, useMemo, useState } from "react";
 import { useAdminLanguage } from "@/components/admin/admin-language";
 import {
   buildHomepageDecisionGuideValue,
@@ -63,7 +64,6 @@ type Copy = {
   optionEyebrow: string;
   optionTitle: string;
   optionDescription: string;
-  optionImage: string;
   optionImageAlt: string;
   optionIcon: string;
   optionDetails: string;
@@ -72,6 +72,7 @@ type Copy = {
   secondaryLinkLabel: string;
   secondaryLinkHref: string;
   routeSteps: string;
+  advancedSteps: string;
   stepNumber: string;
   stepTitle: string;
   stepText: string;
@@ -95,6 +96,15 @@ type Copy = {
   noteText: string;
   duplicateMessage: string;
   requiredError: string;
+  uploadImage: string;
+  uploadingImage: string;
+  imageUploaded: string;
+  imageUploadHelper: string;
+  imageUploadError: string;
+  imageTypeError: string;
+  imageSizeError: string;
+  currentImage: string;
+  editNode: string;
 };
 
 const copy = {
@@ -125,7 +135,6 @@ const copy = {
     optionEyebrow: "节点小标题",
     optionTitle: "推荐标题",
     optionDescription: "推荐说明",
-    optionImage: "图片链接",
     optionImageAlt: "图片 Alt 文本",
     optionIcon: "图标",
     optionDetails: "细节标签（每行一个）",
@@ -134,6 +143,7 @@ const copy = {
     secondaryLinkLabel: "副链接文字",
     secondaryLinkHref: "副链接",
     routeSteps: "导购步骤",
+    advancedSteps: "导购步骤（可展开编辑）",
     stepNumber: "编号",
     stepTitle: "步骤标题",
     stepText: "步骤说明",
@@ -156,7 +166,16 @@ const copy = {
     submittingText: "提交中文字",
     noteText: "底部说明",
     duplicateMessage: "重复邮箱提示",
-    requiredError: "启用的模块必须填写标题。"
+    requiredError: "启用的模块必须填写标题。",
+    uploadImage: "上传本地图片",
+    uploadingImage: "图片上传中...",
+    imageUploaded: "图片已上传，保存后前台生效。",
+    imageUploadHelper: "支持 JPEG、PNG、WebP，最大 5MB。上传成功后自动替换当前图片。",
+    imageUploadError: "图片上传失败，请稍后重试。",
+    imageTypeError: "只支持 JPEG、PNG 或 WebP 图片。",
+    imageSizeError: "图片不能超过 5MB。",
+    currentImage: "当前图片",
+    editNode: "编辑"
   },
   en: {
     title: "Homepage Advanced Modules",
@@ -186,7 +205,6 @@ const copy = {
     optionEyebrow: "Node eyebrow",
     optionTitle: "Recommendation title",
     optionDescription: "Recommendation description",
-    optionImage: "Image URL",
     optionImageAlt: "Image alt text",
     optionIcon: "Icon",
     optionDetails: "Detail chips, one per line",
@@ -195,6 +213,7 @@ const copy = {
     secondaryLinkLabel: "Secondary link label",
     secondaryLinkHref: "Secondary link",
     routeSteps: "Advisor steps",
+    advancedSteps: "Advisor steps, expandable",
     stepNumber: "Number",
     stepTitle: "Step title",
     stepText: "Step text",
@@ -217,7 +236,16 @@ const copy = {
     submittingText: "Submitting text",
     noteText: "Footer note",
     duplicateMessage: "Duplicate email message",
-    requiredError: "Enabled modules must have a title."
+    requiredError: "Enabled modules must have a title.",
+    uploadImage: "Upload local image",
+    uploadingImage: "Uploading image...",
+    imageUploaded: "Image uploaded. Save to publish it.",
+    imageUploadHelper: "Supports JPEG, PNG, and WebP up to 5MB. Upload replaces the current image automatically.",
+    imageUploadError: "Unable to upload image. Please try again.",
+    imageTypeError: "Only JPEG, PNG, or WebP images are supported.",
+    imageSizeError: "Image must be 5MB or smaller.",
+    currentImage: "Current image",
+    editNode: "Edit"
   }
 } as const satisfies Record<"zh" | "en", Copy>;
 
@@ -226,6 +254,10 @@ const inputClass =
 
 const textareaClass =
   "min-h-28 w-full rounded-md border border-outline-variant bg-white px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary-container/30";
+
+const HOMEPAGE_IMAGE_BUCKET = "homepage-images";
+const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
+const acceptedImageTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
 
 const iconLabels: Record<HomepageTrustBadgeIconKey, { zh: string; en: string }> = {
   truck: { zh: "卡车", en: "Truck" },
@@ -277,6 +309,24 @@ function textField(label: string, value: string, onChange: (value: string) => vo
   );
 }
 
+function sanitizePathSegment(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9-]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "item";
+}
+
+function safeFileName(fileName: string) {
+  const normalized = fileName
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9._-]/g, "-")
+    .replace(/-+/g, "-");
+
+  return normalized || "image";
+}
+
 function moveArrayItem<T>(items: T[], index: number, direction: "up" | "down") {
   const nextIndex = direction === "up" ? index - 1 : index + 1;
 
@@ -304,6 +354,7 @@ export function AdminHomepageAdvancedSettings() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [uploadingImageKey, setUploadingImageKey] = useState("");
 
   useEffect(() => {
     if (!supabase) {
@@ -430,6 +481,72 @@ export function AdminHomepageAdvancedSettings() {
     }));
   };
 
+  const uploadGuideOptionImage = async (option: HomepageDecisionGuideOption, file: File) => {
+    if (!supabase) {
+      throw new Error("Supabase client is not available.");
+    }
+
+    const path = `homepage/routine-advisor/${sanitizePathSegment(option.key || option.label)}/${Date.now()}-${safeFileName(
+      file.name
+    )}`;
+    const { error: uploadError } = await supabase.storage.from(HOMEPAGE_IMAGE_BUCKET).upload(path, file, {
+      cacheControl: "31536000",
+      upsert: false
+    });
+
+    if (uploadError) {
+      throw uploadError;
+    }
+
+    const { data } = supabase.storage.from(HOMEPAGE_IMAGE_BUCKET).getPublicUrl(path);
+
+    if (!data.publicUrl) {
+      throw new Error("Supabase did not return a public image URL.");
+    }
+
+    return data.publicUrl;
+  };
+
+  const handleGuideOptionImageUpload = async (
+    index: number,
+    option: HomepageDecisionGuideOption,
+    event: ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+
+    if (!file) {
+      return;
+    }
+
+    setSuccess("");
+    setError("");
+
+    if (!acceptedImageTypes.has(file.type)) {
+      setError(c.imageTypeError);
+      return;
+    }
+
+    if (file.size > MAX_IMAGE_SIZE_BYTES) {
+      setError(c.imageSizeError);
+      return;
+    }
+
+    const uploadKey = option.key || String(index);
+    setUploadingImageKey(uploadKey);
+
+    try {
+      const publicUrl = await uploadGuideOptionImage(option, file);
+      updateGuideOption(index, "image", publicUrl);
+      setSuccess(c.imageUploaded);
+    } catch (uploadError) {
+      console.error("Unable to upload homepage routine image", uploadError);
+      setError(c.imageUploadError);
+    } finally {
+      setUploadingImageKey("");
+    }
+  };
+
   const saveSettings = async () => {
     if (!supabase) {
       setError(c.loadError);
@@ -554,9 +671,12 @@ export function AdminHomepageAdvancedSettings() {
             </div>
           </div>
 
-          <div className="rounded-md bg-surface-container-low p-4">
-            <div className="flex items-center justify-between gap-4">
-              <h4 className="font-heading text-lg font-bold text-on-surface">{c.routeSteps}</h4>
+          <details className="rounded-md bg-surface-container-low p-4">
+            <summary className="cursor-pointer list-none">
+              <h4 className="font-heading text-lg font-bold text-on-surface">{c.advancedSteps}</h4>
+              <p className="mt-1 text-xs font-semibold text-on-surface-variant">{c.routeSteps}</p>
+            </summary>
+            <div className="mt-4 flex justify-end">
               <button
                 type="button"
                 className="rounded-full border border-primary px-4 py-2 text-xs font-bold text-primary transition hover:bg-primary-container/15"
@@ -613,7 +733,7 @@ export function AdminHomepageAdvancedSettings() {
                 </div>
               ))}
             </div>
-          </div>
+          </details>
 
           <div className="rounded-md bg-surface-container-low p-4">
             <h4 className="font-heading text-lg font-bold text-on-surface">{c.routeOptions}</h4>
@@ -623,8 +743,25 @@ export function AdminHomepageAdvancedSettings() {
                 const secondLink = option.links[1] ?? { label: "", href: "" };
 
                 return (
-                  <div key={option.key || index} className="rounded-md border border-outline-variant bg-white p-4">
-                    <div className="grid gap-4 md:grid-cols-2">
+                  <details
+                    key={option.key || index}
+                    className="rounded-md border border-outline-variant bg-white p-4"
+                  >
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-4">
+                      <div>
+                        <p className="font-heading text-base font-bold text-on-surface">
+                          {option.label || `${c.routeOptions} ${index + 1}`}
+                        </p>
+                        <p className="mt-1 line-clamp-1 text-xs font-semibold text-on-surface-variant">
+                          {option.title || option.eyebrow}
+                        </p>
+                      </div>
+                      <span className="rounded-full border border-outline-variant px-4 py-2 text-xs font-bold text-primary">
+                        {c.editNode}
+                      </span>
+                    </summary>
+
+                    <div className="mt-5 grid gap-4 md:grid-cols-2">
                       {textField(c.optionLabel, option.label, (value) => updateGuideOption(index, "label", value))}
                       <label className="grid gap-2 text-sm font-semibold text-on-surface">
                         {c.optionIcon}
@@ -652,7 +789,45 @@ export function AdminHomepageAdvancedSettings() {
                           true
                         )}
                       </div>
-                      {textField(c.optionImage, option.image, (value) => updateGuideOption(index, "image", value))}
+                      <div className="grid gap-3 rounded-md bg-surface-container-low p-4 md:col-span-2">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                          <div>
+                            <p className="text-sm font-semibold text-on-surface">{c.uploadImage}</p>
+                            <p className="mt-1 text-xs font-semibold leading-5 text-on-surface-variant">
+                              {c.imageUploadHelper}
+                            </p>
+                          </div>
+                          <label className="inline-flex w-fit cursor-pointer rounded-full bg-primary px-5 py-2 text-xs font-bold text-white transition hover:bg-primary/90">
+                            {uploadingImageKey === (option.key || String(index)) ? c.uploadingImage : c.uploadImage}
+                            <input
+                              accept="image/jpeg,image/png,image/webp"
+                              className="sr-only"
+                              disabled={uploadingImageKey === (option.key || String(index))}
+                              type="file"
+                              onChange={(event) => handleGuideOptionImageUpload(index, option, event)}
+                            />
+                          </label>
+                        </div>
+                        {option.image ? (
+                          <div className="grid gap-3 rounded-md bg-white p-3 sm:grid-cols-[120px_1fr] sm:items-center">
+                            <div className="relative aspect-[4/3] overflow-hidden rounded-md bg-surface-container-lowest">
+                              <Image
+                                src={option.image}
+                                alt={option.imageAlt || option.label || c.currentImage}
+                                fill
+                                sizes="120px"
+                                className="object-cover"
+                              />
+                            </div>
+                            <div>
+                              <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">
+                                {c.currentImage}
+                              </p>
+                              <p className="mt-1 break-all text-xs leading-5 text-on-surface-variant">{option.image}</p>
+                            </div>
+                          </div>
+                        ) : null}
+                      </div>
                       {textField(c.optionImageAlt, option.imageAlt, (value) =>
                         updateGuideOption(index, "imageAlt", value)
                       )}
@@ -677,7 +852,7 @@ export function AdminHomepageAdvancedSettings() {
                         updateGuideOptionLink(index, 1, "href", value)
                       )}
                     </div>
-                  </div>
+                  </details>
                 );
               })}
             </div>
@@ -685,11 +860,11 @@ export function AdminHomepageAdvancedSettings() {
         </div>
       </div>
 
-      <div className="ambient-card p-6 md:p-8">
-        <div>
+      <details className="ambient-card p-6 md:p-8">
+        <summary className="cursor-pointer list-none">
           <h3 className="font-heading text-2xl font-bold text-on-surface">{c.serviceTitle}</h3>
           <p className="mt-2 text-sm leading-6 text-on-surface-variant">{c.serviceDescription}</p>
-        </div>
+        </summary>
 
         <div className="mt-6 grid gap-5">
           <label className="flex items-center gap-3 rounded-md bg-surface-container-low p-4 text-sm font-semibold text-on-surface">
@@ -812,13 +987,13 @@ export function AdminHomepageAdvancedSettings() {
             </div>
           </div>
         </div>
-      </div>
+      </details>
 
-      <div className="ambient-card p-6 md:p-8">
-        <div>
+      <details className="ambient-card p-6 md:p-8">
+        <summary className="cursor-pointer list-none">
           <h3 className="font-heading text-2xl font-bold text-on-surface">{c.newsletterTitle}</h3>
           <p className="mt-2 text-sm leading-6 text-on-surface-variant">{c.newsletterDescription}</p>
-        </div>
+        </summary>
 
         <div className="mt-6 grid gap-5">
           <label className="flex items-center gap-3 rounded-md bg-surface-container-low p-4 text-sm font-semibold text-on-surface">
@@ -879,7 +1054,7 @@ export function AdminHomepageAdvancedSettings() {
             )}
           </div>
         </div>
-      </div>
+      </details>
     </section>
   );
 }
