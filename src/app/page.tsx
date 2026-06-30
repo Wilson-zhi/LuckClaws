@@ -219,7 +219,7 @@ export default async function HomePage() {
 
       <HomeRoutineStrip />
 
-      <section className="bg-[#F3E5D2] py-4">
+      <section className="bg-[linear-gradient(180deg,#3B2616_0%,#8A6743_38%,#F3E5D2_100%)] pb-7 pt-8">
         <CompactTrustBar items={topTrustItems} columns="wide" className="section-shell" />
       </section>
 

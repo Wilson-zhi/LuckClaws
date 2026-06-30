@@ -90,7 +90,7 @@ export function NewsletterSignup() {
   const visibleSubmittedEmail = submittedEmail === "__newsletter_honeypot__" ? "" : submittedEmail;
 
   return (
-    <section className="bg-[#FFF9EF] py-14 md:py-20">
+    <section className="bg-[linear-gradient(180deg,#FFF9EF_0%,#FFF9EF_72%,#F3E5D2_100%)] pb-20 pt-14 md:pb-24 md:pt-20">
       <div className="section-shell">
         <div className="overflow-hidden rounded-[2rem] border border-[#EAD4B8] bg-[linear-gradient(135deg,#FFF8EF_0%,#F3DFC4_100%)] shadow-lift">
           <div className="grid gap-8 p-6 md:grid-cols-[minmax(0,0.9fr)_minmax(340px,0.78fr)] md:items-center md:p-10 lg:p-12">

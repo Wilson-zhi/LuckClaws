@@ -40,7 +40,7 @@ export function HomeStorySection({ story }: { story: HomepageStorySectionContent
   }
 
   return (
-    <section className="bg-[#FFF9EF] py-14 md:py-20">
+    <section className="bg-[linear-gradient(180deg,#F7EAD8_0%,#FFF9EF_18%,#FFF9EF_78%,#F3E5D2_100%)] py-16 md:py-24">
       <div className="section-shell">
         <div className="grid overflow-hidden rounded-[2rem] border border-[#E5C9A4] bg-[#2C1A0D] shadow-lift lg:grid-cols-[0.9fr_1.1fr]">
           <div className="relative isolate min-h-[420px] overflow-hidden p-6 text-white md:p-10">

@@ -28,8 +28,8 @@ const footerGroups = [
 
 export function Footer() {
   return (
-    <footer className="mt-16 bg-[#2D1B10] text-[#FFF8EF]">
-      <div className="section-shell py-12 md:py-16">
+    <footer className="bg-[linear-gradient(180deg,#F3E5D2_0%,#2D1B10_88px,#2D1B10_100%)] pt-16 text-[#FFF8EF]">
+      <div className="section-shell pb-12 pt-8 md:pb-16 md:pt-10">
         <div className="grid gap-10 lg:grid-cols-[1.25fr_1.75fr] lg:gap-14">
           <div className="max-w-sm">
             <Link

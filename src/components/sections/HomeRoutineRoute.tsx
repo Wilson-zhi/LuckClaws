@@ -106,7 +106,10 @@ export function HomeRoutineRoute({ categories }: { categories: PublicCategoryCar
   const visibleCategories = categories.slice(0, 5);
 
   return (
-    <section id="shop-by-routine" className="bg-[#FFF9EF] py-14 md:py-20">
+    <section
+      id="shop-by-routine"
+      className="bg-[linear-gradient(180deg,#F3E5D2_0%,#FFF9EF_16%,#FFF9EF_84%,#F7EAD8_100%)] py-16 md:py-24"
+    >
       <div className="section-shell">
         <div className="mb-8 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
           <div>

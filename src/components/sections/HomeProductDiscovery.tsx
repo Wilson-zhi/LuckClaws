@@ -118,7 +118,10 @@ export function HomeProductDiscovery({ featuredProduct, products }: HomeProductD
     : ["Useful for daily routines", "Clear product details before checkout", "Chosen for play, rest, or comfort"];
 
   return (
-    <section id="best-sellers" className="bg-[#F3E5D2] py-14 md:py-20">
+    <section
+      id="best-sellers"
+      className="bg-[linear-gradient(180deg,#F3E5D2_0%,#F3E5D2_82%,#2C1A0D_100%)] pb-24 pt-14 md:pb-28 md:pt-20"
+    >
       <div className="section-shell">
         <div className="mb-8 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
           <div className="max-w-3xl">

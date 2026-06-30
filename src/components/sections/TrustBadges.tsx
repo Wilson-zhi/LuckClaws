@@ -31,7 +31,7 @@ const badges = [
 
 export function TrustBadges() {
   return (
-    <section className="bg-[#2C1A0D] py-14 text-white md:py-20">
+    <section className="bg-[linear-gradient(180deg,#2C1A0D_0%,#2C1A0D_78%,#FFF9EF_100%)] pb-24 pt-14 text-white md:pb-28 md:pt-20">
       <div className="section-shell">
         <div className="grid gap-8">
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
