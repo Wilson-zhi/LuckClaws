@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAdminFromRequest } from "@/lib/admin-auth";
-import { validateAdminProductPayload } from "@/lib/admin-products";
+import { type AdminProductMutationPayload, validateAdminProductPayload } from "@/lib/admin-products";
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
 
 type RouteContext = {
@@ -21,6 +21,7 @@ export type AdminProductDetailRow = {
   currency: string | null;
   image_url: string | null;
   image_alt: string | null;
+  video_url?: string | null;
   images: unknown;
   status: string | null;
   inventory_status: string | null;
@@ -45,6 +46,29 @@ export type AdminProductDetailRow = {
   created_at: string | null;
   updated_at: string | null;
 };
+
+const productDetailSelectWithVideo =
+  "id, title, slug, category, category_slug, description, price, compare_at_price, currency, image_url, image_alt, video_url, images, status, inventory_status, stock_quantity, is_featured, is_sale, sort_order, homepage_section, badge, published_at, short_description, product_highlights, detail_rows, best_for, care_instructions, product_faqs, accordion_sections, related_product_slugs, seo_title, seo_description, google_product_category, created_at, updated_at";
+
+const productDetailSelectBase =
+  "id, title, slug, category, category_slug, description, price, compare_at_price, currency, image_url, image_alt, images, status, inventory_status, stock_quantity, is_featured, is_sale, sort_order, homepage_section, badge, published_at, short_description, product_highlights, detail_rows, best_for, care_instructions, product_faqs, accordion_sections, related_product_slugs, seo_title, seo_description, google_product_category, created_at, updated_at";
+
+function isMissingVideoUrlColumnError(error: { message?: string } | null) {
+  const message = error?.message?.toLowerCase() ?? "";
+
+  return message.includes("video_url") || message.includes("schema cache");
+}
+
+function productPayloadForDatabase(payload: AdminProductMutationPayload, includeVideoUrl: boolean) {
+  if (includeVideoUrl) {
+    return payload;
+  }
+
+  const basePayload: Partial<AdminProductMutationPayload> = { ...payload };
+  delete basePayload.video_url;
+
+  return basePayload;
+}
 
 export type AdminProductImageRow = {
   id: string;
@@ -75,19 +99,25 @@ export async function GET(request: Request, { params }: RouteContext) {
     return NextResponse.json({ error: "Product id is required." }, { status: 400 });
   }
 
-  const { data: productData, error: productError } = await supabase
+  let productResult = await supabase
     .from("products")
-    .select(
-      "id, title, slug, category, category_slug, description, price, compare_at_price, currency, image_url, image_alt, images, status, inventory_status, stock_quantity, is_featured, is_sale, sort_order, homepage_section, badge, published_at, short_description, product_highlights, detail_rows, best_for, care_instructions, product_faqs, accordion_sections, related_product_slugs, seo_title, seo_description, google_product_category, created_at, updated_at"
-    )
+    .select(productDetailSelectWithVideo)
     .eq("id", id)
     .maybeSingle();
 
-  if (productError) {
-    return NextResponse.json({ error: productError.message }, { status: 500 });
+  if (productResult.error && isMissingVideoUrlColumnError(productResult.error)) {
+    productResult = await supabase
+      .from("products")
+      .select(productDetailSelectBase)
+      .eq("id", id)
+      .maybeSingle();
   }
 
-  if (!productData) {
+  if (productResult.error) {
+    return NextResponse.json({ error: productResult.error.message }, { status: 500 });
+  }
+
+  if (!productResult.data) {
     return NextResponse.json({ error: "Product not found." }, { status: 404 });
   }
 
@@ -102,7 +132,7 @@ export async function GET(request: Request, { params }: RouteContext) {
   }
 
   return NextResponse.json({
-    product: productData as AdminProductDetailRow,
+    product: productResult.data as AdminProductDetailRow,
     images: (imageData ?? []) as AdminProductImageRow[]
   });
 }
@@ -179,20 +209,36 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     );
   }
 
-  const { data, error } = await supabase
+  let updateResult = await supabase
     .from("products")
-    .update(validation.payload)
+    .update(productPayloadForDatabase(validation.payload, true))
     .eq("id", id)
     .select("id")
     .maybeSingle();
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  if (updateResult.error && isMissingVideoUrlColumnError(updateResult.error)) {
+    if (validation.payload.video_url) {
+      return NextResponse.json(
+        { error: "Product video storage is not ready. Add the products.video_url column before saving video URLs." },
+        { status: 500 }
+      );
+    }
+
+    updateResult = await supabase
+      .from("products")
+      .update(productPayloadForDatabase(validation.payload, false))
+      .eq("id", id)
+      .select("id")
+      .maybeSingle();
   }
 
-  if (!data) {
+  if (updateResult.error) {
+    return NextResponse.json({ error: updateResult.error.message }, { status: 500 });
+  }
+
+  if (!updateResult.data) {
     return NextResponse.json({ error: "Product not found." }, { status: 404 });
   }
 
-  return NextResponse.json({ product: data });
+  return NextResponse.json({ product: updateResult.data });
 }

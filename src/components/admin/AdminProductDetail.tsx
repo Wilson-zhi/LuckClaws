@@ -20,6 +20,7 @@ type AdminProductDetailRow = {
   currency: string | null;
   image_url: string | null;
   image_alt: string | null;
+  video_url?: string | null;
   images: unknown;
   status: string | null;
   inventory_status: string | null;
@@ -530,6 +531,7 @@ function ProductDetailContent({ productId }: { productId: string }) {
           <DetailField label={t("currency")} value={product.currency ?? "USD"} />
           <DetailField label={t("imageUrl")} value={displayValue(product.image_url, t("notProvided"))} />
           <DetailField label={t("altText")} value={displayValue(product.image_alt, t("notProvided"))} />
+          <DetailField label={t("productVideoUrl")} value={displayValue(product.video_url ?? null, t("notProvided"))} />
           <DetailField label={t("status")} value={formatAdminStatus(product.status, t)} />
           <DetailField label={t("inventoryStatus")} value={formatAdminStatus(product.inventory_status, t)} />
           <DetailField label={t("stockQuantity")} value={product.stock_quantity ?? t("notProvided")} />
@@ -559,6 +561,28 @@ function ProductDetailContent({ productId }: { productId: string }) {
           <AccordionSectionsCard value={product.accordion_sections} />
           <RelatedProductSlugsCard value={product.related_product_slugs} />
         </div>
+      </section>
+
+      <section className="ambient-card p-6 md:p-8">
+        <h2 className="font-heading text-2xl font-bold">{t("productVideo")}</h2>
+        {product.video_url ? (
+          <div className="mt-6 grid gap-5 md:grid-cols-[280px_1fr] md:items-start">
+            <video
+              className="aspect-video w-full rounded-md bg-black object-cover"
+              controls
+              muted
+              playsInline
+              preload="metadata"
+              src={product.video_url}
+            />
+            <div>
+              <p className="text-sm font-semibold text-on-surface">{t("productVideoUrl")}</p>
+              <p className="mt-2 break-all text-sm leading-6 text-on-surface-variant">{product.video_url}</p>
+            </div>
+          </div>
+        ) : (
+          <p className="mt-5 text-sm leading-6 text-on-surface-variant">{t("noProductVideo")}</p>
+        )}
       </section>
 
       <section className="ambient-card p-6 md:p-8">

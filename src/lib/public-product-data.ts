@@ -38,6 +38,7 @@ type SupabaseProductRow = {
   currency: string | null;
   image_url: string | null;
   image_alt?: string | null;
+  video_url?: string | null;
   images?: unknown;
   variants?: unknown;
   status: string | null;
@@ -125,7 +126,7 @@ export type PublicCategoryCard = {
 };
 
 const productSelectWithOptionalJson =
-  "id, title, slug, category, category_slug, description, price, compare_at_price, currency, image_url, image_alt, images, variants, status, inventory_status, stock_quantity, is_featured, is_sale, sort_order, homepage_section, badge, published_at, short_description, product_highlights, detail_rows, best_for, care_instructions, product_faqs, accordion_sections, related_product_slugs, seo_title, seo_description, google_product_category, created_at, updated_at";
+  "id, title, slug, category, category_slug, description, price, compare_at_price, currency, image_url, image_alt, video_url, images, variants, status, inventory_status, stock_quantity, is_featured, is_sale, sort_order, homepage_section, badge, published_at, short_description, product_highlights, detail_rows, best_for, care_instructions, product_faqs, accordion_sections, related_product_slugs, seo_title, seo_description, google_product_category, created_at, updated_at";
 
 const productSelectBase =
   "id, title, slug, category, category_slug, description, price, compare_at_price, currency, image_url, status, inventory_status, stock_quantity, is_featured, is_sale, sort_order, homepage_section, badge, published_at, seo_title, seo_description, google_product_category, created_at, updated_at";
@@ -134,8 +135,9 @@ const categoryMetadataSelect =
   "id, name, slug, description, image_url, seo_title, seo_description, google_product_category, status, sort_order, show_in_nav, show_on_home, created_at, updated_at";
 
 const optionalJsonColumns = [
-    "images",
-    "image_alt",
+  "images",
+  "image_alt",
+  "video_url",
   "variants",
   "short_description",
   "product_highlights",
@@ -567,6 +569,7 @@ function mapSupabaseProduct(
   const primaryImageEntry = imageEntries.find((image) => image.isPrimary) ?? imageEntries[0];
   const primaryImage =
     primaryImageEntry?.url ?? nullableString(row.image_url) ?? staticProduct?.image ?? "/images/hero-dog-running.jpg";
+  const videoUrl = nullableString(row.video_url) ?? staticProduct?.videoUrl ?? null;
   const gallery = uniqueImages([
     primaryImage,
     ...imageEntries.map((image) => image.url),
@@ -638,6 +641,7 @@ function mapSupabaseProduct(
     description,
     image: primaryImage,
     gallery,
+    ...(videoUrl ? { videoUrl } : {}),
     alt,
     ...(materialTags ? { materialTags } : {}),
     shippingRate,

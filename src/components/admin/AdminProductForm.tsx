@@ -82,6 +82,7 @@ type ProductFormState = {
   currency: string;
   image_url: string;
   image_alt: string;
+  video_url: string;
   images: ProductGalleryImageFormItem[];
   status: string;
   inventory_status: string;
@@ -117,6 +118,7 @@ type AdminProductDetailRow = {
   currency: string | null;
   image_url: string | null;
   image_alt: string | null;
+  video_url: string | null;
   images: unknown;
   status: string | null;
   inventory_status: string | null;
@@ -163,6 +165,7 @@ const emptyForm: ProductFormState = {
   currency: "USD",
   image_url: "",
   image_alt: "",
+  video_url: "",
   images: [],
   status: "active",
   inventory_status: "in_stock",
@@ -193,8 +196,11 @@ const textareaClass =
   "min-h-32 w-full rounded-md border border-outline-variant bg-white px-4 py-3 text-base outline-none transition focus:border-primary focus:ring-2 focus:ring-primary-container/30";
 
 const PRODUCT_IMAGE_BUCKET = "product-images";
+const PRODUCT_VIDEO_BUCKET = "product-videos";
 const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
+const MAX_VIDEO_SIZE_BYTES = 80 * 1024 * 1024;
 const acceptedImageTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
+const acceptedVideoTypes = new Set(["video/mp4", "video/webm"]);
 
 function stringValue(value: string | number | null) {
   return value === null ? "" : String(value);
@@ -441,6 +447,7 @@ function formFromProduct(product: AdminProductDetailRow): ProductFormState {
     currency: product.currency ?? "USD",
     image_url: product.image_url ?? "",
     image_alt: product.image_alt ?? "",
+    video_url: product.video_url ?? "",
     images: galleryImagesFormValue(product.images),
     status: product.status ?? "active",
     inventory_status: product.inventory_status ?? "in_stock",
@@ -519,6 +526,7 @@ function buildPayload(form: ProductFormState) {
     currency: form.currency,
     image_url: primaryImage?.url ?? form.image_url,
     image_alt: primaryImage?.alt || form.image_alt,
+    video_url: form.video_url,
     images: galleryImages,
     status: form.status,
     inventory_status: form.inventory_status,
@@ -1172,6 +1180,9 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
   const [uploading, setUploading] = useState(false);
   const [uploadMessage, setUploadMessage] = useState("");
   const [uploadError, setUploadError] = useState("");
+  const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [videoUploadMessage, setVideoUploadMessage] = useState("");
+  const [videoUploadError, setVideoUploadError] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState("");
   const [categories, setCategories] = useState<AdminProductCategoryOption[]>([]);
@@ -1339,6 +1350,66 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
     const { data } = supabase.storage.from(PRODUCT_IMAGE_BUCKET).getPublicUrl(storagePath);
 
     return data.publicUrl;
+  };
+
+  const uploadProductVideo = async (file: File) => {
+    if (!file) {
+      throw new Error(t("chooseVideo"));
+    }
+
+    if (!acceptedVideoTypes.has(file.type)) {
+      throw new Error(t("chooseValidVideo"));
+    }
+
+    if (file.size > MAX_VIDEO_SIZE_BYTES) {
+      throw new Error(t("videoSizeLimit"));
+    }
+
+    if (!supabase) {
+      throw new Error(t("uploadConfigMissing"));
+    }
+
+    const folderSlug = sanitizePathSegment(form.slug) || "uploads";
+    const storagePath = `products/${folderSlug}/videos/${Date.now()}-${safeFileName(file.name)}`;
+    const { error: uploadErrorResult } = await supabase.storage
+      .from(PRODUCT_VIDEO_BUCKET)
+      .upload(storagePath, file, {
+        cacheControl: "3600",
+        contentType: file.type,
+        upsert: false
+      });
+
+    if (uploadErrorResult) {
+      throw new Error(uploadErrorResult.message);
+    }
+
+    const { data } = supabase.storage.from(PRODUCT_VIDEO_BUCKET).getPublicUrl(storagePath);
+
+    return data.publicUrl;
+  };
+
+  const handleProductVideoUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    setVideoUploadMessage("");
+    setVideoUploadError("");
+
+    if (!file) {
+      return;
+    }
+
+    setUploadingVideo(true);
+
+    try {
+      const publicUrl = await uploadProductVideo(file);
+
+      updateField("video_url", publicUrl);
+      setVideoUploadMessage(t("productVideoUploaded"));
+    } catch (uploadErrorResult: unknown) {
+      setVideoUploadError(uploadErrorResult instanceof Error ? uploadErrorResult.message : t("unableToUploadProductVideo"));
+    } finally {
+      setUploadingVideo(false);
+    }
   };
 
   const updateGalleryImages = (images: ProductGalleryImageFormItem[]) => {
@@ -1590,6 +1661,68 @@ function ProductFormContent({ mode, productId }: { mode: ProductFormMode; produc
             </p>
           )}
         </div>
+
+        <section className="grid gap-4 rounded-md bg-surface-container-low p-4 md:col-span-2">
+          <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+            <div>
+              <h2 className="font-heading text-lg font-bold text-on-surface">{t("productVideo")}</h2>
+              <p className="mt-1 text-sm leading-6 text-on-surface-variant">{t("productVideoDescription")}</p>
+            </div>
+            {form.video_url ? (
+              <button
+                type="button"
+                className="inline-flex w-fit rounded-full border border-error/50 px-4 py-2 font-heading text-xs font-bold text-error transition hover:bg-error/10"
+                onClick={() => {
+                  updateField("video_url", "");
+                  setVideoUploadMessage("");
+                  setVideoUploadError("");
+                }}
+              >
+                {t("removeProductVideo")}
+              </button>
+            ) : null}
+          </div>
+
+          <label className="grid gap-2 text-sm font-semibold text-on-surface">
+            {t("uploadProductVideo")}
+            <input
+              accept="video/mp4,video/webm"
+              className="block w-full rounded-md border border-outline-variant bg-white px-4 py-3 text-sm text-on-surface file:mr-4 file:rounded-full file:border-0 file:bg-primary-container file:px-4 file:py-2 file:font-heading file:font-bold file:text-on-primary-container"
+              disabled={uploadingVideo}
+              type="file"
+              onChange={handleProductVideoUpload}
+            />
+          </label>
+          <p className="text-sm leading-6 text-on-surface-variant">{t("productVideoUploadHelper")}</p>
+          {uploadingVideo && <p className="text-sm font-semibold text-on-surface-variant">{t("uploadingVideo")}</p>}
+          {videoUploadMessage && <p className="text-sm font-semibold text-primary">{videoUploadMessage}</p>}
+          {videoUploadError && (
+            <p className="text-sm font-semibold text-error" role="alert">
+              {videoUploadError}
+            </p>
+          )}
+
+          {form.video_url ? (
+            <div className="grid gap-4 rounded-md bg-white p-4 lg:grid-cols-[280px_1fr] lg:items-start">
+              <video
+                className="aspect-video w-full rounded-md bg-black object-cover"
+                controls
+                muted
+                playsInline
+                preload="metadata"
+                src={form.video_url}
+              />
+              <label className="grid gap-2 text-sm font-semibold text-on-surface">
+                {t("productVideoUrl")}
+                <input className={inputClass} value={form.video_url} readOnly />
+              </label>
+            </div>
+          ) : (
+            <p className="rounded-md bg-white p-4 text-sm font-semibold text-on-surface-variant">
+              {t("noProductVideo")}
+            </p>
+          )}
+        </section>
 
         <ProductImageGalleryEditor
           images={form.images}

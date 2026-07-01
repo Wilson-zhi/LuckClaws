@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAdminFromRequest } from "@/lib/admin-auth";
-import { validateAdminProductPayload } from "@/lib/admin-products";
+import { type AdminProductMutationPayload, validateAdminProductPayload } from "@/lib/admin-products";
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
 
 export type AdminProductRow = {
@@ -19,6 +19,23 @@ export type AdminProductRow = {
   published_at: string | null;
   created_at: string | null;
 };
+
+function isMissingVideoUrlColumnError(error: { message?: string } | null) {
+  const message = error?.message?.toLowerCase() ?? "";
+
+  return message.includes("video_url") || message.includes("schema cache");
+}
+
+function productPayloadForDatabase(payload: AdminProductMutationPayload, includeVideoUrl: boolean) {
+  if (includeVideoUrl) {
+    return payload;
+  }
+
+  const basePayload: Partial<AdminProductMutationPayload> = { ...payload };
+  delete basePayload.video_url;
+
+  return basePayload;
+}
 
 export async function GET(request: Request) {
   const auth = await requireAdminFromRequest(request);
@@ -94,15 +111,30 @@ export async function POST(request: Request) {
     );
   }
 
-  const { data, error } = await supabase
+  let insertResult = await supabase
     .from("products")
-    .insert(validation.payload)
+    .insert(productPayloadForDatabase(validation.payload, true))
     .select("id")
     .single();
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  if (insertResult.error && isMissingVideoUrlColumnError(insertResult.error)) {
+    if (validation.payload.video_url) {
+      return NextResponse.json(
+        { error: "Product video storage is not ready. Add the products.video_url column before saving video URLs." },
+        { status: 500 }
+      );
+    }
+
+    insertResult = await supabase
+      .from("products")
+      .insert(productPayloadForDatabase(validation.payload, false))
+      .select("id")
+      .single();
   }
 
-  return NextResponse.json({ product: data }, { status: 201 });
+  if (insertResult.error) {
+    return NextResponse.json({ error: insertResult.error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ product: insertResult.data }, { status: 201 });
 }

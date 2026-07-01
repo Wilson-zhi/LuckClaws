@@ -29,6 +29,7 @@ export type AdminProductMutationPayload = {
   currency: string;
   image_url: string | null;
   image_alt: string | null;
+  video_url: string | null;
   images: JsonObject[];
   status: ProductStatus;
   inventory_status: InventoryStatus;
@@ -462,6 +463,7 @@ export function validateAdminProductPayload(input: unknown): ValidationResult {
       currency,
       image_url: nullableString(record.image_url),
       image_alt: nullableString(record.image_alt),
+      video_url: nullableString(record.video_url),
       images,
       status: status as ProductStatus,
       inventory_status: inventoryStatus as InventoryStatus,

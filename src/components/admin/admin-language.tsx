@@ -132,6 +132,22 @@ export const adminLabels = {
     zh: "上传商品图片、选择主图并编辑 Alt 文本",
     en: "Upload product gallery images, choose one primary image, and edit alt text."
   },
+  productVideo: { zh: "商品首视频", en: "Product hero video" },
+  productVideoDescription: {
+    zh: "可选。上传后会显示在商品详情页媒体区第一位，图片库仍作为后续图片展示。",
+    en: "Optional. Uploaded video appears first in the product detail media gallery; images remain after it."
+  },
+  productVideoUrl: { zh: "商品视频链接", en: "Product video URL" },
+  productVideoUploadHelper: {
+    zh: "支持 MP4、WebM，最大 80MB。上传成功后会自动写入视频链接，保存商品后前台生效。",
+    en: "Supports MP4 and WebM up to 80MB. A successful upload fills the video URL; save the product to publish it."
+  },
+  uploadProductVideo: { zh: "上传商品视频", en: "Upload product video" },
+  uploadingVideo: { zh: "正在上传视频...", en: "Uploading video..." },
+  productVideoUploaded: { zh: "商品视频已上传。", en: "Product video uploaded." },
+  noProductVideo: { zh: "暂无商品视频", en: "No product video yet." },
+  removeProductVideo: { zh: "移除商品视频", en: "Remove product video" },
+  productVideoPreview: { zh: "商品视频预览", en: "Product video preview" },
   uploadGalleryImages: { zh: "上传图库图片", en: "Upload gallery images" },
   uploadingImage: { zh: "正在上传图片...", en: "Uploading image..." },
   galleryImageUploaded: { zh: "图库图片已上传", en: "Gallery image uploaded." },
@@ -417,8 +433,12 @@ export const adminLabels = {
   chooseImage: { zh: "请选择一张图片", en: "Please choose an image." },
   chooseValidImage: { zh: "请选择 JPEG、PNG 或 WebP 图片", en: "Please choose a JPEG, PNG, or WebP image." },
   imageSizeLimit: { zh: "图片必须小于或等于 5MB", en: "Image must be 5MB or smaller." },
+  chooseVideo: { zh: "请选择一个视频文件", en: "Please choose a video file." },
+  chooseValidVideo: { zh: "请选择 MP4 或 WebM 视频", en: "Please choose an MP4 or WebM video." },
+  videoSizeLimit: { zh: "视频必须小于或等于 80MB", en: "Video must be 80MB or smaller." },
   uploadConfigMissing: { zh: "当前构建未配置 Supabase 上传", en: "Supabase is not configured for uploads in this build." },
   unableToUploadGallery: { zh: "无法上传图库图片", en: "Unable to upload gallery images." },
+  unableToUploadProductVideo: { zh: "无法上传商品视频", en: "Unable to upload product video." },
   unableToUploadHomepageImage: { zh: "无法上传首页图片", en: "Unable to upload homepage image." },
   unableToUploadCategoryImage: { zh: "无法上传分类图片", en: "Unable to upload category image." },
   addImageUrlFirst: { zh: "请先有主图链接，再添加到图库", en: "Add an Image URL before adding it to the gallery." },

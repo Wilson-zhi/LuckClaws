@@ -45,6 +45,7 @@ type ProductBase = {
   description: string;
   image: string;
   gallery?: string[];
+  videoUrl?: string;
   alt: string;
   materialTags?: string[];
   shippingRate?: number;
