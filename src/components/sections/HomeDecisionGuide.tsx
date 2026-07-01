@@ -40,7 +40,7 @@ export function HomeDecisionGuide({ guide }: { guide: HomepageDecisionGuideConte
       className="scroll-mt-24 bg-[linear-gradient(180deg,#F3E5D2_0%,#FFF9EF_16%,#FFF9EF_84%,#F7EAD8_100%)] py-6 md:py-7 xl:py-8"
     >
       <div className="section-shell">
-        <div className="grid gap-7 lg:h-[min(640px,calc(100svh-132px))] lg:grid-cols-[0.78fr_1.22fr] lg:items-stretch">
+        <div className="grid gap-7 lg:h-[min(660px,calc(100svh-132px))] lg:grid-cols-[0.78fr_1.22fr] lg:items-stretch">
           <div className="flex max-w-xl flex-col lg:h-full lg:max-w-none lg:rounded-[2rem] lg:border lg:border-[#E5C9A4] lg:bg-white/36 lg:p-5 lg:shadow-[0_24px_70px_rgba(92,60,30,0.09)] lg:backdrop-blur">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">{guide.eyebrow}</p>
@@ -52,16 +52,16 @@ export function HomeDecisionGuide({ guide }: { guide: HomepageDecisionGuideConte
               </p>
             </div>
 
-            <div className="mt-4 flex max-w-xl flex-col rounded-[1.35rem] border border-[#E5C9A4] bg-white/68 p-3.5 shadow-soft backdrop-blur lg:flex-1">
+            <div className="mt-4 flex max-w-xl flex-col rounded-[1.35rem] border border-[#E5C9A4] bg-white/68 p-4 shadow-soft backdrop-blur lg:flex-1">
               <div className="flex items-center justify-between gap-4 border-b border-[#E5C9A4] pb-2.5">
                 <p className="font-heading text-base font-extrabold text-[#2C1A0D] 2xl:text-lg">{guide.stepsTitle}</p>
                 <span className="rounded-full bg-primary-container/20 px-3 py-1 text-xs font-extrabold uppercase tracking-[0.14em] text-primary">
                   {guide.stepsBadge}
                 </span>
               </div>
-              <ol className="mt-3 grid gap-2 lg:flex-1 lg:content-center 2xl:gap-2.5">
+              <ol className="mt-3 flex flex-col gap-2 lg:flex-1 lg:justify-evenly 2xl:gap-2.5">
                 {guide.steps.map((step) => (
-                  <li key={step.number} className="grid grid-cols-[auto_minmax(0,1fr)] gap-2.5">
+                  <li key={step.number} className="grid grid-cols-[auto_minmax(0,1fr)] gap-2.5 lg:min-h-[64px]">
                     <span className="grid h-8 w-8 place-items-center rounded-full border border-[#E0C39C] bg-[#FFF8ED] font-heading text-[11px] font-extrabold text-primary 2xl:h-9 2xl:w-9 2xl:text-xs">
                       {step.number}
                     </span>
@@ -173,11 +173,15 @@ export function HomeDecisionGuide({ guide }: { guide: HomepageDecisionGuideConte
                 </div>
 
                 <div className="grid gap-3">
-                  <ul className="grid gap-2 sm:grid-cols-3">
-                    {activeOption.details.map((detail) => (
+                  <ul className="grid gap-2 sm:grid-cols-2">
+                    {activeOption.details.map((detail, detailIndex) => (
                       <li
                         key={detail}
-                        className="rounded-[0.85rem] border border-white/12 bg-white/[0.07] px-3 py-2 text-xs font-bold leading-5 text-white/82 2xl:px-4 2xl:py-3 2xl:text-sm"
+                        className={`min-w-0 rounded-[0.85rem] border border-white/12 bg-white/[0.07] px-3 py-2 text-[11px] font-bold leading-5 text-white/82 [overflow-wrap:anywhere] sm:min-h-[58px] 2xl:px-4 2xl:py-3 2xl:text-xs ${
+                          detailIndex === activeOption.details.length - 1 && activeOption.details.length % 2 === 1
+                            ? "sm:col-span-2"
+                            : ""
+                        }`}
                       >
                         {detail}
                       </li>

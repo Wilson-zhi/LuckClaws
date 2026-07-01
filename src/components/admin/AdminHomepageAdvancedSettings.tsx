@@ -67,6 +67,8 @@ type Copy = {
   optionImageAlt: string;
   optionIcon: string;
   optionDetails: string;
+  optionDetailsHint: string;
+  detailPreview: string;
   primaryLinkLabel: string;
   primaryLinkHref: string;
   secondaryLinkLabel: string;
@@ -138,6 +140,8 @@ const copy = {
     optionImageAlt: "图片 Alt 文本",
     optionIcon: "图标",
     optionDetails: "细节标签（每行一个）",
+    optionDetailsHint: "建议每行一个短标签。较长文案会在前台自动换行，避免超出边框。",
+    detailPreview: "前台标签预览",
     primaryLinkLabel: "主链接文字",
     primaryLinkHref: "主链接",
     secondaryLinkLabel: "副链接文字",
@@ -208,6 +212,8 @@ const copy = {
     optionImageAlt: "Image alt text",
     optionIcon: "Icon",
     optionDetails: "Detail chips, one per line",
+    optionDetailsHint: "Use one short chip per line. Longer text wraps safely on the storefront.",
+    detailPreview: "Storefront chip preview",
     primaryLinkLabel: "Primary link label",
     primaryLinkHref: "Primary link",
     secondaryLinkLabel: "Secondary link label",
@@ -296,7 +302,13 @@ function arrayToLines(value: string[]) {
   return value.join("\n");
 }
 
-function textField(label: string, value: string, onChange: (value: string) => void, textarea = false) {
+function textField(
+  label: string,
+  value: string,
+  onChange: (value: string) => void,
+  textarea = false,
+  hint?: string
+) {
   return (
     <label className="grid gap-2 text-sm font-semibold text-on-surface">
       {label}
@@ -305,6 +317,7 @@ function textField(label: string, value: string, onChange: (value: string) => vo
       ) : (
         <input className={inputClass} value={value} onChange={(event) => onChange(event.target.value)} />
       )}
+      {hint ? <span className="text-xs font-medium leading-5 text-on-surface-variant">{hint}</span> : null}
     </label>
   );
 }
@@ -836,8 +849,30 @@ export function AdminHomepageAdvancedSettings() {
                           c.optionDetails,
                           arrayToLines(option.details),
                           (value) => updateGuideOption(index, "details", linesToArray(value)),
-                          true
+                          true,
+                          c.optionDetailsHint
                         )}
+                        {option.details.length > 0 ? (
+                          <div className="mt-3 rounded-md border border-outline-variant bg-surface-container-low p-3">
+                            <p className="text-xs font-bold uppercase tracking-[0.14em] text-primary">
+                              {c.detailPreview}
+                            </p>
+                            <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                              {option.details.map((detail, detailIndex) => (
+                                <span
+                                  key={`${detail}-${detailIndex}`}
+                                  className={`min-w-0 rounded-md border border-outline-variant bg-white px-3 py-2 text-xs font-bold leading-5 text-on-surface [overflow-wrap:anywhere] ${
+                                    detailIndex === option.details.length - 1 && option.details.length % 2 === 1
+                                      ? "sm:col-span-2"
+                                      : ""
+                                  }`}
+                                >
+                                  {detail}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        ) : null}
                       </div>
                       {textField(c.primaryLinkLabel, firstLink.label, (value) =>
                         updateGuideOptionLink(index, 0, "label", value)
