@@ -98,6 +98,10 @@ img {
   animation: homepage-poster-reveal 1200ms ease-out both, homepage-poster-drift 18000ms ease-in-out 1200ms both;
 }
 
+.about-poster-media {
+  animation: homepage-poster-reveal 1200ms ease-out both, about-poster-drift 22000ms ease-in-out 1200ms both;
+}
+
 .hide-scrollbar {
   scrollbar-width: none;
 }
@@ -140,6 +144,16 @@ img {
   }
 }
 
+@keyframes about-poster-drift {
+  from {
+    transform: scale(1);
+  }
+
+  to {
+    transform: scale(1.04) translate3d(1.2%, -0.8%, 0);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -155,6 +169,10 @@ img {
   }
 
   .homepage-poster-media {
+    animation: none !important;
+  }
+
+  .about-poster-media {
     animation: none !important;
   }
 }

@@ -1,7 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   ArrowRight,
   Check,
@@ -27,28 +28,16 @@ import {
 
 type Routine = AboutPawRouteContent & {
   Icon: LucideIcon;
-  desktopPosition: string;
+  media: {
+    image: string;
+    alt: string;
+    tone: string;
+  };
   links: Array<{
     label: string;
     href: string;
   }>;
 };
-
-const routePositionsByKey: Record<string, string> = {
-  play: "lg:left-4 lg:top-14",
-  walk: "lg:left-[24%] lg:top-[48%]",
-  rest: "lg:left-[46%] lg:top-12",
-  comfort: "lg:left-[64%] lg:top-[54%]",
-  support: "lg:right-1 lg:top-20"
-};
-
-const fallbackRoutePositions = [
-  "lg:left-4 lg:top-14",
-  "lg:left-[24%] lg:top-[48%]",
-  "lg:left-[46%] lg:top-12",
-  "lg:left-[64%] lg:top-[54%]",
-  "lg:right-1 lg:top-20"
-];
 
 const iconMap: Record<string, LucideIcon> = {
   paw: PawPrint,
@@ -66,18 +55,52 @@ const iconMap: Record<string, LucideIcon> = {
   arrow: ArrowRight
 };
 
+const routeMediaByKey: Record<string, Routine["media"]> = {
+  play: {
+    image: "/images/natural-cotton-tug-rope.jpg",
+    alt: "Natural cotton rope and play textures for pet enrichment.",
+    tone: "Play path"
+  },
+  walk: {
+    image: "/images/category-walking-essentials.jpg",
+    alt: "Walking essentials arranged as a warm pet routine.",
+    tone: "Walk path"
+  },
+  rest: {
+    image: "/images/category-beds-blankets.jpg",
+    alt: "Soft bedding and blankets for calm pet routines.",
+    tone: "Rest path"
+  },
+  comfort: {
+    image: "/images/category-pet-apparel.jpg",
+    alt: "Pet apparel shown in a warm everyday setting.",
+    tone: "Comfort path"
+  },
+  support: {
+    image: "/images/about-partners.jpg",
+    alt: "LUCK CLAWS support and pet care materials.",
+    tone: "Support path"
+  }
+};
+
+const fallbackMedia: Routine["media"] = {
+  image: "/images/about-dogs-running.jpg",
+  alt: "Pets moving through an everyday routine.",
+  tone: "Routine path"
+};
+
 const noteClassesByKey: Record<string, string> = {
-  useful: "lg:-rotate-[1.4deg] lg:translate-y-1",
-  comfort: "lg:rotate-[0.9deg]",
-  "clear-details": "lg:-rotate-[0.8deg] lg:translate-y-2",
-  support: "lg:rotate-[1.2deg] lg:translate-y-0.5"
+  useful: "lg:-rotate-[1.2deg]",
+  comfort: "lg:rotate-[0.8deg] lg:translate-y-2",
+  "clear-details": "lg:-rotate-[0.7deg] lg:translate-y-1",
+  support: "lg:rotate-[1deg]"
 };
 
 const fallbackNoteClasses = [
-  "lg:-rotate-[1.4deg] lg:translate-y-1",
-  "lg:rotate-[0.9deg]",
-  "lg:-rotate-[0.8deg] lg:translate-y-2",
-  "lg:rotate-[1.2deg] lg:translate-y-0.5"
+  "lg:-rotate-[1.2deg]",
+  "lg:rotate-[0.8deg] lg:translate-y-2",
+  "lg:-rotate-[0.7deg] lg:translate-y-1",
+  "lg:rotate-[1deg]"
 ];
 
 function iconForKey(iconKey: string) {
@@ -100,11 +123,10 @@ function routeLinksFromContent(route: AboutPawRouteContent) {
 function displayRoutinesFromContent(content: AboutPawContent): Routine[] {
   const routes = content.routes.length > 0 ? content.routes : fallbackAboutPawContent.routes;
 
-  return routes.map((route, index) => ({
+  return routes.map((route) => ({
     ...route,
     Icon: iconForKey(route.iconKey),
-    desktopPosition:
-      routePositionsByKey[route.routeKey] ?? fallbackRoutePositions[index] ?? fallbackRoutePositions[0],
+    media: routeMediaByKey[route.routeKey] ?? fallbackMedia,
     links: routeLinksFromContent(route)
   }));
 }
@@ -114,206 +136,139 @@ function noteClassName(note: AboutPawNoteContent, index: number) {
 }
 
 export function AboutRoutineTabs({ content = fallbackAboutPawContent }: { content?: AboutPawContent }) {
-  const routines = displayRoutinesFromContent(content);
+  const routines = useMemo(() => displayRoutinesFromContent(content), [content]);
   const guideNotes = content.notes.length > 0 ? content.notes : fallbackAboutPawContent.notes;
   const [activeRoutineKey, setActiveRoutineKey] = useState(routines[0]?.routeKey ?? "play");
   const activeRoutine = routines.find((routine) => routine.routeKey === activeRoutineKey) ?? routines[0];
   const ActiveIcon = activeRoutine.Icon;
 
   return (
-    <section className="relative overflow-hidden rounded-[34px] bg-[#fff8ed] p-5 shadow-ambient ring-1 ring-primary/10 md:p-7 lg:p-8">
-      <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-primary-container/25" />
-      <div className="pointer-events-none absolute -bottom-24 left-8 h-64 w-64 rounded-full border border-primary/15" />
+    <section className="relative overflow-hidden rounded-[36px] border border-primary/10 bg-[#24170e] p-4 text-white shadow-ambient md:p-6 lg:p-7">
+      <div className="pointer-events-none absolute -left-20 top-10 h-72 w-72 rounded-full bg-primary-container/20 blur-3xl" />
+      <div className="pointer-events-none absolute -right-24 bottom-10 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
 
-      <div className="relative">
-        <div className="max-w-3xl">
-          <span className="inline-flex rounded-full bg-white/80 px-4 py-2 text-xs font-bold uppercase tracking-wide text-primary shadow-soft">
+      <div className="relative grid gap-5 xl:grid-cols-[390px_minmax(0,1fr)]">
+        <div className="flex min-h-[540px] flex-col rounded-[30px] border border-white/12 bg-white/[0.06] p-5 backdrop-blur md:p-7">
+          <span className="inline-flex w-fit rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-bold uppercase tracking-wide text-[#ffd98d]">
             {content.header.sectionLabel}
           </span>
-          <h2 className="mt-5 font-heading text-3xl font-extrabold leading-tight text-on-surface md:text-5xl">
+          <h2 className="mt-5 font-heading text-4xl font-extrabold leading-[1.02] md:text-5xl">
             {content.header.title}
           </h2>
-          <p className="mt-4 max-w-2xl text-sm leading-7 text-on-surface-variant md:text-base">
-            {content.header.subtitle}
-          </p>
-          <p className="mt-3 text-sm font-bold leading-6 text-primary">
-            {content.header.supportingLine}
-          </p>
+          <p className="mt-4 text-sm leading-7 text-white/72 md:text-base">{content.header.subtitle}</p>
+          <p className="mt-4 text-sm font-bold leading-6 text-[#ffd98d]">{content.header.supportingLine}</p>
+
+          <div className="mt-7 grid gap-3" role="tablist" aria-label="Paw Path Finder routines">
+            {routines.map((routine, index) => {
+              const selected = routine.routeKey === activeRoutineKey;
+              const RoutineIcon = routine.Icon;
+
+              return (
+                <button
+                  key={routine.routeKey}
+                  type="button"
+                  role="tab"
+                  aria-selected={selected}
+                  aria-controls="about-routine-panel"
+                  id={`about-routine-tab-${routine.routeKey}`}
+                  className={`group flex min-h-[74px] items-center gap-3 rounded-[22px] border p-3 text-left transition-[background-color,border-color,box-shadow,transform] duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:transition-none ${
+                    selected
+                      ? "border-[#ffd98d]/70 bg-[#ffd98d] text-[#24170e] shadow-lift"
+                      : "border-white/12 bg-white/[0.06] text-white hover:-translate-y-0.5 hover:border-white/28 hover:bg-white/[0.1] motion-reduce:hover:translate-y-0"
+                  }`}
+                  onClick={() => setActiveRoutineKey(routine.routeKey)}
+                >
+                  <span
+                    className={`grid h-12 w-12 shrink-0 place-items-center rounded-full transition ${
+                      selected ? "bg-[#24170e] text-[#ffd98d]" : "bg-white/10 text-[#ffd98d]"
+                    }`}
+                  >
+                    <RoutineIcon aria-hidden className="h-5 w-5" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-xs font-bold uppercase tracking-wide opacity-70">
+                      Stop {String(index + 1).padStart(2, "0")}
+                    </span>
+                    <span className="mt-1 block font-heading text-lg font-extrabold leading-6">{routine.label}</span>
+                  </span>
+                  <ArrowRight
+                    aria-hidden
+                    className={`h-4 w-4 shrink-0 transition ${
+                      selected ? "translate-x-0.5" : "group-hover:translate-x-1 motion-reduce:group-hover:translate-x-0"
+                    }`}
+                  />
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-        <div className="mt-7 grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_420px] xl:items-stretch">
-          <div className="relative overflow-hidden rounded-[30px] bg-white/72 p-4 shadow-soft md:p-6 lg:min-h-[430px]">
-            <div className="pointer-events-none absolute inset-x-8 top-20 hidden h-64 lg:block">
-              <svg
-                aria-hidden="true"
-                className="h-full w-full overflow-visible"
-                viewBox="0 0 760 260"
-                preserveAspectRatio="none"
-              >
-                <path
-                  d="M32 60 C150 10 200 210 318 150 C430 90 420 18 540 70 C638 112 638 208 744 120"
-                  fill="none"
-                  stroke="#d6a245"
-                  strokeLinecap="round"
-                  strokeWidth="10"
-                  opacity="0.18"
-                />
-                <path
-                  d="M32 60 C150 10 200 210 318 150 C430 90 420 18 540 70 C638 112 638 208 744 120"
-                  fill="none"
-                  stroke="#8a5a2b"
-                  strokeDasharray="4 26"
-                  strokeLinecap="round"
-                  strokeWidth="6"
-                  opacity="0.36"
-                />
-              </svg>
-            </div>
-
-            <div className="flex gap-3 overflow-x-auto pb-2 lg:hidden" role="tablist" aria-label="Paw Path Finder routines">
-              {routines.map((routine) => {
-                const selected = routine.routeKey === activeRoutineKey;
-                const RoutineIcon = routine.Icon;
-
-                return (
-                  <button
-                    key={routine.routeKey}
-                    type="button"
-                    role="tab"
-                    aria-selected={selected}
-                    aria-controls="about-routine-panel"
-                    className={`min-h-14 shrink-0 rounded-full border px-4 py-3 text-left transition-[background-color,border-color,box-shadow] duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:transition-none ${
-                      selected
-                        ? "border-primary bg-primary text-white shadow-lift"
-                        : "border-primary/15 bg-white text-primary hover:border-primary/35"
-                    }`}
-                    onClick={() => setActiveRoutineKey(routine.routeKey)}
-                  >
-                    <span className="flex items-center gap-2 text-sm font-bold">
-                      <RoutineIcon aria-hidden className="h-4 w-4" />
-                      {routine.label}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-
-            <div
-              className="relative hidden min-h-[360px] lg:block"
-              role="tablist"
-              aria-label="Paw Path Finder routines"
-            >
-              {routines.map((routine) => {
-                const selected = routine.routeKey === activeRoutineKey;
-                const RoutineIcon = routine.Icon;
-
-                return (
-                  <button
-                    key={routine.routeKey}
-                    type="button"
-                    role="tab"
-                    aria-selected={selected}
-                    aria-controls="about-routine-panel"
-                    id={`about-routine-tab-${routine.routeKey}`}
-                    className={`group absolute w-[168px] rounded-[24px] border px-3 py-3 text-left transition-[border-color,background-color,box-shadow,transform] duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:transition-none ${routine.desktopPosition} ${
-                      selected
-                        ? "z-20 -translate-y-1 border-primary bg-white shadow-lift"
-                        : "z-10 border-primary/10 bg-white/80 shadow-soft hover:-translate-y-0.5 hover:border-primary/35 hover:bg-white"
-                    }`}
-                    onClick={() => setActiveRoutineKey(routine.routeKey)}
-                  >
-                    <span className="flex items-center gap-3">
-                      <span
-                        className={`relative grid h-12 w-12 shrink-0 place-items-center rounded-full transition ${
-                        selected
-                          ? "bg-primary text-white ring-8 ring-primary-container/30"
-                          : "bg-primary-container/35 text-primary group-hover:bg-primary-container/55"
-                      }`}
-                      >
-                        {selected && (
-                          <PawPrint
-                            aria-hidden
-                            className="absolute -right-2 -top-2 h-5 w-5 rounded-full bg-white p-0.5 text-primary shadow-soft"
-                          />
-                        )}
-                        <RoutineIcon aria-hidden className="h-5 w-5" />
-                      </span>
-                      <span className="min-w-0">
-                        <span className="block font-heading text-base font-bold text-on-surface">
-                          {routine.label}
-                        </span>
-                        <span className="mt-0.5 block text-[11px] font-semibold uppercase tracking-wide text-on-surface-variant">
-                          {selected ? "Active stop" : "Route stop"}
-                        </span>
-                      </span>
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:absolute lg:bottom-4 lg:left-4 lg:right-4 lg:mt-0 lg:grid-cols-4 lg:items-end">
-              {guideNotes.map((note, index) => {
-                const Icon = iconForKey(note.iconKey);
-                const label = `${note.keyword} ${note.secondaryText}`;
-
-                return (
-                <div
-                  key={label}
-                  aria-label={label}
-                  className={`relative overflow-hidden rounded-[18px] border border-primary/15 bg-[#fffaf3]/90 px-3.5 py-3 text-left shadow-soft backdrop-blur transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-lift motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${noteClassName(note, index)}`}
-                >
-                  <span className="pointer-events-none absolute -right-5 -top-5 h-12 w-12 rounded-full bg-primary-container/25" />
-                  <span className="relative flex items-start gap-2.5">
-                    <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full bg-primary-container/35 text-primary">
-                      <Icon aria-hidden className="h-3.5 w-3.5" />
-                    </span>
-                    <span className="min-w-0">
-                      <span className="block font-heading text-sm font-extrabold leading-5 text-primary">
-                        {note.keyword}
-                      </span>
-                      <span className="block text-[11px] font-semibold uppercase tracking-wide text-on-surface-variant">
-                        {note.secondaryText}
-                      </span>
-                    </span>
-                  </span>
-                </div>
-                );
-              })}
+        <div
+          key={activeRoutine.routeKey}
+          id="about-routine-panel"
+          role="tabpanel"
+          aria-labelledby={`about-routine-tab-${activeRoutine.routeKey}`}
+          className="homepage-enter grid min-h-[540px] overflow-hidden rounded-[30px] border border-white/12 bg-[#fff8ed] text-on-surface shadow-lift lg:grid-cols-[minmax(0,1.02fr)_minmax(360px,0.98fr)]"
+        >
+          <div className="relative min-h-[330px] overflow-hidden bg-[#d8c4a9] lg:min-h-full">
+            <Image
+              src={activeRoutine.media.image}
+              alt={activeRoutine.media.alt}
+              fill
+              sizes="(min-width: 1024px) 520px, 100vw"
+              className="object-cover transition duration-500 hover:scale-[1.025] motion-reduce:hover:scale-100"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/62 via-black/10 to-transparent" />
+            <div className="absolute bottom-5 left-5 right-5 rounded-[22px] border border-white/28 bg-black/24 p-5 text-white backdrop-blur">
+              <p className="text-xs font-bold uppercase tracking-wide text-[#ffd98d]">
+                {activeRoutine.media.tone}
+              </p>
+              <p className="mt-2 font-heading text-2xl font-extrabold leading-tight">{activeRoutine.noteText}</p>
             </div>
           </div>
 
-          <div
-            key={activeRoutine.routeKey}
-            id="about-routine-panel"
-            role="tabpanel"
-            aria-label={`${activeRoutine.label} recommendations`}
-            className="homepage-enter flex min-h-[320px] flex-col rounded-[30px] bg-white p-5 shadow-lift md:p-6"
-          >
+          <div className="flex flex-col bg-[#2b160b] p-5 text-white md:p-7 lg:p-8">
             <div className="flex items-center gap-3">
-              <span className="grid h-12 w-12 place-items-center rounded-full bg-primary text-white shadow-soft">
+              <span className="grid h-12 w-12 place-items-center rounded-full bg-[#ffd98d] text-[#24170e] shadow-soft">
                 <ActiveIcon aria-hidden className="h-5 w-5" />
               </span>
               <div>
-                <p className="text-xs font-bold uppercase tracking-wide text-primary">Selected route</p>
+                <p className="text-xs font-bold uppercase tracking-wide text-[#ffd98d]">Guided choice</p>
                 <p className="font-heading text-lg font-bold">{activeRoutine.label}</p>
               </div>
             </div>
-            <h3 className="mt-6 font-heading text-2xl font-extrabold leading-tight">
+
+            <h3 className="mt-7 max-w-[12ch] font-heading text-[clamp(2.5rem,5.2vw,4.9rem)] font-extrabold leading-[0.98]">
               {activeRoutine.recommendationTitle}
             </h3>
-            <p className="mt-3 text-sm leading-7 text-on-surface-variant md:text-base">
+            <p className="mt-5 max-w-md text-sm font-semibold leading-7 text-white/78 md:text-base">
               {activeRoutine.recommendationDescription}
             </p>
-            <p className="mt-5 rounded-[20px] bg-[#fff8ed] px-4 py-3 text-sm font-semibold leading-6 text-on-surface-variant">
-              {activeRoutine.noteText}
-            </p>
-            <div className="mt-auto flex flex-wrap gap-3 pt-6">
-              {activeRoutine.links.map((link) => (
+
+            <div className="mt-7 grid gap-3 sm:grid-cols-3">
+              {guideNotes.slice(0, 3).map((note) => {
+                const Icon = iconForKey(note.iconKey);
+
+                return (
+                  <div key={note.noteKey} className="rounded-[18px] border border-white/18 bg-white/[0.05] p-3">
+                    <Icon aria-hidden className="h-4 w-4 text-[#ffd98d]" />
+                    <p className="mt-2 text-sm font-bold leading-5">{note.keyword}</p>
+                    <p className="mt-1 text-xs font-semibold leading-5 text-white/[0.58]">{note.secondaryText}</p>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="mt-auto flex flex-wrap gap-3 pt-8">
+              {activeRoutine.links.map((link, index) => (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="group inline-flex items-center gap-2 rounded-full border border-primary px-5 py-3 text-sm font-bold text-primary transition hover:bg-primary-container/10"
+                  className={`group inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-bold transition hover:-translate-y-0.5 motion-reduce:hover:translate-y-0 ${
+                    index === 0
+                      ? "bg-[#ffd98d] text-[#24170e] hover:bg-[#f7c868]"
+                      : "border border-white/25 bg-white/[0.08] text-white hover:bg-white/[0.14]"
+                  }`}
                 >
                   {link.label}
                   <ArrowRight
@@ -325,6 +280,30 @@ export function AboutRoutineTabs({ content = fallbackAboutPawContent }: { conten
             </div>
           </div>
         </div>
+      </div>
+
+      <div className="relative mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        {guideNotes.map((note, index) => {
+          const Icon = iconForKey(note.iconKey);
+
+          return (
+            <div
+              key={note.noteKey}
+              className={`relative overflow-hidden rounded-[22px] border border-white/12 bg-white/[0.08] p-4 text-white shadow-soft backdrop-blur transition duration-300 hover:-translate-y-0.5 hover:bg-white/[0.12] motion-reduce:hover:translate-y-0 ${noteClassName(note, index)}`}
+            >
+              <span className="pointer-events-none absolute -right-7 -top-7 h-20 w-20 rounded-full bg-[#ffd98d]/15" />
+              <span className="relative flex items-start gap-3">
+                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#ffd98d] text-[#24170e]">
+                  <Icon aria-hidden className="h-4 w-4" />
+                </span>
+                <span>
+                  <span className="block font-heading text-lg font-extrabold text-[#ffd98d]">{note.keyword}</span>
+                  <span className="block text-sm font-semibold leading-6 text-white/70">{note.secondaryText}</span>
+                </span>
+              </span>
+            </div>
+          );
+        })}
       </div>
     </section>
   );

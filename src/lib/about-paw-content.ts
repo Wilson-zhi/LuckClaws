@@ -398,6 +398,18 @@ function cleanString(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
 }
 
+function isPlaceholderContent(value: string) {
+  return ["hi", "test", "testing", "demo", "placeholder", "todo", "tbd", "测试"].includes(
+    value.trim().toLowerCase()
+  );
+}
+
+function cleanContentString(value: unknown) {
+  const cleaned = cleanString(value);
+
+  return cleaned && !isPlaceholderContent(cleaned) ? cleaned : "";
+}
+
 function numberFromValue(value: unknown, fallback: number) {
   if (value === null || value === undefined || value === "") {
     return fallback;
@@ -609,12 +621,17 @@ export function aboutPawRoutesFromRows(rows: AboutPawRouteRow[] | null | undefin
   const normalizedRoutes = rows
     .map((row, index): AboutPawRouteContent | null => {
       const routeKey = cleanString(row.route_key);
-      const label = cleanString(row.label);
-      const recommendationTitle = cleanString(row.recommendation_title);
-      const recommendationDescription = cleanString(row.recommendation_description);
-      const noteText = cleanString(row.note_text);
-      const ctaLabel = cleanString(row.cta_label);
-      const ctaHref = cleanString(row.cta_href);
+      const fallbackByKey = fallbackAboutPawContent.routes.find(
+        (route) => normalizedLookupKey(route.routeKey) === normalizedLookupKey(routeKey)
+      );
+      const label = cleanContentString(row.label) || fallbackByKey?.label || "";
+      const recommendationTitle =
+        cleanContentString(row.recommendation_title) || fallbackByKey?.recommendationTitle || "";
+      const recommendationDescription =
+        cleanContentString(row.recommendation_description) || fallbackByKey?.recommendationDescription || "";
+      const noteText = cleanContentString(row.note_text) || fallbackByKey?.noteText || "";
+      const ctaLabel = cleanContentString(row.cta_label) || fallbackByKey?.ctaLabel || "";
+      const ctaHref = cleanString(row.cta_href) || fallbackByKey?.ctaHref || "";
 
       if (!routeKey || !label || !recommendationTitle || !recommendationDescription || !noteText || !ctaLabel || !ctaHref) {
         return null;
@@ -629,8 +646,8 @@ export function aboutPawRoutesFromRows(rows: AboutPawRouteRow[] | null | undefin
         noteText,
         ctaLabel,
         ctaHref,
-        secondaryCtaLabel: cleanString(row.secondary_cta_label),
-        secondaryCtaHref: cleanString(row.secondary_cta_href),
+        secondaryCtaLabel: cleanContentString(row.secondary_cta_label) || fallbackByKey?.secondaryCtaLabel || "",
+        secondaryCtaHref: cleanString(row.secondary_cta_href) || fallbackByKey?.secondaryCtaHref || "",
         sortOrder: numberFromValue(row.sort_order, index + 1),
         enabled: row.enabled !== false
       } satisfies AboutPawRouteContent;
