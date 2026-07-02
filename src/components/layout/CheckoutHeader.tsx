@@ -1,5 +1,6 @@
 import { Lock } from "lucide-react";
 import Link from "next/link";
+import { CurrentYear } from "@/components/layout/CurrentYear";
 import { brandName } from "@/data/products";
 
 export function CheckoutHeader() {
@@ -30,7 +31,9 @@ export function CheckoutFooter() {
   return (
     <footer className="bg-surface-container-high py-8">
       <div className="section-shell flex flex-col gap-6 text-sm text-on-surface-variant md:flex-row md:items-center md:justify-between">
-        <p>&copy; 2024 {brandName}</p>
+        <p>
+          &copy; <CurrentYear /> {brandName}
+        </p>
         <nav aria-label="Checkout footer">
           <ul className="flex flex-wrap gap-x-8 gap-y-3">
             {links.map((link) => (

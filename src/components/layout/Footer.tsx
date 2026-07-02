@@ -6,6 +6,7 @@ import {
   supportFooterLinks
 } from "@/data/navigation";
 import { brandName } from "@/data/products";
+import { CurrentYear } from "@/components/layout/CurrentYear";
 
 const footerGroups = [
   {
@@ -76,7 +77,9 @@ export function Footer() {
         </div>
 
         <div className="mt-12 flex flex-col gap-3 border-t border-white/10 pt-7 text-sm text-[#F7E8D0]/65 md:flex-row md:items-center md:justify-between">
-          <span>&copy; 2024 {brandName}</span>
+          <span>
+            &copy; <CurrentYear /> {brandName}
+          </span>
           <span>Warm routine-first shopping for dogs, cats, and daily pet life.</span>
         </div>
       </div>
