@@ -160,7 +160,10 @@ type EditableCollectionCard = {
 
 const ABOUT_IMAGE_BUCKET = "about-images";
 const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
+const MAX_HERO_VIDEO_SIZE_BYTES = 80 * 1024 * 1024;
 const acceptedImageTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
+const acceptedHeroVideoTypes = new Set(["video/mp4", "video/webm", "video/ogg"]);
+const heroMediaAccept = "image/jpeg,image/png,image/webp,video/mp4,video/webm,video/ogg";
 
 const inputClass =
   "min-h-12 w-full rounded-md border border-outline-variant bg-white px-4 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary-container/30";
@@ -182,10 +185,15 @@ const copy = {
     validationRequired: "请填写所有必填字段。",
     uploadConfigMissing: "当前构建未配置 Supabase 上传。",
     chooseValidImage: "请选择 JPEG、PNG 或 WebP 图片。",
+    chooseValidHeroMedia: "请选择 JPEG、PNG、WebP 图片，或 MP4、WebM 视频。",
     imageSizeLimit: "图片必须小于或等于 5MB。",
+    heroMediaSizeLimit: "图片必须小于或等于 5MB，视频必须小于或等于 80MB。",
     unableToUploadImage: "无法上传图片。",
+    unableToUploadHeroMedia: "无法上传 Hero 媒体。",
     uploaded: "图片已上传。",
+    uploadedHeroMedia: "Hero 媒体已上传。",
     uploading: "正在上传图片...",
+    uploadingHeroMedia: "正在上传 Hero 媒体...",
     heroSection: "About Hero",
     pawSection: "Paw Path Finder",
     collectionSection: "Routine Collection Cards",
@@ -199,11 +207,11 @@ const copy = {
     primaryCtaHref: "主按钮链接",
     secondaryCtaLabel: "次按钮文字",
     secondaryCtaHref: "次按钮链接",
-    heroImageUrl: "Hero 图片 URL",
-    heroImageAlt: "Hero 图片 Alt",
+    heroImageUrl: "Hero 媒体 URL",
+    heroImageAlt: "Hero 媒体 Alt",
     compassTitle: "Compass 标题",
     compassDescription: "Compass 描述",
-    uploadHeroImage: "上传 Hero 图片",
+    uploadHeroImage: "上传 Hero 图片或视频",
     sectionLabel: "模块标签",
     subtitle: "副标题",
     supportingLine: "辅助说明",
@@ -233,7 +241,9 @@ const copy = {
     save: "保存 About 内容",
     saving: "保存中...",
     routeHelper: "已知 route_key 会使用代码中的固定地图位置；未知 key 使用安全备用位置。",
-    uploadHelper: "支持 JPEG、PNG、WebP，最大 5MB。上传成功后会自动填入图片 URL。",
+    uploadHelper: "卡片图片支持 JPEG、PNG、WebP，最大 5MB。上传成功后会自动填入图片 URL。",
+    heroUploadHelper:
+      "Hero 支持 JPEG、PNG、WebP 图片（最大 5MB）或 MP4、WebM 视频（最大 80MB）。上传成功后会自动填入媒体 URL。",
     noRoutes: "暂无路线节点。",
     noNotes: "暂无路线注释。",
     noCards: "暂无卡片。"
@@ -248,10 +258,15 @@ const copy = {
     validationRequired: "Please complete all required fields.",
     uploadConfigMissing: "Supabase upload is not configured for this build.",
     chooseValidImage: "Please choose a JPEG, PNG, or WebP image.",
+    chooseValidHeroMedia: "Please choose a JPEG, PNG, WebP image, or MP4/WebM video.",
     imageSizeLimit: "Image must be 5MB or smaller.",
+    heroMediaSizeLimit: "Images must be 5MB or smaller. Videos must be 80MB or smaller.",
     unableToUploadImage: "Unable to upload image.",
+    unableToUploadHeroMedia: "Unable to upload Hero media.",
     uploaded: "Image uploaded.",
+    uploadedHeroMedia: "Hero media uploaded.",
     uploading: "Uploading image...",
+    uploadingHeroMedia: "Uploading Hero media...",
     heroSection: "About Hero",
     pawSection: "Paw Path Finder",
     collectionSection: "Routine Collection Cards",
@@ -265,11 +280,11 @@ const copy = {
     primaryCtaHref: "Primary CTA link",
     secondaryCtaLabel: "Secondary CTA label",
     secondaryCtaHref: "Secondary CTA link",
-    heroImageUrl: "Hero image URL",
-    heroImageAlt: "Hero image alt",
+    heroImageUrl: "Hero media URL",
+    heroImageAlt: "Hero media alt",
     compassTitle: "Compass title",
     compassDescription: "Compass description",
-    uploadHeroImage: "Upload Hero Image",
+    uploadHeroImage: "Upload Hero Image or Video",
     sectionLabel: "Section label",
     subtitle: "Subtitle",
     supportingLine: "Supporting line",
@@ -299,7 +314,9 @@ const copy = {
     save: "Save About Content",
     saving: "Saving...",
     routeHelper: "Known route_key values use fixed map positions in code; unknown keys use safe fallback positions.",
-    uploadHelper: "Supports JPEG, PNG, and WebP up to 5MB. A successful upload automatically fills the image URL.",
+    uploadHelper: "Card images support JPEG, PNG, and WebP up to 5MB. A successful upload automatically fills the image URL.",
+    heroUploadHelper:
+      "Hero supports JPEG, PNG, and WebP images up to 5MB, or MP4/WebM videos up to 80MB. A successful upload automatically fills the media URL.",
     noRoutes: "No route nodes.",
     noNotes: "No route notes.",
     noCards: "No cards."
@@ -338,6 +355,10 @@ function sanitizePathSegment(value: string) {
 
 function safeFileName(fileName: string) {
   return sanitizePathSegment(fileName) || "about-image";
+}
+
+function isHeroVideoUrl(src: string) {
+  return /\.(mp4|webm|ogg)(\?|#|$)/i.test(src);
 }
 
 function logUploadError(message: string, error: unknown) {
@@ -630,6 +651,22 @@ function ImagePreview({ src, alt }: { src: string; alt: string }) {
   );
 }
 
+function HeroMediaPreview({ src, alt }: { src: string; alt: string }) {
+  if (!src) {
+    return null;
+  }
+
+  if (isHeroVideoUrl(src)) {
+    return (
+      <div className="aspect-video overflow-hidden rounded-md bg-surface-container-low">
+        <video src={src} aria-label={alt || "About hero video preview"} className="h-full w-full object-cover" muted controls playsInline />
+      </div>
+    );
+  }
+
+  return <ImagePreview src={src} alt={alt} />;
+}
+
 function AdminAboutForm() {
   const { accessToken } = useAdminAuth();
   const { language } = useAdminLanguage();
@@ -774,6 +811,38 @@ function AdminAboutForm() {
     return data.publicUrl;
   }
 
+  async function uploadAboutHeroMedia(file: File, folder: string) {
+    if (!supabase) {
+      throw new Error(c.uploadConfigMissing);
+    }
+
+    const isAcceptedImage = acceptedImageTypes.has(file.type);
+    const isAcceptedVideo = acceptedHeroVideoTypes.has(file.type);
+
+    if (!isAcceptedImage && !isAcceptedVideo) {
+      throw new Error(c.chooseValidHeroMedia);
+    }
+
+    if ((isAcceptedImage && file.size > MAX_IMAGE_SIZE_BYTES) || (isAcceptedVideo && file.size > MAX_HERO_VIDEO_SIZE_BYTES)) {
+      throw new Error(c.heroMediaSizeLimit);
+    }
+
+    const storagePath = `${folder}/${Date.now()}-${safeFileName(file.name)}`;
+    const { error: uploadErrorResult } = await supabase.storage.from(ABOUT_IMAGE_BUCKET).upload(storagePath, file, {
+      cacheControl: "31536000",
+      contentType: file.type,
+      upsert: false
+    });
+
+    if (uploadErrorResult) {
+      throw uploadErrorResult;
+    }
+
+    const { data } = supabase.storage.from(ABOUT_IMAGE_BUCKET).getPublicUrl(storagePath);
+
+    return data.publicUrl;
+  }
+
   async function persistHeroImageUrl(publicUrl: string) {
     if (!supabase) {
       throw new Error(c.uploadConfigMissing);
@@ -863,7 +932,7 @@ function AdminAboutForm() {
     setUploadingKey("hero");
 
     try {
-      const publicUrl = await uploadAboutImage(file, "hero");
+      const publicUrl = await uploadAboutHeroMedia(file, "hero");
       const persistedHero = await persistHeroImageUrl(publicUrl);
 
       setHero((current) => ({
@@ -871,10 +940,10 @@ function AdminAboutForm() {
         id: persistedHero.id ?? current.id,
         hero_image_url: persistedHero.hero_image_url ?? publicUrl
       }));
-      setUploadMessage(c.uploaded);
+      setUploadMessage(c.uploadedHeroMedia);
     } catch (uploadErrorResult: unknown) {
-      logUploadError("Unable to upload or persist About hero image:", uploadErrorResult);
-      setUploadError(uploadErrorResult instanceof Error ? uploadErrorResult.message : c.unableToUploadImage);
+      logUploadError("Unable to upload or persist About hero media:", uploadErrorResult);
+      setUploadError(uploadErrorResult instanceof Error ? uploadErrorResult.message : c.unableToUploadHeroMedia);
     } finally {
       setUploadingKey("");
     }
@@ -1050,19 +1119,21 @@ function AdminAboutForm() {
             <label className="grid gap-2 text-sm font-semibold text-on-surface">
               {c.uploadHeroImage}
               <input
-                accept="image/jpeg,image/png,image/webp"
+                accept={heroMediaAccept}
                 className={fileInputClass}
                 disabled={uploadingKey === "hero"}
                 type="file"
                 onChange={handleHeroImageUpload}
               />
             </label>
-            <p className="text-xs font-semibold leading-5 text-on-surface-variant">{c.uploadHelper}</p>
-            {uploadingKey === "hero" && <p className="text-sm font-semibold text-on-surface-variant">{c.uploading}</p>}
+            <p className="text-xs font-semibold leading-5 text-on-surface-variant">{c.heroUploadHelper}</p>
+            {uploadingKey === "hero" && (
+              <p className="text-sm font-semibold text-on-surface-variant">{c.uploadingHeroMedia}</p>
+            )}
           </div>
         </div>
         <div className="mt-5 max-w-sm">
-          <ImagePreview src={hero.hero_image_url} alt={hero.hero_image_alt} />
+          <HeroMediaPreview src={hero.hero_image_url} alt={hero.hero_image_alt} />
         </div>
       </section>
 

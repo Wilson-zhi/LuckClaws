@@ -70,23 +70,39 @@ const promiseCards: IconCard[] = [
   }
 ];
 
-const posterPrinciples = [
-  "Useful before novelty",
-  "Comfort before complication",
-  "Clear details before checkout"
+const storyPoints = [
+  {
+    title: "Routine-first shopping",
+    text: "Start with what your pet is doing today, then move into a shorter shopping path.",
+    Icon: PawPrint
+  },
+  {
+    title: "Clearer product paths",
+    text: "Product categories connect to real moments: toys, walks, rest, comfort, and support.",
+    Icon: MapPinned
+  },
+  {
+    title: "Support stays visible",
+    text: "Questions, order help, and damaged item support stay part of the customer journey.",
+    Icon: Compass
+  }
 ];
 
 function isLogoLikeMedia(url: string) {
   return /logo|luck[-_\s]?claw|pet[-_\s]?suppl/i.test(url);
 }
 
+function isVideoMedia(url: string) {
+  return /\.(mp4|webm|ogg)(\?|#|$)/i.test(url);
+}
+
 function SectionLabel({ children, dark = false }: { children: React.ReactNode; dark?: boolean }) {
   return (
     <span
-      className={`inline-flex rounded-full px-4 py-2 text-xs font-bold uppercase tracking-wide ${
+      className={`inline-flex rounded-full px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] ${
         dark
-          ? "border border-white/20 bg-white/10 text-[#ffe2a6] backdrop-blur"
-          : "bg-primary-container/20 text-primary"
+          ? "border border-white/20 bg-white/10 text-[#ffe0a3] backdrop-blur"
+          : "bg-[#ffe7b7] text-[#8a5a00]"
       }`}
     >
       {children}
@@ -101,6 +117,7 @@ export default async function AboutPage() {
   const heroPosterImage = isLogoLikeMedia(hero.heroImageUrl)
     ? "/images/about-dogs-running.jpg"
     : hero.heroImageUrl;
+  const heroUsesVideo = isVideoMedia(heroPosterImage);
 
   return (
     <SiteShell>
@@ -112,24 +129,36 @@ export default async function AboutPage() {
         }}
       />
 
-      <section className="relative isolate overflow-hidden bg-[#24170e] text-white">
+      <section className="relative isolate min-h-[calc(100svh-76px)] overflow-hidden bg-[#241407] text-white">
         <div className="absolute inset-0">
-          <Image
-            src={heroPosterImage}
-            alt=""
-            fill
-            priority
-            sizes="100vw"
-            className="about-poster-media object-cover opacity-80"
-          />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_28%,rgba(245,158,11,0.24),transparent_32%),linear-gradient(90deg,rgba(20,10,4,0.94)_0%,rgba(20,10,4,0.72)_42%,rgba(20,10,4,0.42)_72%,rgba(20,10,4,0.72)_100%)]" />
-          <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#24170e] to-transparent" />
+          {heroUsesVideo ? (
+            <video
+              aria-label={hero.heroImageAlt}
+              className="about-poster-media h-full w-full object-cover"
+              src={heroPosterImage}
+              autoPlay
+              muted
+              loop
+              playsInline
+            />
+          ) : (
+            <Image
+              src={heroPosterImage}
+              alt={hero.heroImageAlt}
+              fill
+              priority
+              sizes="100vw"
+              className="about-poster-media object-cover"
+            />
+          )}
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_38%,rgba(245,158,11,0.18),transparent_30%),linear-gradient(90deg,rgba(24,12,5,0.88)_0%,rgba(24,12,5,0.72)_38%,rgba(24,12,5,0.32)_70%,rgba(24,12,5,0.5)_100%)]" />
+          <div className="absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-[#241407] to-transparent" />
         </div>
 
-        <div className="section-shell relative grid min-h-[720px] items-end py-10 md:min-h-[780px] md:py-16 lg:min-h-[calc(100svh-76px)]">
-          <AboutReveal className="max-w-5xl pb-28 md:pb-24">
+        <div className="section-shell relative flex min-h-[calc(100svh-76px)] items-center py-12 md:py-16">
+          <div className="max-w-6xl">
             <SectionLabel dark>{hero.eyebrow}</SectionLabel>
-            <h1 className="mt-6 max-w-5xl font-heading text-[clamp(3.5rem,9.5vw,9.25rem)] font-extrabold leading-[0.92]">
+            <h1 className="mt-7 max-w-6xl font-heading text-[clamp(3.1rem,9vw,8.8rem)] font-extrabold leading-[0.9]">
               {hero.title}
             </h1>
             <p className="mt-7 max-w-2xl text-base font-semibold leading-8 text-white/[0.82] md:text-lg">
@@ -138,7 +167,7 @@ export default async function AboutPage() {
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <Link
                 href={hero.primaryCtaHref}
-                className="group inline-flex items-center justify-center gap-2 rounded-full bg-primary-container px-7 py-3 font-heading text-sm font-bold text-on-primary-container shadow-soft transition hover:-translate-y-0.5 hover:bg-[#f4b340] motion-reduce:hover:translate-y-0"
+                className="group inline-flex items-center justify-center gap-2 rounded-full bg-[#f4a300] px-7 py-3 font-heading text-sm font-bold text-[#241407] shadow-soft transition hover:-translate-y-0.5 hover:bg-[#ffb32b] motion-reduce:hover:translate-y-0"
               >
                 {hero.primaryCtaLabel}
                 <ArrowRight
@@ -153,65 +182,26 @@ export default async function AboutPage() {
                 {hero.secondaryCtaLabel}
               </Link>
             </div>
-          </AboutReveal>
-
-          <AboutReveal className="homepage-enter-delay-2 absolute bottom-8 right-4 hidden w-[430px] max-w-[34vw] lg:block">
-            <div className="rounded-[30px] border border-white/20 bg-[#fff8ed]/92 p-4 text-on-surface shadow-ambient backdrop-blur">
-              <div className="relative aspect-[1.35] overflow-hidden rounded-[24px] bg-[#e9d9c3]">
-                <Image
-                  src="/images/about-selected-materials.jpg"
-                  alt="Selected pet essentials arranged with warm materials."
-                  fill
-                  sizes="430px"
-                  className="object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent" />
-                <div className="absolute bottom-4 left-4 right-4 rounded-[18px] border border-white/25 bg-black/30 p-4 text-white backdrop-blur">
-                  <p className="text-xs font-bold uppercase tracking-wide text-[#ffd98d]">
-                    {hero.compassTitle}
-                  </p>
-                  <p className="mt-1 text-sm font-semibold leading-6">{hero.compassDescription}</p>
-                </div>
-              </div>
-              <div className="mt-4 grid grid-cols-3 gap-2">
-                {posterPrinciples.map((principle) => (
-                  <div
-                    key={principle}
-                    className="rounded-[16px] border border-primary/10 bg-white/80 px-3 py-3 text-xs font-bold leading-5 text-on-surface-variant"
-                  >
-                    {principle}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </AboutReveal>
+          </div>
         </div>
       </section>
 
-      <section className="bg-[#24170e] pb-10">
+      <section className="bg-[linear-gradient(180deg,#fbf2e3_0%,#fffaf1_100%)] py-8">
         <div className="section-shell">
-          <div className="grid gap-3 rounded-[28px] border border-white/15 bg-white/[0.08] p-3 text-white shadow-ambient backdrop-blur md:grid-cols-3">
-            <div className="rounded-[22px] bg-white/10 p-5">
-              <PawPrint aria-hidden className="h-5 w-5 text-[#ffd98d]" />
-              <p className="mt-3 font-heading text-lg font-bold">Routine-first shopping</p>
-              <p className="mt-2 text-sm leading-6 text-white/70">Start with the moment your pet is in.</p>
-            </div>
-            <div className="rounded-[22px] bg-white/10 p-5">
-              <MapPinned aria-hidden className="h-5 w-5 text-[#ffd98d]" />
-              <p className="mt-3 font-heading text-lg font-bold">Clearer product paths</p>
-              <p className="mt-2 text-sm leading-6 text-white/70">Move from need to category without guessing.</p>
-            </div>
-            <div className="rounded-[22px] bg-white/10 p-5">
-              <Compass aria-hidden className="h-5 w-5 text-[#ffd98d]" />
-              <p className="mt-3 font-heading text-lg font-bold">Support stays visible</p>
-              <p className="mt-2 text-sm leading-6 text-white/70">Questions and order help stay part of the route.</p>
-            </div>
+          <div className="grid gap-3 rounded-[32px] border border-[#e4caa5] bg-white/65 p-3 shadow-soft backdrop-blur md:grid-cols-3">
+            {storyPoints.map(({ title, text, Icon }) => (
+              <div key={title} className="rounded-[24px] bg-[#fff8ed] p-5">
+                <Icon aria-hidden className="h-5 w-5 text-[#a06a00]" />
+                <p className="mt-3 font-heading text-lg font-bold text-[#241407]">{title}</p>
+                <p className="mt-2 text-sm leading-6 text-[#6f5a43]">{text}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
       <AboutReveal>
-        <section id="paw-path" className="scroll-mt-24 bg-[#fff8ed] py-12 md:py-20">
+        <section id="paw-path" className="scroll-mt-24 bg-[#fffaf1] py-12 md:py-20">
           <div className="section-shell">
             <AboutRoutineTabs content={pawPath} />
           </div>
@@ -219,102 +209,98 @@ export default async function AboutPage() {
       </AboutReveal>
 
       <AboutReveal>
-        <section className="bg-[#fff8ed] py-12 md:py-20">
+        <section className="bg-[#fffaf1] py-12 md:py-20">
           <div className="section-shell">
-            <div className="grid gap-8 lg:grid-cols-[0.82fr_1.18fr] lg:items-end">
-              <div>
+            <div className="grid gap-8 lg:grid-cols-[0.78fr_1.22fr] lg:items-start">
+              <div className="lg:sticky lg:top-28">
                 <SectionLabel>Trust clarity</SectionLabel>
-                <h2 className="mt-5 font-heading text-3xl font-extrabold leading-tight md:text-5xl">
+                <h2 className="mt-5 font-heading text-4xl font-extrabold leading-[1.02] text-[#241407] md:text-6xl">
                   What you can expect from {brandName}
                 </h2>
+                <p className="mt-5 max-w-md text-sm leading-7 text-[#6f5a43] md:text-base">
+                  Practical guidance, cleaner paths, and visible support make the store easier to trust before
+                  checkout.
+                </p>
               </div>
-              <p className="text-sm leading-7 text-on-surface-variant md:text-base">
-                The store is designed to make everyday decisions easier: compare the practical details, follow the
-                right category path, and keep support visible when a purchase needs context.
-              </p>
-            </div>
-            <div className="mt-9 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              {promiseCards.map(({ title, text, detail, Icon }, index) => (
-                <article
-                  key={title}
-                  className={`group relative overflow-hidden rounded-[28px] border border-primary/10 bg-white p-6 shadow-soft transition duration-300 hover:-translate-y-1 hover:shadow-lift motion-reduce:hover:translate-y-0 ${
-                    index % 2 === 1 ? "xl:translate-y-8 motion-reduce:xl:translate-y-0" : ""
-                  }`}
-                >
-                  <span className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-primary-container/25 transition group-hover:scale-110" />
-                  <span className="relative grid h-12 w-12 place-items-center rounded-full bg-primary-container/25 text-primary transition group-hover:bg-primary group-hover:text-white">
-                    <Icon aria-hidden className="h-5 w-5" />
-                  </span>
-                  <h3 className="relative mt-6 font-heading text-xl font-bold">{title}</h3>
-                  <p className="relative mt-3 text-sm leading-6 text-on-surface-variant">{text}</p>
-                  <p className="relative mt-5 rounded-[16px] bg-[#fff8ed] px-4 py-3 text-sm font-semibold leading-6 text-primary">
-                    {detail}
-                  </p>
-                </article>
-              ))}
+              <div className="grid gap-4 md:grid-cols-2">
+                {promiseCards.map(({ title, text, detail, Icon }) => (
+                  <article
+                    key={title}
+                    className="group relative min-h-[300px] overflow-hidden rounded-[30px] border border-[#e4caa5] bg-white p-6 shadow-soft transition duration-300 hover:-translate-y-1 hover:shadow-lift motion-reduce:hover:translate-y-0"
+                  >
+                    <span className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-[#ffe3aa]" />
+                    <span className="relative grid h-12 w-12 place-items-center rounded-full bg-[#ffe4ad] text-[#8a5a00] transition group-hover:bg-[#241407] group-hover:text-[#ffd98d]">
+                      <Icon aria-hidden className="h-5 w-5" />
+                    </span>
+                    <h3 className="relative mt-7 font-heading text-2xl font-extrabold leading-tight text-[#241407]">
+                      {title}
+                    </h3>
+                    <p className="relative mt-4 text-sm leading-7 text-[#6f5a43]">{text}</p>
+                    <p className="relative mt-6 rounded-[18px] bg-[#fff8ed] px-4 py-3 text-sm font-bold leading-6 text-[#8a5a00]">
+                      {detail}
+                    </p>
+                  </article>
+                ))}
+              </div>
             </div>
           </div>
         </section>
       </AboutReveal>
 
       <AboutReveal>
-        <section className="bg-[linear-gradient(180deg,#fff8ed_0%,#f3e5d2_100%)] py-12 md:py-20">
+        <section className="bg-[linear-gradient(180deg,#fffaf1_0%,#f2dfc5_100%)] py-12 md:py-20">
           <div className="section-shell">
-            <div className="mb-8 grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
-              <div className="max-w-4xl">
+            <div className="grid gap-6 lg:grid-cols-[370px_minmax(0,1fr)] lg:items-start">
+              <div className="rounded-[32px] border border-[#e4caa5] bg-[#fffaf1] p-6 shadow-soft md:p-8 lg:sticky lg:top-28">
                 <SectionLabel>{collectionSection.eyebrow}</SectionLabel>
-                <h2 className="mt-5 font-heading text-3xl font-extrabold leading-tight md:text-5xl">
+                <h2 className="mt-5 font-heading text-4xl font-extrabold leading-[1.04] text-[#241407] md:text-5xl">
                   {collectionSection.title}
                 </h2>
-                <p className="mt-4 max-w-2xl text-sm leading-7 text-on-surface-variant md:text-base">
-                  {collectionSection.subtitle}
-                </p>
-              </div>
-              <Link
-                href={collectionSection.viewAllHref}
-                className="group inline-flex items-center gap-2 justify-self-start rounded-full border border-primary/20 bg-white/70 px-5 py-3 text-sm font-bold text-primary shadow-soft transition hover:-translate-y-0.5 hover:bg-white motion-reduce:hover:translate-y-0 lg:justify-self-end"
-              >
-                {collectionSection.viewAllLabel}
-                <ArrowRight
-                  aria-hidden
-                  className="h-4 w-4 transition group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0"
-                />
-              </Link>
-            </div>
-            <div className="grid gap-4 lg:grid-cols-4 lg:grid-rows-2">
-              {collectionCards.map((category, index) => (
+                <p className="mt-5 text-sm leading-7 text-[#6f5a43] md:text-base">{collectionSection.subtitle}</p>
                 <Link
-                  key={category.href}
-                  href={category.href}
-                  className={`group relative min-h-[260px] overflow-hidden rounded-[30px] bg-[#2f1c10] shadow-soft transition duration-300 hover:-translate-y-1 hover:shadow-lift motion-reduce:hover:translate-y-0 ${
-                    index === 0 ? "lg:col-span-2 lg:row-span-2 lg:min-h-[520px]" : ""
-                  }`}
+                  href={collectionSection.viewAllHref}
+                  className="group mt-7 inline-flex items-center gap-2 rounded-full bg-[#241407] px-6 py-3 text-sm font-bold text-white shadow-soft transition hover:-translate-y-0.5 hover:bg-[#3a220f] motion-reduce:hover:translate-y-0"
                 >
-                  <Image
-                    src={category.imageUrl}
-                    alt={category.imageAlt}
-                    fill
-                    sizes={index === 0 ? "(min-width: 1024px) 560px, 100vw" : "(min-width: 1024px) 280px, 100vw"}
-                    className="object-cover transition duration-500 group-hover:scale-[1.035] motion-reduce:group-hover:scale-100"
+                  {collectionSection.viewAllLabel}
+                  <ArrowRight
+                    aria-hidden
+                    className="h-4 w-4 transition group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/78 via-black/22 to-transparent" />
-                  <div className="absolute inset-x-5 bottom-5">
-                    <p className="text-xs font-bold uppercase tracking-wide text-[#ffd98d]">Routine path</p>
-                    <div className="mt-2 flex items-end justify-between gap-4">
-                      <h3
-                        className={`font-heading font-extrabold leading-tight text-white ${
-                          index === 0 ? "text-4xl md:text-5xl" : "text-2xl"
-                        }`}
-                      >
-                        {category.title}
-                      </h3>
-                      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-white/16 text-white backdrop-blur transition group-hover:translate-x-1 group-hover:bg-primary-container group-hover:text-on-primary-container motion-reduce:group-hover:translate-x-0">
+                </Link>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                {collectionCards.map((category, index) => (
+                  <Link
+                    key={category.href}
+                    href={category.href}
+                    className={`group overflow-hidden rounded-[30px] border border-[#e4caa5] bg-[#fffaf1] shadow-soft transition duration-300 hover:-translate-y-1 hover:shadow-lift motion-reduce:hover:translate-y-0 ${
+                      index === 0 ? "xl:col-span-2" : ""
+                    }`}
+                  >
+                    <div className={`relative bg-[#e4d1b7] ${index === 0 ? "aspect-[1.9]" : "aspect-[1.08]"}`}>
+                      <Image
+                        src={category.imageUrl}
+                        alt={category.imageAlt}
+                        fill
+                        sizes={index === 0 ? "(min-width: 1280px) 560px, 100vw" : "(min-width: 1280px) 280px, 50vw"}
+                        className="object-cover transition duration-500 group-hover:scale-[1.035] motion-reduce:group-hover:scale-100"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/34 via-transparent to-transparent" />
+                    </div>
+                    <div className="flex items-center justify-between gap-4 p-5">
+                      <div>
+                        <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#a06a00]">Routine path</p>
+                        <h3 className="mt-2 font-heading text-2xl font-extrabold leading-tight text-[#241407]">
+                          {category.title}
+                        </h3>
+                      </div>
+                      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#ffe4ad] text-[#8a5a00] transition group-hover:translate-x-1 group-hover:bg-[#241407] group-hover:text-[#ffd98d] motion-reduce:group-hover:translate-x-0">
                         <ArrowRight aria-hidden className="h-5 w-5" />
                       </span>
                     </div>
-                  </div>
-                </Link>
-              ))}
+                  </Link>
+                ))}
+              </div>
             </div>
           </div>
         </section>

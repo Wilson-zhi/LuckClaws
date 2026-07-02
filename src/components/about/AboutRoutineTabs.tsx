@@ -89,20 +89,6 @@ const fallbackMedia: Routine["media"] = {
   tone: "Routine path"
 };
 
-const noteClassesByKey: Record<string, string> = {
-  useful: "lg:-rotate-[1.2deg]",
-  comfort: "lg:rotate-[0.8deg] lg:translate-y-2",
-  "clear-details": "lg:-rotate-[0.7deg] lg:translate-y-1",
-  support: "lg:rotate-[1deg]"
-};
-
-const fallbackNoteClasses = [
-  "lg:-rotate-[1.2deg]",
-  "lg:rotate-[0.8deg] lg:translate-y-2",
-  "lg:-rotate-[0.7deg] lg:translate-y-1",
-  "lg:rotate-[1deg]"
-];
-
 function iconForKey(iconKey: string) {
   return iconMap[iconKey] ?? PawPrint;
 }
@@ -131,8 +117,15 @@ function displayRoutinesFromContent(content: AboutPawContent): Routine[] {
   }));
 }
 
-function noteClassName(note: AboutPawNoteContent, index: number) {
-  return noteClassesByKey[note.noteKey] ?? fallbackNoteClasses[index] ?? "";
+function noteTransform(note: AboutPawNoteContent, index: number) {
+  const transforms: Record<string, string> = {
+    useful: "lg:-rotate-[0.8deg]",
+    comfort: "lg:rotate-[0.7deg] lg:translate-y-2",
+    "clear-details": "lg:-rotate-[0.5deg] lg:translate-y-1",
+    support: "lg:rotate-[0.8deg]"
+  };
+
+  return transforms[note.noteKey] ?? ["lg:-rotate-[0.8deg]", "lg:rotate-[0.7deg]", "lg:-rotate-[0.5deg]", "lg:rotate-[0.8deg]"][index] ?? "";
 }
 
 export function AboutRoutineTabs({ content = fallbackAboutPawContent }: { content?: AboutPawContent }) {
@@ -143,20 +136,20 @@ export function AboutRoutineTabs({ content = fallbackAboutPawContent }: { conten
   const ActiveIcon = activeRoutine.Icon;
 
   return (
-    <section className="relative overflow-hidden rounded-[36px] border border-primary/10 bg-[#24170e] p-4 text-white shadow-ambient md:p-6 lg:p-7">
-      <div className="pointer-events-none absolute -left-20 top-10 h-72 w-72 rounded-full bg-primary-container/20 blur-3xl" />
-      <div className="pointer-events-none absolute -right-24 bottom-10 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
+    <section className="relative overflow-hidden rounded-[40px] border border-[#e4caa5] bg-[#f8ead4] p-4 shadow-ambient md:p-6 lg:p-8">
+      <div className="pointer-events-none absolute left-0 top-0 h-52 w-52 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#ffd98d]/40 blur-3xl" />
+      <div className="pointer-events-none absolute bottom-0 right-0 h-64 w-64 translate-x-1/3 translate-y-1/3 rounded-full bg-white/70 blur-3xl" />
 
-      <div className="relative grid gap-5 xl:grid-cols-[390px_minmax(0,1fr)]">
-        <div className="flex min-h-[540px] flex-col rounded-[30px] border border-white/12 bg-white/[0.06] p-5 backdrop-blur md:p-7">
-          <span className="inline-flex w-fit rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-bold uppercase tracking-wide text-[#ffd98d]">
+      <div className="relative grid gap-5 xl:grid-cols-[360px_minmax(0,1fr)]">
+        <div className="rounded-[32px] border border-[#dfc39b] bg-[#fffaf1] p-5 md:p-7">
+          <span className="inline-flex rounded-full bg-[#ffe4ad] px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-[#8a5a00]">
             {content.header.sectionLabel}
           </span>
-          <h2 className="mt-5 font-heading text-4xl font-extrabold leading-[1.02] md:text-5xl">
+          <h2 className="mt-5 font-heading text-4xl font-extrabold leading-[1.02] text-[#241407] md:text-5xl">
             {content.header.title}
           </h2>
-          <p className="mt-4 text-sm leading-7 text-white/72 md:text-base">{content.header.subtitle}</p>
-          <p className="mt-4 text-sm font-bold leading-6 text-[#ffd98d]">{content.header.supportingLine}</p>
+          <p className="mt-4 text-sm leading-7 text-[#6f5a43] md:text-base">{content.header.subtitle}</p>
+          <p className="mt-4 text-sm font-bold leading-6 text-[#8a5a00]">{content.header.supportingLine}</p>
 
           <div className="mt-7 grid gap-3" role="tablist" aria-label="Paw Path Finder routines">
             {routines.map((routine, index) => {
@@ -171,31 +164,29 @@ export function AboutRoutineTabs({ content = fallbackAboutPawContent }: { conten
                   aria-selected={selected}
                   aria-controls="about-routine-panel"
                   id={`about-routine-tab-${routine.routeKey}`}
-                  className={`group flex min-h-[74px] items-center gap-3 rounded-[22px] border p-3 text-left transition-[background-color,border-color,box-shadow,transform] duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:transition-none ${
+                  className={`group flex min-h-[72px] items-center gap-3 rounded-[22px] border p-3 text-left transition-[background-color,border-color,box-shadow,transform] duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:transition-none ${
                     selected
-                      ? "border-[#ffd98d]/70 bg-[#ffd98d] text-[#24170e] shadow-lift"
-                      : "border-white/12 bg-white/[0.06] text-white hover:-translate-y-0.5 hover:border-white/28 hover:bg-white/[0.1] motion-reduce:hover:translate-y-0"
+                      ? "border-[#241407] bg-[#241407] text-white shadow-lift"
+                      : "border-[#e4caa5] bg-white/72 text-[#241407] hover:-translate-y-0.5 hover:border-[#b68742] hover:bg-white motion-reduce:hover:translate-y-0"
                   }`}
                   onClick={() => setActiveRoutineKey(routine.routeKey)}
                 >
                   <span
-                    className={`grid h-12 w-12 shrink-0 place-items-center rounded-full transition ${
-                      selected ? "bg-[#24170e] text-[#ffd98d]" : "bg-white/10 text-[#ffd98d]"
+                    className={`grid h-11 w-11 shrink-0 place-items-center rounded-full transition ${
+                      selected ? "bg-[#ffd98d] text-[#241407]" : "bg-[#ffe4ad] text-[#8a5a00]"
                     }`}
                   >
                     <RoutineIcon aria-hidden className="h-5 w-5" />
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block text-xs font-bold uppercase tracking-wide opacity-70">
+                    <span className="block text-xs font-bold uppercase tracking-[0.16em] opacity-70">
                       Stop {String(index + 1).padStart(2, "0")}
                     </span>
                     <span className="mt-1 block font-heading text-lg font-extrabold leading-6">{routine.label}</span>
                   </span>
                   <ArrowRight
                     aria-hidden
-                    className={`h-4 w-4 shrink-0 transition ${
-                      selected ? "translate-x-0.5" : "group-hover:translate-x-1 motion-reduce:group-hover:translate-x-0"
-                    }`}
+                    className="h-4 w-4 shrink-0 transition group-hover:translate-x-1 motion-reduce:group-hover:translate-x-0"
                   />
                 </button>
               );
@@ -208,75 +199,79 @@ export function AboutRoutineTabs({ content = fallbackAboutPawContent }: { conten
           id="about-routine-panel"
           role="tabpanel"
           aria-labelledby={`about-routine-tab-${activeRoutine.routeKey}`}
-          className="homepage-enter grid min-h-[540px] overflow-hidden rounded-[30px] border border-white/12 bg-[#fff8ed] text-on-surface shadow-lift lg:grid-cols-[minmax(0,1.02fr)_minmax(360px,0.98fr)]"
+          className="homepage-enter h-full overflow-hidden rounded-[32px] border border-[#dfc39b] bg-[#fffaf1] shadow-lift"
         >
-          <div className="relative min-h-[330px] overflow-hidden bg-[#d8c4a9] lg:min-h-full">
-            <Image
-              src={activeRoutine.media.image}
-              alt={activeRoutine.media.alt}
-              fill
-              sizes="(min-width: 1024px) 520px, 100vw"
-              className="object-cover transition duration-500 hover:scale-[1.025] motion-reduce:hover:scale-100"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/62 via-black/10 to-transparent" />
-            <div className="absolute bottom-5 left-5 right-5 rounded-[22px] border border-white/28 bg-black/24 p-5 text-white backdrop-blur">
-              <p className="text-xs font-bold uppercase tracking-wide text-[#ffd98d]">
-                {activeRoutine.media.tone}
-              </p>
-              <p className="mt-2 font-heading text-2xl font-extrabold leading-tight">{activeRoutine.noteText}</p>
-            </div>
-          </div>
-
-          <div className="flex flex-col bg-[#2b160b] p-5 text-white md:p-7 lg:p-8">
-            <div className="flex items-center gap-3">
-              <span className="grid h-12 w-12 place-items-center rounded-full bg-[#ffd98d] text-[#24170e] shadow-soft">
-                <ActiveIcon aria-hidden className="h-5 w-5" />
-              </span>
-              <div>
-                <p className="text-xs font-bold uppercase tracking-wide text-[#ffd98d]">Guided choice</p>
-                <p className="font-heading text-lg font-bold">{activeRoutine.label}</p>
+          <div className="grid h-full lg:grid-cols-[minmax(0,1.08fr)_minmax(360px,0.92fr)]">
+            <div className="relative min-h-[340px] overflow-hidden bg-[#d8c4a9] lg:min-h-full">
+              <Image
+                src={activeRoutine.media.image}
+                alt={activeRoutine.media.alt}
+                fill
+                sizes="(min-width: 1024px) 560px, 100vw"
+                className="object-cover transition duration-500 hover:scale-[1.025] motion-reduce:hover:scale-100"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/48 via-black/8 to-transparent" />
+              <div className="absolute bottom-5 left-5 right-5 rounded-[24px] border border-white/30 bg-white/18 p-5 text-white shadow-soft backdrop-blur">
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#ffd98d]">
+                  {activeRoutine.media.tone}
+                </p>
+                <p className="mt-2 max-w-lg font-heading text-2xl font-extrabold leading-tight">
+                  {activeRoutine.noteText}
+                </p>
               </div>
             </div>
 
-            <h3 className="mt-7 max-w-[12ch] font-heading text-[clamp(2.5rem,5.2vw,4.9rem)] font-extrabold leading-[0.98]">
-              {activeRoutine.recommendationTitle}
-            </h3>
-            <p className="mt-5 max-w-md text-sm font-semibold leading-7 text-white/78 md:text-base">
-              {activeRoutine.recommendationDescription}
-            </p>
+            <div className="flex min-h-[520px] flex-col bg-[#2b160b] p-6 text-white md:p-7 lg:min-h-full">
+              <div className="flex items-center gap-3">
+                <span className="grid h-12 w-12 place-items-center rounded-full bg-[#ffd98d] text-[#241407] shadow-soft">
+                  <ActiveIcon aria-hidden className="h-5 w-5" />
+                </span>
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#ffd98d]">Guided choice</p>
+                  <p className="font-heading text-lg font-bold">{activeRoutine.label}</p>
+                </div>
+              </div>
 
-            <div className="mt-7 grid gap-3 sm:grid-cols-3">
-              {guideNotes.slice(0, 3).map((note) => {
-                const Icon = iconForKey(note.iconKey);
+              <h3 className="mt-6 max-w-[13ch] font-heading text-[clamp(2.35rem,4.2vw,4.15rem)] font-extrabold leading-[0.98]">
+                {activeRoutine.recommendationTitle}
+              </h3>
+              <p className="mt-4 max-w-md text-sm font-semibold leading-7 text-white/78 md:text-base">
+                {activeRoutine.recommendationDescription}
+              </p>
 
-                return (
-                  <div key={note.noteKey} className="rounded-[18px] border border-white/18 bg-white/[0.05] p-3">
-                    <Icon aria-hidden className="h-4 w-4 text-[#ffd98d]" />
-                    <p className="mt-2 text-sm font-bold leading-5">{note.keyword}</p>
-                    <p className="mt-1 text-xs font-semibold leading-5 text-white/[0.58]">{note.secondaryText}</p>
-                  </div>
-                );
-              })}
-            </div>
+              <div className="mt-6 grid gap-3 sm:grid-cols-3">
+                {guideNotes.slice(0, 3).map((note) => {
+                  const Icon = iconForKey(note.iconKey);
 
-            <div className="mt-auto flex flex-wrap gap-3 pt-8">
-              {activeRoutine.links.map((link, index) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`group inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-bold transition hover:-translate-y-0.5 motion-reduce:hover:translate-y-0 ${
-                    index === 0
-                      ? "bg-[#ffd98d] text-[#24170e] hover:bg-[#f7c868]"
-                      : "border border-white/25 bg-white/[0.08] text-white hover:bg-white/[0.14]"
-                  }`}
-                >
-                  {link.label}
-                  <ArrowRight
-                    aria-hidden
-                    className="h-4 w-4 transition group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0"
-                  />
-                </Link>
-              ))}
+                  return (
+                    <div key={note.noteKey} className="min-h-[92px] rounded-[18px] border border-white/18 bg-white/[0.06] p-3">
+                      <Icon aria-hidden className="h-4 w-4 text-[#ffd98d]" />
+                      <p className="mt-2 text-sm font-bold leading-5">{note.keyword}</p>
+                      <p className="mt-1 text-xs font-semibold leading-5 text-white/[0.62]">{note.secondaryText}</p>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="mt-auto flex flex-wrap gap-3 pt-6">
+                {activeRoutine.links.map((link, index) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={`group inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-bold transition hover:-translate-y-0.5 motion-reduce:hover:translate-y-0 ${
+                      index === 0
+                        ? "bg-[#ffd98d] text-[#241407] hover:bg-[#f7c868]"
+                        : "border border-white/25 bg-white/[0.08] text-white hover:bg-white/[0.14]"
+                    }`}
+                  >
+                    {link.label}
+                    <ArrowRight
+                      aria-hidden
+                      className="h-4 w-4 transition group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0"
+                    />
+                  </Link>
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -289,16 +284,16 @@ export function AboutRoutineTabs({ content = fallbackAboutPawContent }: { conten
           return (
             <div
               key={note.noteKey}
-              className={`relative overflow-hidden rounded-[22px] border border-white/12 bg-white/[0.08] p-4 text-white shadow-soft backdrop-blur transition duration-300 hover:-translate-y-0.5 hover:bg-white/[0.12] motion-reduce:hover:translate-y-0 ${noteClassName(note, index)}`}
+              className={`relative overflow-hidden rounded-[22px] border border-[#dfc39b] bg-[#fffaf1] p-4 text-[#241407] shadow-soft transition duration-300 hover:-translate-y-0.5 hover:bg-white motion-reduce:hover:translate-y-0 ${noteTransform(note, index)}`}
             >
-              <span className="pointer-events-none absolute -right-7 -top-7 h-20 w-20 rounded-full bg-[#ffd98d]/15" />
+              <span className="pointer-events-none absolute -right-7 -top-7 h-20 w-20 rounded-full bg-[#ffe4ad]" />
               <span className="relative flex items-start gap-3">
-                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#ffd98d] text-[#24170e]">
+                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#ffe4ad] text-[#8a5a00]">
                   <Icon aria-hidden className="h-4 w-4" />
                 </span>
                 <span>
-                  <span className="block font-heading text-lg font-extrabold text-[#ffd98d]">{note.keyword}</span>
-                  <span className="block text-sm font-semibold leading-6 text-white/70">{note.secondaryText}</span>
+                  <span className="block font-heading text-lg font-extrabold text-[#8a5a00]">{note.keyword}</span>
+                  <span className="block text-sm font-semibold leading-6 text-[#6f5a43]">{note.secondaryText}</span>
                 </span>
               </span>
             </div>
