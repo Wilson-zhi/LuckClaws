@@ -151,8 +151,9 @@ export default async function AboutPage() {
               className="about-poster-media object-cover"
             />
           )}
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_38%,rgba(245,158,11,0.18),transparent_30%),linear-gradient(90deg,rgba(24,12,5,0.88)_0%,rgba(24,12,5,0.72)_38%,rgba(24,12,5,0.32)_70%,rgba(24,12,5,0.5)_100%)]" />
-          <div className="absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-[#241407] to-transparent" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_38%,rgba(245,158,11,0.18),transparent_30%),linear-gradient(90deg,rgba(24,12,5,0.9)_0%,rgba(24,12,5,0.74)_38%,rgba(24,12,5,0.34)_70%,rgba(24,12,5,0.5)_100%)]" />
+          <div className="absolute inset-x-0 bottom-0 h-80 bg-[linear-gradient(180deg,rgba(36,20,7,0)_0%,rgba(36,20,7,0.58)_44%,rgba(251,242,227,0.96)_92%,#fbf2e3_100%)]" />
+          <div className="absolute inset-x-0 -bottom-12 h-28 bg-[#fbf2e3] opacity-95 blur-2xl" />
         </div>
 
         <div className="section-shell relative flex min-h-[calc(100svh-76px)] items-center py-12 md:py-16">
@@ -186,11 +187,11 @@ export default async function AboutPage() {
         </div>
       </section>
 
-      <section className="bg-[linear-gradient(180deg,#fbf2e3_0%,#fffaf1_100%)] py-8">
+      <section className="relative z-10 -mt-16 bg-transparent pb-10 pt-0 md:-mt-20">
         <div className="section-shell">
-          <div className="grid gap-3 rounded-[32px] border border-[#e4caa5] bg-white/65 p-3 shadow-soft backdrop-blur md:grid-cols-3">
+          <div className="grid gap-3 rounded-[34px] border border-[#ead3b1] bg-[#fffaf1]/86 p-3 shadow-ambient backdrop-blur-xl md:grid-cols-3">
             {storyPoints.map(({ title, text, Icon }) => (
-              <div key={title} className="rounded-[24px] bg-[#fff8ed] p-5">
+              <div key={title} className="rounded-[24px] bg-[#fff6e9]/90 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.72)]">
                 <Icon aria-hidden className="h-5 w-5 text-[#a06a00]" />
                 <p className="mt-3 font-heading text-lg font-bold text-[#241407]">{title}</p>
                 <p className="mt-2 text-sm leading-6 text-[#6f5a43]">{text}</p>
@@ -201,7 +202,7 @@ export default async function AboutPage() {
       </section>
 
       <AboutReveal>
-        <section id="paw-path" className="scroll-mt-24 bg-[#fffaf1] py-12 md:py-20">
+        <section id="paw-path" className="scroll-mt-24 bg-[linear-gradient(180deg,#fffaf1_0%,#fff6ea_100%)] py-12 md:py-20">
           <div className="section-shell">
             <AboutRoutineTabs content={pawPath} />
           </div>
@@ -209,7 +210,7 @@ export default async function AboutPage() {
       </AboutReveal>
 
       <AboutReveal>
-        <section className="bg-[#fffaf1] py-12 md:py-20">
+        <section className="bg-[linear-gradient(180deg,#fff6ea_0%,#fffaf1_46%,#f6ead8_100%)] py-12 md:py-20">
           <div className="section-shell">
             <div className="grid gap-8 lg:grid-cols-[0.78fr_1.22fr] lg:items-start">
               <div className="lg:sticky lg:top-28">
@@ -226,7 +227,7 @@ export default async function AboutPage() {
                 {promiseCards.map(({ title, text, detail, Icon }) => (
                   <article
                     key={title}
-                    className="group relative min-h-[300px] overflow-hidden rounded-[30px] border border-[#e4caa5] bg-white p-6 shadow-soft transition duration-300 hover:-translate-y-1 hover:shadow-lift motion-reduce:hover:translate-y-0"
+                    className="group relative min-h-[300px] overflow-hidden rounded-[30px] border border-[#e4caa5] bg-[#fffdf8] p-6 shadow-soft transition duration-300 hover:-translate-y-1 hover:shadow-lift motion-reduce:hover:translate-y-0"
                   >
                     <span className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-[#ffe3aa]" />
                     <span className="relative grid h-12 w-12 place-items-center rounded-full bg-[#ffe4ad] text-[#8a5a00] transition group-hover:bg-[#241407] group-hover:text-[#ffd98d]">
