@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { Lock, Mail, ShieldCheck, Truck } from "lucide-react";
+import { Lock, Mail, PackageOpen, ShieldCheck, Truck } from "lucide-react";
 import { DiscountCodeBox } from "@/components/checkout/DiscountCodeBox";
 import { PayPalSandboxButtons } from "@/components/checkout/PayPalSandboxButtons";
 import { CompactTrustBar, type CompactTrustItem } from "@/components/sections/CompactTrustBar";
@@ -85,6 +85,35 @@ export function CheckoutPaymentContent() {
         checkoutItemsSignature
       ].join("-")
     : "paypal-pending";
+
+  if (checkoutInfoLoaded && buyNowLoaded && !hasItems) {
+    return (
+      <section className="mx-auto max-w-2xl py-8 text-center md:py-14">
+        <span className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-primary-container/30 text-primary">
+          <PackageOpen aria-hidden className="h-7 w-7" />
+        </span>
+        <h1 className="mt-6 font-heading text-4xl font-bold md:text-5xl">Your cart is empty</h1>
+        <p className="mx-auto mt-4 max-w-lg text-base leading-7 text-on-surface-variant">
+          Add a product before continuing to payment. Your checkout details will remain available
+          for the next attempt.
+        </p>
+        <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
+          <Link
+            href="/collections"
+            className="inline-flex min-h-11 items-center justify-center rounded-full bg-primary px-7 font-heading font-bold text-white transition hover:bg-primary/90"
+          >
+            Explore products
+          </Link>
+          <Link
+            href="/cart"
+            className="inline-flex min-h-11 items-center justify-center rounded-full border border-primary px-7 font-heading font-bold text-primary transition hover:bg-primary-container/10"
+          >
+            Return to cart
+          </Link>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <div className="grid gap-12 lg:grid-cols-[1fr_520px] lg:items-start">

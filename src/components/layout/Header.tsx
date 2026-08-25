@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import { Heart, Menu, Search, ShoppingBag, User, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { CartDrawer } from "@/components/cart/CartDrawer";
 import { topLevelNavigation, type NavigationItem } from "@/data/navigation";
 import { brandName } from "@/data/products";
 import { cn } from "@/lib/utils";
@@ -12,6 +12,11 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { getCartTotals, useCartStore } from "@/store/cart-store";
 import { trackViewCart } from "@/lib/ga4-ecommerce";
 import { useWishlistStore } from "@/store/wishlist-store";
+
+const CartDrawer = dynamic(
+  () => import("@/components/cart/CartDrawer").then((module) => module.CartDrawer),
+  { ssr: false }
+);
 
 type PublicCategoryNavRow = {
   name: string | null;

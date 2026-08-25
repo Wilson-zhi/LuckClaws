@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { type CheckoutInfo, validateCheckoutInfo } from "@/lib/checkout-info";
 import { calculateCheckoutTotals, validateCheckoutItems } from "@/lib/checkout-items";
 import { validateDiscountForSubtotal } from "@/lib/discount-validation";
-import { capturePayPalOrder } from "@/lib/paypal";
+import { capturePayPalOrder, getPayPalOrder } from "@/lib/paypal";
 import { savePayPalOrderToSupabase } from "@/lib/supabase/orders";
 import { getUserFromRequest } from "@/lib/supabase/server";
 import { roundMoney } from "@/lib/utils";
@@ -74,7 +74,28 @@ export async function POST(request: Request) {
     }
 
     const paypalOrderId = payload.orderId.trim();
-    const capture = await capturePayPalOrder(paypalOrderId);
+    const paypalOrder = await getPayPalOrder(paypalOrderId);
+    const purchaseUnit = paypalOrder.purchase_units?.[0];
+    const approvedValue = Number(purchaseUnit?.amount?.value);
+
+    if (
+      purchaseUnit?.reference_id !== "luck-claws-checkout" ||
+      purchaseUnit.amount?.currency_code !== "USD" ||
+      !Number.isFinite(approvedValue) ||
+      roundMoney(approvedValue) !== totals.total
+    ) {
+      return NextResponse.json(
+        {
+          error: "PayPal order amount does not match the recalculated checkout total. Payment was not captured."
+        },
+        { status: 409 }
+      );
+    }
+
+    const capture =
+      paypalOrder.status === "COMPLETED"
+        ? paypalOrder
+        : await capturePayPalOrder(paypalOrderId);
     const completedCapture = getCompletedCapture(capture);
 
     if (capture.status !== "COMPLETED" || !completedCapture || !completedCapture.id) {
@@ -119,7 +140,10 @@ export async function POST(request: Request) {
 
       internalOrderId = savedOrder.id;
       internalOrderNumber = savedOrder.orderNumber;
-    } catch {
+    } catch (orderError) {
+      if (process.env.NODE_ENV === "development") {
+        console.error("PayPal payment captured but internal order storage failed:", orderError);
+      }
       orderSaveError = "Payment captured, but internal order storage could not be confirmed. Contact support with your PayPal order ID.";
     }
 

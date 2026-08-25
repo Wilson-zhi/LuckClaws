@@ -19,6 +19,8 @@ type AdminOrderDetailRow = {
   currency: string | null;
   subtotal: number | string | null;
   shipping_amount: number | string | null;
+  discount_code: string | null;
+  discount_amount: number | string | null;
   total_amount: number | string | null;
   source: string | null;
   paypal_order_id: string | null;
@@ -274,6 +276,11 @@ function OrderDetailContent({ orderId }: { orderId: string }) {
           <SummaryField label={t("currency")} value={order.currency ?? "USD"} />
           <SummaryField label={t("subtotal")} value={formatPrice(numberFromValue(order.subtotal))} />
           <SummaryField label={t("shipping")} value={formatPrice(numberFromValue(order.shipping_amount))} />
+          <SummaryField label="Discount code" value={displayValue(order.discount_code, notProvidedLabel)} />
+          <SummaryField
+            label="Discount amount"
+            value={formatPrice(numberFromValue(order.discount_amount))}
+          />
           <SummaryField label={t("total")} value={formatPrice(numberFromValue(order.total_amount))} />
           <SummaryField label={t("source")} value={displayValue(order.source, notProvidedLabel)} />
           <SummaryField label="PayPal order ID" value={displayValue(order.paypal_order_id, notProvidedLabel)} />

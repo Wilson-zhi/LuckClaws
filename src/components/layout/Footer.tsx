@@ -7,6 +7,7 @@ import {
 } from "@/data/navigation";
 import { brandName } from "@/data/products";
 import { CurrentYear } from "@/components/layout/CurrentYear";
+import { CookiePreferencesButton } from "@/components/layout/CookiePreferencesButton";
 
 const footerGroups = [
   {
@@ -80,7 +81,10 @@ export function Footer() {
           <span>
             &copy; <CurrentYear /> {brandName}
           </span>
-          <span>Warm routine-first shopping for dogs, cats, and daily pet life.</span>
+          <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-5">
+            <CookiePreferencesButton />
+            <span>Warm routine-first shopping for dogs, cats, and daily pet life.</span>
+          </div>
         </div>
       </div>
     </footer>

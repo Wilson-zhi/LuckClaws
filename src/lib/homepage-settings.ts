@@ -1,5 +1,6 @@
 import "server-only";
 
+import { unstable_cache } from "next/cache";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 import {
@@ -25,6 +26,7 @@ import {
   type HomepageStorySectionContent,
   type HomepageTrustBadge
 } from "@/lib/homepage-content";
+import { storefrontCacheSeconds, storefrontCacheTags } from "@/lib/storefront-cache";
 
 type HomepageSettingRow = {
   key: string | null;
@@ -127,7 +129,7 @@ async function fetchHomepageSettingRows() {
   return base.rows;
 }
 
-export async function getPublicHomepageSettings(): Promise<PublicHomepageSettings> {
+async function loadPublicHomepageSettings(): Promise<PublicHomepageSettings> {
   const rows = await fetchHomepageSettingRows();
   const heroRow = rows.find((row) => row.key === homepageHeroSettingKey && rowIsActive(row));
   const trustBadgesRow = rows.find((row) => row.key === homepageTrustBadgesSettingKey && rowIsActive(row));
@@ -148,4 +150,17 @@ export async function getPublicHomepageSettings(): Promise<PublicHomepageSetting
     servicePromises: homepageServicePromisesFromValue(servicePromisesRow?.value),
     newsletter: homepageNewsletterFromValue(newsletterRow?.value)
   };
+}
+
+const getCachedPublicHomepageSettings = unstable_cache(
+  loadPublicHomepageSettings,
+  ["public-homepage-settings-v1"],
+  {
+    revalidate: storefrontCacheSeconds,
+    tags: [storefrontCacheTags.homepage]
+  }
+);
+
+export async function getPublicHomepageSettings(): Promise<PublicHomepageSettings> {
+  return getCachedPublicHomepageSettings();
 }

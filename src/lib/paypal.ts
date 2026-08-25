@@ -9,6 +9,18 @@ type PayPalAmount = {
   value: string;
 };
 
+type PayPalPurchaseUnit = {
+  reference_id?: string;
+  amount?: PayPalAmount;
+  payments?: {
+    captures?: Array<{
+      id?: string;
+      status?: string;
+      amount?: PayPalAmount;
+    }>;
+  };
+};
+
 type PayPalCreateOrderResponse = {
   id?: string;
   status?: string;
@@ -17,15 +29,7 @@ type PayPalCreateOrderResponse = {
 export type PayPalCaptureResponse = {
   id?: string;
   status?: string;
-  purchase_units?: Array<{
-    payments?: {
-      captures?: Array<{
-        id?: string;
-        status?: string;
-        amount?: PayPalAmount;
-      }>;
-    };
-  }>;
+  purchase_units?: PayPalPurchaseUnit[];
 };
 
 function money(value: number) {
@@ -160,7 +164,34 @@ export async function capturePayPalOrder(orderId: string) {
   const payload = (await response.json()) as PayPalCaptureResponse;
 
   if (!response.ok) {
+    const existingOrder = await getPayPalOrder(orderId);
+
+    if (existingOrder.status === "COMPLETED") {
+      return existingOrder;
+    }
+
     throw new Error("Unable to capture PayPal Sandbox order.");
+  }
+
+  return payload;
+}
+
+export async function getPayPalOrder(orderId: string) {
+  const accessToken = await getAccessToken();
+  const response = await fetch(
+    `${getPayPalApiBase()}/v2/checkout/orders/${encodeURIComponent(orderId)}`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json"
+      },
+      cache: "no-store"
+    }
+  );
+  const payload = (await response.json()) as PayPalCaptureResponse;
+
+  if (!response.ok || !payload.id) {
+    throw new Error("Unable to verify PayPal Sandbox order.");
   }
 
   return payload;

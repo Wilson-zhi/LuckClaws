@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { type ChangeEvent, useEffect, useMemo, useState } from "react";
+import { useAdminAuth } from "@/components/admin/AdminGuard";
 import { useAdminLanguage } from "@/components/admin/admin-language";
 import {
   buildHomepageDecisionGuideValue,
@@ -31,6 +32,7 @@ import {
   type HomepageTrustBadgeIconKey
 } from "@/lib/homepage-content";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { requestStorefrontRevalidation } from "@/lib/storefront-revalidation-client";
 
 type HomepageSettingRow = {
   key: string | null;
@@ -356,6 +358,7 @@ function moveArrayItem<T>(items: T[], index: number, direction: "up" | "down") {
 }
 
 export function AdminHomepageAdvancedSettings() {
+  const { accessToken } = useAdminAuth();
   const { language } = useAdminLanguage();
   const c = copy[language];
   const supabase = getSupabaseBrowserClient();
@@ -599,14 +602,27 @@ export function AdminHomepageAdvancedSettings() {
       { onConflict: "key" }
     );
 
-    setSaving(false);
-
     if (saveError) {
+      setSaving(false);
       console.error("Unable to save homepage advanced modules", saveError);
       setError(c.saveError);
       return;
     }
 
+    try {
+      await requestStorefrontRevalidation(accessToken, "homepage");
+    } catch (revalidationError) {
+      setSaving(false);
+      console.error("Homepage content saved but storefront refresh failed", revalidationError);
+      setError(
+        revalidationError instanceof Error
+          ? `${c.saveError} ${revalidationError.message}`
+          : c.saveError
+      );
+      return;
+    }
+
+    setSaving(false);
     setSuccess(c.saved);
   };
 

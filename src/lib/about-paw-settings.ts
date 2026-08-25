@@ -1,5 +1,6 @@
 import "server-only";
 
+import { unstable_cache } from "next/cache";
 import {
   fallbackPublicAboutContent,
   publicAboutContentFromRows,
@@ -7,6 +8,7 @@ import {
   type PublicAboutContent
 } from "@/lib/about-paw-content";
 import { getSupabasePublicServerClient } from "@/lib/supabase/server";
+import { storefrontCacheSeconds, storefrontCacheTags } from "@/lib/storefront-cache";
 
 const aboutHeroColumns =
   "id, section_key, eyebrow, title, description, primary_cta_label, primary_cta_href, secondary_cta_label, secondary_cta_href, hero_image_url, hero_image_alt, compass_title, compass_description";
@@ -18,7 +20,7 @@ const aboutCollectionSectionColumns = "id, section_key, eyebrow, title, subtitle
 const aboutCollectionCardColumns =
   "id, card_key, title, category_slug, href, image_url, image_alt, sort_order, enabled";
 
-export async function getPublicAboutContent(): Promise<PublicAboutContent> {
+async function loadPublicAboutContent(): Promise<PublicAboutContent> {
   const supabase = getSupabasePublicServerClient();
 
   if (!supabase) {
@@ -125,6 +127,19 @@ export async function getPublicAboutContent(): Promise<PublicAboutContent> {
       }
     };
   }
+}
+
+const getCachedPublicAboutContent = unstable_cache(
+  loadPublicAboutContent,
+  ["public-about-content-v1"],
+  {
+    revalidate: storefrontCacheSeconds,
+    tags: [storefrontCacheTags.about]
+  }
+);
+
+export async function getPublicAboutContent(): Promise<PublicAboutContent> {
+  return getCachedPublicAboutContent();
 }
 
 export const getPublicAboutPawContent = getPublicAboutContent;

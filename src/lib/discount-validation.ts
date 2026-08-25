@@ -8,7 +8,7 @@ import {
   type AppliedDiscount,
   type DiscountCodeRow
 } from "@/lib/discounts";
-import { getSupabasePublicServerClient } from "@/lib/supabase/server";
+import { getSupabaseAdminClient } from "@/lib/supabase/server";
 
 function dateFromValue(value: string | null) {
   if (!value) {
@@ -33,7 +33,7 @@ export async function validateDiscountForSubtotal({
     throw new Error("Enter a discount code.");
   }
 
-  const supabase = getSupabasePublicServerClient();
+  const supabase = getSupabaseAdminClient();
 
   if (!supabase) {
     throw new Error("Discount validation is temporarily unavailable.");
@@ -48,6 +48,9 @@ export async function validateDiscountForSubtotal({
     .maybeSingle();
 
   if (error) {
+    if (process.env.NODE_ENV === "development") {
+      console.error("Discount validation query failed:", error);
+    }
     throw new Error("Discount validation is temporarily unavailable.");
   }
 

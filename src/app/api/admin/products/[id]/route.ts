@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAdminFromRequest } from "@/lib/admin-auth";
 import { type AdminProductMutationPayload, validateAdminProductPayload } from "@/lib/admin-products";
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
+import { revalidateStorefrontScope } from "@/lib/storefront-cache";
 
 type RouteContext = {
   params: Promise<{
@@ -177,6 +178,8 @@ export async function PATCH(request: Request, { params }: RouteContext) {
       return NextResponse.json({ error: "Product not found." }, { status: 404 });
     }
 
+    revalidateStorefrontScope("products");
+
     return NextResponse.json({ product: data });
   }
 
@@ -239,6 +242,8 @@ export async function PATCH(request: Request, { params }: RouteContext) {
   if (!updateResult.data) {
     return NextResponse.json({ error: "Product not found." }, { status: 404 });
   }
+
+  revalidateStorefrontScope("products");
 
   return NextResponse.json({ product: updateResult.data });
 }

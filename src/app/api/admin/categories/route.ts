@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAdminFromRequest } from "@/lib/admin-auth";
 import { categoryStatuses, validateAdminCategoryPayload } from "@/lib/admin-categories";
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
+import { revalidateStorefrontScope } from "@/lib/storefront-cache";
 
 export type AdminCategoryRow = {
   id: string;
@@ -114,6 +115,8 @@ export async function POST(request: Request) {
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+
+  revalidateStorefrontScope("categories");
 
   return NextResponse.json({ category: data }, { status: 201 });
 }

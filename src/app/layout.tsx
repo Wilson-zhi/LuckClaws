@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
-import { MicrosoftClarity } from "@/components/analytics/MicrosoftClarity";
+import { AnalyticsConsent } from "@/components/analytics/AnalyticsConsent";
 import { NavigationProgress } from "@/components/layout/NavigationProgress";
 import { brandName } from "@/data/products";
 import { defaultOgImage, siteUrl } from "@/lib/seo";
@@ -49,8 +48,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body>
         <NavigationProgress />
         {children}
-        <GoogleAnalytics />
-        <MicrosoftClarity />
+        <AnalyticsConsent />
       </body>
     </html>
   );

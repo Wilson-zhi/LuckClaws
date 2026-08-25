@@ -26,7 +26,7 @@ const sections = [
   {
     title: "Cookies and Analytics",
     text:
-      "We may use cookies and similar technologies to keep the website working, remember preferences, understand site performance, and improve product discovery."
+      "Essential browser storage keeps core store features working. Optional Google Analytics and Microsoft Clarity tools are loaded only after you allow analytics through the cookie preference control."
   },
   {
     title: "Third-Party Services",
@@ -36,7 +36,7 @@ const sections = [
   {
     title: "Your Choices",
     text:
-      "You may unsubscribe from marketing emails when available and may contact us to request help with privacy-related questions about your account or order information."
+      "You can review or change your analytics preference at any time through Cookie preferences in the site footer. You may also unsubscribe from marketing emails when available and contact us with privacy-related questions."
   },
   {
     title: "Contact Us",

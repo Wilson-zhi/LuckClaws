@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAdminFromRequest } from "@/lib/admin-auth";
 import { type AdminProductMutationPayload, validateAdminProductPayload } from "@/lib/admin-products";
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
+import { revalidateStorefrontScope } from "@/lib/storefront-cache";
 
 export type AdminProductRow = {
   id: string;
@@ -135,6 +136,8 @@ export async function POST(request: Request) {
   if (insertResult.error) {
     return NextResponse.json({ error: insertResult.error.message }, { status: 500 });
   }
+
+  revalidateStorefrontScope("products");
 
   return NextResponse.json({ product: insertResult.data }, { status: 201 });
 }

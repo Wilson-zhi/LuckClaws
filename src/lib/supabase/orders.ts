@@ -25,6 +25,8 @@ export type SavedSupabaseOrder = {
   orderNumber: string;
 };
 
+const pendingOrderSaves = new Map<string, Promise<SavedSupabaseOrder>>();
+
 function clean(value: string | undefined) {
   const trimmed = value?.trim();
 
@@ -76,6 +78,28 @@ async function incrementDiscountUsage(code: string | null) {
     return;
   }
 
+  const { data: incremented, error: rpcError } = await supabase.rpc(
+    "increment_discount_usage_if_available",
+    { p_code: code }
+  );
+
+  if (!rpcError) {
+    if (incremented !== true && process.env.NODE_ENV === "development") {
+      console.error("Discount usage was not incremented because the code is unavailable or at its usage limit.");
+    }
+    return;
+  }
+
+  const rpcMessage = rpcError.message?.toLowerCase() ?? "";
+  const rpcIsUnavailable =
+    rpcError.code === "PGRST202" ||
+    rpcMessage.includes("could not find the function") ||
+    rpcMessage.includes("schema cache");
+
+  if (!rpcIsUnavailable && process.env.NODE_ENV === "development") {
+    console.error("Unable to increment discount usage through the database function:", rpcError);
+  }
+
   const { data } = await supabase
     .from("discount_codes")
     .select("id, used_count")
@@ -98,7 +122,50 @@ async function incrementDiscountUsage(code: string | null) {
     .eq("id", discount.id);
 }
 
-export async function savePayPalOrderToSupabase({
+async function ensureOrderItems(
+  orderId: string,
+  items: ValidatedCheckoutItem[]
+) {
+  const supabase = getSupabaseAdminClient();
+
+  if (!supabase) {
+    throw new Error("Supabase server environment variables are not configured.");
+  }
+
+  const { count, error: countError } = await supabase
+    .from("order_items")
+    .select("id", { count: "exact", head: true })
+    .eq("order_id", orderId);
+
+  if (countError) {
+    throw new Error(countError.message);
+  }
+
+  if ((count ?? 0) > 0) {
+    return false;
+  }
+
+  const { error: itemError } = await supabase.from("order_items").insert(
+    items.map((item) => ({
+      order_id: orderId,
+      product_id: item.id,
+      product_title: item.name,
+      product_slug: item.id,
+      product_image: item.image,
+      quantity: item.quantity,
+      unit_price: roundMoney(item.price),
+      line_total: roundMoney(item.price * item.quantity)
+    }))
+  );
+
+  if (itemError) {
+    throw new Error(itemError.message);
+  }
+
+  return true;
+}
+
+async function persistPayPalOrderToSupabase({
   paypalOrderId,
   paypalCaptureId,
   checkoutInfo,
@@ -124,6 +191,11 @@ export async function savePayPalOrderToSupabase({
 
   if (existingOrder) {
     const row = existingOrder as SupabaseOrderRow;
+    const insertedItems = await ensureOrderItems(row.id, items);
+
+    if (insertedItems) {
+      await incrementDiscountUsage(totals.discountCode);
+    }
 
     return {
       id: row.id,
@@ -181,27 +253,32 @@ export async function savePayPalOrderToSupabase({
   }
 
   const order = orderData as SupabaseOrderRow;
-  const { error: itemError } = await supabase.from("order_items").insert(
-    items.map((item) => ({
-      order_id: order.id,
-      product_id: item.id,
-      product_title: item.name,
-      product_slug: item.id,
-      product_image: item.image,
-      quantity: item.quantity,
-      unit_price: roundMoney(item.price),
-      line_total: roundMoney(item.price * item.quantity)
-    }))
-  );
+  const insertedItems = await ensureOrderItems(order.id, items);
 
-  if (itemError) {
-    throw new Error(itemError.message);
+  if (insertedItems) {
+    await incrementDiscountUsage(totals.discountCode);
   }
-
-  await incrementDiscountUsage(totals.discountCode);
 
   return {
     id: order.id,
     orderNumber: order.order_number ?? orderNumber
   };
+}
+
+export async function savePayPalOrderToSupabase(
+  input: SavePayPalOrderInput
+): Promise<SavedSupabaseOrder> {
+  const pendingSave = pendingOrderSaves.get(input.paypalOrderId);
+
+  if (pendingSave) {
+    return pendingSave;
+  }
+
+  const save = persistPayPalOrderToSupabase(input).finally(() => {
+    pendingOrderSaves.delete(input.paypalOrderId);
+  });
+
+  pendingOrderSaves.set(input.paypalOrderId, save);
+
+  return save;
 }

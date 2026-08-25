@@ -19,6 +19,8 @@ type OrderRow = {
   currency: string | null;
   subtotal: number | string | null;
   shipping_amount: number | string | null;
+  discount_code?: string | null;
+  discount_amount?: number | string | null;
   total_amount: number | string | null;
   payment_status: string | null;
   fulfillment_status: string | null;
@@ -104,9 +106,12 @@ function productImageFromItem(item: OrderItemRow, productRows: Map<string, { ima
   return productRows.get(item.product_id)?.image_url ?? getProduct(item.product_id)?.image ?? null;
 }
 
-function isMissingBillingColumnError(error: { message?: string; code?: string }) {
+function isMissingOptionalOrderColumnError(error: { message?: string; code?: string }) {
   return Boolean(
-    error.code === "PGRST204" || error.message?.toLowerCase().includes("billing_address")
+    error.code === "PGRST204" ||
+      error.message?.toLowerCase().includes("billing_address") ||
+      error.message?.toLowerCase().includes("discount_code") ||
+      error.message?.toLowerCase().includes("discount_amount")
   );
 }
 
@@ -134,21 +139,32 @@ export async function GET(request: Request, { params }: RouteContext) {
 
   const orderResult = await supabase
     .from("orders")
-    .select(`${orderColumns}, billing_address`)
+    .select(`${orderColumns}, billing_address, discount_code, discount_amount`)
     .eq("id", id)
     .maybeSingle();
   let orderData: unknown = orderResult.data;
   let orderError = orderResult.error;
 
-  if (orderError && isMissingBillingColumnError(orderError)) {
-    const fallbackResult = await supabase
+  if (orderError && isMissingOptionalOrderColumnError(orderError)) {
+    const billingFallbackResult = await supabase
+      .from("orders")
+      .select(`${orderColumns}, billing_address`)
+      .eq("id", id)
+      .maybeSingle();
+
+    orderData = billingFallbackResult.data;
+    orderError = billingFallbackResult.error;
+  }
+
+  if (orderError && isMissingOptionalOrderColumnError(orderError)) {
+    const baseFallbackResult = await supabase
       .from("orders")
       .select(orderColumns)
       .eq("id", id)
       .maybeSingle();
 
-    orderData = fallbackResult.data;
-    orderError = fallbackResult.error;
+    orderData = baseFallbackResult.data;
+    orderError = baseFallbackResult.error;
   }
 
   if (orderError) {
@@ -204,6 +220,8 @@ export async function GET(request: Request, { params }: RouteContext) {
       currency: order.currency ?? "USD",
       subtotal: order.subtotal,
       shipping_amount: order.shipping_amount,
+      discount_code: order.discount_code ?? null,
+      discount_amount: order.discount_amount ?? 0,
       total_amount: order.total_amount,
       source: order.source,
       paypal_order_id: order.paypal_order_id,

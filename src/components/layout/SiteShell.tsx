@@ -1,7 +1,11 @@
+import dynamic from "next/dynamic";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
-import { WishlistFeedback } from "@/components/wishlist/WishlistFeedback";
 import { type NavigationItem } from "@/data/navigation";
+
+const WishlistFeedback = dynamic(() =>
+  import("@/components/wishlist/WishlistFeedback").then((module) => module.WishlistFeedback)
+);
 
 export function SiteShell({
   children,

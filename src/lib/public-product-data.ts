@@ -1,5 +1,6 @@
 import "server-only";
 
+import { unstable_cache } from "next/cache";
 import { cache } from "react";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import {
@@ -23,6 +24,7 @@ import { defaultHomepageCategorySection, type HomepageCategorySectionContent } f
 import { normalizeProductHighlightIconKey } from "@/lib/product-highlight-icons";
 import { DEFAULT_SHIPPING_RATE, standardShippingSentence } from "@/lib/shipping";
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
+import { storefrontCacheSeconds, storefrontCacheTags } from "@/lib/storefront-cache";
 
 type PublicInventoryStatus = Product["availability"];
 type PublicHomepageSection = NonNullable<Product["homepageSection"]>;
@@ -914,8 +916,21 @@ function headerNavigationFromCategories(categories: CategoryMetadata[]): Navigat
     : topLevelNavigation;
 }
 
-export async function getPublicHeaderNavigationItems() {
+async function loadPublicHeaderNavigationItems() {
   return headerNavigationFromCategories(await fetchActiveCategoryMetadata());
+}
+
+const getCachedPublicHeaderNavigationItems = unstable_cache(
+  loadPublicHeaderNavigationItems,
+  ["public-header-navigation-v1"],
+  {
+    revalidate: storefrontCacheSeconds,
+    tags: [storefrontCacheTags.categories]
+  }
+);
+
+export async function getPublicHeaderNavigationItems() {
+  return getCachedPublicHeaderNavigationItems();
 }
 
 function collectionCategoryFilterOptions(
@@ -1161,13 +1176,22 @@ function homepageSectionProducts(sectionProducts: Product[], fallbackProducts: P
   return (sectionProducts.length > 0 ? sectionProducts : fallbackProducts).slice(0, limit);
 }
 
-export async function getPublicProducts() {
+async function loadPublicProducts() {
   const supabaseProducts = await fetchSupabaseActiveProducts();
 
   return supabaseProducts ?? staticProducts;
 }
 
-export async function getPublicProductBySlug(slug: string) {
+const getCachedPublicProducts = unstable_cache(loadPublicProducts, ["public-products-v1"], {
+  revalidate: storefrontCacheSeconds,
+  tags: [storefrontCacheTags.products, storefrontCacheTags.categories]
+});
+
+export async function getPublicProducts() {
+  return getCachedPublicProducts();
+}
+
+async function loadPublicProductBySlug(slug: string) {
   const lookup = await fetchSupabaseProductBySlug(slug);
 
   if (lookup.product) {
@@ -1179,6 +1203,19 @@ export async function getPublicProductBySlug(slug: string) {
   }
 
   return getProductBySlug(slug) ?? null;
+}
+
+const getCachedPublicProductBySlug = unstable_cache(
+  loadPublicProductBySlug,
+  ["public-product-by-slug-v1"],
+  {
+    revalidate: storefrontCacheSeconds,
+    tags: [storefrontCacheTags.products, storefrontCacheTags.categories]
+  }
+);
+
+export async function getPublicProductBySlug(slug: string) {
+  return getCachedPublicProductBySlug(slug);
 }
 
 export async function getPublicProductByIdOrSlug(idOrSlug: string) {

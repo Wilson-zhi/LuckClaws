@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAdminFromRequest } from "@/lib/admin-auth";
 import { validateAdminCategoryPayload } from "@/lib/admin-categories";
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
+import { revalidateStorefrontScope } from "@/lib/storefront-cache";
 import type { AdminCategoryRow } from "@/app/api/admin/categories/route";
 
 type RouteContext = {
@@ -92,6 +93,8 @@ export async function PATCH(request: Request, { params }: RouteContext) {
       return NextResponse.json({ error: "Category not found." }, { status: 404 });
     }
 
+    revalidateStorefrontScope("categories");
+
     return NextResponse.json({ category: data });
   }
 
@@ -138,6 +141,8 @@ export async function PATCH(request: Request, { params }: RouteContext) {
   if (!data) {
     return NextResponse.json({ error: "Category not found." }, { status: 404 });
   }
+
+  revalidateStorefrontScope("categories");
 
   return NextResponse.json({ category: data });
 }

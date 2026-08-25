@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAdminFromRequest } from "@/lib/admin-auth";
 import { aboutIconKeys, normalizeAboutIconKey } from "@/lib/about-paw-content";
 import { getSupabaseAuthenticatedClientFromRequest } from "@/lib/supabase/server";
+import { revalidateStorefrontScope } from "@/lib/storefront-cache";
 
 export type AdminAboutSettingsRow = {
   id: string;
@@ -836,6 +837,8 @@ export async function PATCH(request: Request) {
 
     return NextResponse.json({ error: "About page content was saved but could not be reloaded." }, { status: 500 });
   }
+
+  revalidateStorefrontScope("about");
 
   return NextResponse.json({
     hero: heroResult.data as AdminAboutHeroRow,

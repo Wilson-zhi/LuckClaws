@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
-import { AdminGuard } from "@/components/admin/AdminGuard";
+import { AdminGuard, useAdminAuth } from "@/components/admin/AdminGuard";
 import { AdminHomepageAdvancedSettings } from "@/components/admin/AdminHomepageAdvancedSettings";
 import { AdminPageFrame } from "@/components/admin/AdminPageFrame";
 import { type AdminLabelKey, useAdminLanguage } from "@/components/admin/admin-language";
@@ -35,6 +35,7 @@ import {
   type HomepageTrustBadgeIconKey
 } from "@/lib/homepage-content";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { requestStorefrontRevalidation } from "@/lib/storefront-revalidation-client";
 
 type HomepageSettingRow = {
   key: string | null;
@@ -278,6 +279,7 @@ function HeroField({
 }
 
 function AdminHomepageFormContent() {
+  const { accessToken } = useAdminAuth();
   const { t, language } = useAdminLanguage();
   const categoryCopy = homepageCategorySectionCopy[language];
   const heroMediaCopy = homepageHeroMediaCopy[language];
@@ -687,13 +689,25 @@ function AdminHomepageFormContent() {
       { onConflict: "key" }
     );
 
-    setSaving(false);
-
     if (saveError) {
+      setSaving(false);
       setError(saveError.message || t("unableToSaveHomepage"));
       return;
     }
 
+    try {
+      await requestStorefrontRevalidation(accessToken, "homepage");
+    } catch (revalidationError) {
+      setSaving(false);
+      setError(
+        revalidationError instanceof Error
+          ? `Content was saved, but the storefront refresh failed: ${revalidationError.message}`
+          : "Content was saved, but the storefront refresh failed."
+      );
+      return;
+    }
+
+    setSaving(false);
     setSuccessMessage(t("homepageSaved"));
   };
 
@@ -718,13 +732,25 @@ function AdminHomepageFormContent() {
       { onConflict: "key" }
     );
 
-    setSavingCategorySection(false);
-
     if (saveError) {
+      setSavingCategorySection(false);
       setCategorySaveError(saveError.message || categoryCopy.unableToSave);
       return;
     }
 
+    try {
+      await requestStorefrontRevalidation(accessToken, "homepage");
+    } catch (revalidationError) {
+      setSavingCategorySection(false);
+      setCategorySaveError(
+        revalidationError instanceof Error
+          ? `Content was saved, but the storefront refresh failed: ${revalidationError.message}`
+          : "Content was saved, but the storefront refresh failed."
+      );
+      return;
+    }
+
+    setSavingCategorySection(false);
     setCategorySuccessMessage(categoryCopy.saved);
   };
 
@@ -759,13 +785,25 @@ function AdminHomepageFormContent() {
       { onConflict: "key" }
     );
 
-    setSavingStorySection(false);
-
     if (saveError) {
+      setSavingStorySection(false);
       setStorySaveError(saveError.message || storyCopy.unableToSave);
       return;
     }
 
+    try {
+      await requestStorefrontRevalidation(accessToken, "homepage");
+    } catch (revalidationError) {
+      setSavingStorySection(false);
+      setStorySaveError(
+        revalidationError instanceof Error
+          ? `Content was saved, but the storefront refresh failed: ${revalidationError.message}`
+          : "Content was saved, but the storefront refresh failed."
+      );
+      return;
+    }
+
+    setSavingStorySection(false);
     setStorySection(storyValue);
     setStorySuccessMessage(storyCopy.saved);
   };
