@@ -113,7 +113,7 @@ function SupportingProductCard({ product }: { product: Product }) {
         onClick={() => trackSelectItem(product, "Homepage Everyday Edit")}
       >
         {(product.badge || product.isNew) && (
-          <span className="absolute left-3 top-3 z-10 rounded-full border border-white/70 bg-white/92 px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-[0.12em] text-primary shadow-soft">
+          <span className="absolute left-3 top-3 z-10 rounded-full border border-white/70 bg-white/[0.92] px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-[0.12em] text-primary shadow-soft">
             {product.badge ?? "New"}
           </span>
         )}

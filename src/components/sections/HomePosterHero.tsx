@@ -101,14 +101,14 @@ export function HomePosterHero({
 
         <div className="relative z-10 mx-auto flex min-h-[calc(100svh-72px)] max-w-[1600px] flex-col justify-between px-5 py-6 sm:px-8 md:min-h-[calc(100svh-88px)] md:px-10 md:py-8 lg:px-16 xl:px-20">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <span className="inline-flex rounded-full border border-white/25 bg-white/14 px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-[#FFD894] backdrop-blur">
+            <span className="inline-flex rounded-full border border-white/25 bg-white/[0.14] px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-[#FFD894] backdrop-blur">
               {eyebrow}
             </span>
             <div className="hidden flex-wrap gap-2 md:flex">
               {heroBadges.map((badge) => (
                 <span
                   key={badge}
-                  className="rounded-full border border-white/30 bg-[#2C1A0D]/62 px-3 py-2 text-xs font-bold text-white shadow-soft backdrop-blur"
+                  className="rounded-full border border-white/30 bg-[#2C1A0D]/[0.62] px-3 py-2 text-xs font-bold text-white shadow-soft backdrop-blur"
                 >
                   {badge}
                 </span>
@@ -142,7 +142,7 @@ export function HomePosterHero({
                 </Link>
                 <Link
                   href={secondaryButtonLink}
-                  className="inline-flex items-center justify-center rounded-full border border-white/35 bg-white/14 px-6 py-3 text-sm font-extrabold text-white backdrop-blur transition hover:-translate-y-0.5 hover:bg-white hover:text-[#2C1A0D] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white motion-reduce:hover:translate-y-0"
+                  className="inline-flex items-center justify-center rounded-full border border-white/35 bg-white/[0.14] px-6 py-3 text-sm font-extrabold text-white backdrop-blur transition hover:-translate-y-0.5 hover:bg-white hover:text-[#2C1A0D] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white motion-reduce:hover:translate-y-0"
                 >
                   {secondaryButtonText}
                 </Link>
@@ -150,37 +150,59 @@ export function HomePosterHero({
             </div>
 
             {products.length > 0 && (
-              <div className="grid gap-3 rounded-[1.5rem] border border-white/18 bg-[#2C1A0D]/30 p-3 shadow-lift backdrop-blur-md">
-                {products.map((product) => (
-                  <Link
-                    key={product.id}
-                    href={product.productUrl}
-                    className="group flex items-center gap-3 rounded-[1.1rem] bg-white/92 p-3 shadow-soft transition hover:-translate-y-0.5 hover:bg-white hover:shadow-lift focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white motion-reduce:hover:translate-y-0"
-                  >
-                    <span className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-[#F7EAD8]">
-                      <Image
-                        src={fallbackProductImage(product)}
-                        alt={product.alt}
-                        fill
-                        loading="eager"
-                        sizes="64px"
-                        className="object-cover transition duration-300 group-hover:scale-105"
-                      />
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-[11px] font-extrabold uppercase tracking-wide text-primary">
-                        {product.category}
+              <aside
+                aria-label="Quick product picks"
+                className="w-full max-w-xl overflow-hidden rounded-2xl bg-[#FFF8ED] text-[#24170E] shadow-[0_22px_60px_rgba(20,11,5,0.34)] ring-1 ring-[#F2D9AE] lg:justify-self-end"
+              >
+                <div className="flex items-end justify-between gap-4 border-b border-[#E8D4B4] px-4 py-3.5 sm:px-5">
+                  <div>
+                    <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#94600A]">Quick picks</p>
+                    <p className="mt-1 font-heading text-sm font-extrabold text-[#24170E] sm:text-base">
+                      A shorter route to shop.
+                    </p>
+                  </div>
+                  <span className="shrink-0 rounded-full bg-[#F6E2BC] px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#6E4300]">
+                    {products.length} {products.length === 1 ? "pick" : "picks"}
+                  </span>
+                </div>
+
+                <div className="divide-y divide-[#E8D4B4]">
+                  {products.map((product) => (
+                    <Link
+                      key={product.id}
+                      href={product.productUrl}
+                      className="group grid min-h-[88px] grid-cols-[4rem_minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 transition-colors duration-200 hover:bg-[#F8E7C9] focus-visible:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-[#8E5700] sm:gap-4 sm:px-5"
+                    >
+                      <span className="relative h-16 w-16 overflow-hidden rounded-xl bg-[#F7EAD8]">
+                        <Image
+                          src={fallbackProductImage(product)}
+                          alt={product.alt}
+                          fill
+                          loading="eager"
+                          sizes="64px"
+                          className="object-cover transition-transform duration-300 group-hover:scale-[1.04] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+                        />
                       </span>
-                      <span className="mt-1 block truncate font-heading text-sm font-bold text-[#24170E]">
-                        {product.name}
+                      <span className="min-w-0">
+                        <span className="block text-[10px] font-extrabold uppercase tracking-[0.1em] text-[#8E5700] sm:text-[11px]">
+                          {product.category}
+                        </span>
+                        <span className="mt-1 block font-heading text-sm font-extrabold leading-5 text-[#24170E] sm:text-base">
+                          {product.name}
+                        </span>
                       </span>
-                    </span>
-                    <span className="shrink-0 font-heading text-sm font-extrabold text-primary">
-                      {formatPrice(product.price)}
-                    </span>
-                  </Link>
-                ))}
-              </div>
+                      <span className="flex shrink-0 items-center gap-2 pl-1">
+                        <span className="font-heading text-sm font-extrabold tabular-nums text-[#7B4A00]">
+                          {formatPrice(product.price)}
+                        </span>
+                        <span className="grid h-8 w-8 place-items-center rounded-full bg-[#2C1A0D] text-[#FFD894] transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transition-none motion-reduce:group-hover:translate-x-0">
+                          <ArrowRight aria-hidden className="h-4 w-4" />
+                        </span>
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              </aside>
             )}
           </div>
         </div>
