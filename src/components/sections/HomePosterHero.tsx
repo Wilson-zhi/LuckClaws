@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Award } from "lucide-react";
+import { ArrowRight, Award, PawPrint } from "lucide-react";
 import { type Product } from "@/data/products";
 import { formatPrice } from "@/lib/utils";
 
@@ -70,7 +70,7 @@ export function HomePosterHero({
   products
 }: HomePosterHeroProps) {
   return (
-    <section className="relative isolate overflow-hidden bg-[#2C1A0D]">
+    <section className="home-hero relative isolate overflow-hidden bg-[#2C1A0D]">
       <div className="homepage-enter relative min-h-[calc(100svh-72px)] overflow-hidden bg-[#2C1A0D] shadow-lift md:min-h-[calc(100svh-88px)]">
         {hasVideo ? (
           <video
@@ -128,13 +128,23 @@ export function HomePosterHero({
               <p className="mt-6 max-w-2xl text-base font-semibold leading-7 text-white [text-shadow:0_4px_18px_rgba(0,0,0,0.50)] md:text-xl md:leading-8">
                 {subtitle}
               </p>
-              <p className="mt-4 max-w-xl text-sm font-semibold text-[#FFD894]">{featuredText}</p>
+              <div className="home-hero-art-note mt-4 flex w-fit items-center gap-3 text-[#FFD894]">
+                <p className="lc-hand-note text-lg leading-none md:text-xl">{featuredText}</p>
+                <span className="flex items-center gap-1.5" aria-hidden="true">
+                  {[0, 1, 2].map((step) => (
+                    <PawPrint
+                      key={step}
+                      className={`home-hero-paw ${step === 0 ? "h-3.5 w-3.5" : step === 1 ? "h-4 w-4" : "h-[1.15rem] w-[1.15rem]"}`}
+                    />
+                  ))}
+                </span>
+              </div>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <Link
                   href={primaryButtonLink}
                   className="group inline-flex items-center justify-center gap-2 rounded-full bg-primary-container px-6 py-3 text-sm font-extrabold text-on-primary-container transition hover:-translate-y-0.5 hover:bg-[#C87500] hover:shadow-lift focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white motion-reduce:hover:translate-y-0"
                 >
-                  {primaryButtonText}
+                  <span className="lc-ink-underline">{primaryButtonText}</span>
                   <ArrowRight
                     aria-hidden
                     className="h-4 w-4 transition group-hover:translate-x-1 motion-reduce:group-hover:translate-x-0"
@@ -161,8 +171,11 @@ export function HomePosterHero({
                       A shorter route to shop.
                     </p>
                   </div>
-                  <span className="shrink-0 rounded-full bg-[#F6E2BC] px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#6E4300]">
-                    {products.length} {products.length === 1 ? "pick" : "picks"}
+                  <span className="shrink-0 text-right">
+                    <span className="block rounded-full bg-[#F6E2BC] px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#6E4300]">
+                      {products.length} {products.length === 1 ? "pick" : "picks"}
+                    </span>
+                    <span className="lc-hand-note mt-1.5 block text-xs text-[#8E5700]">sniff out a favorite</span>
                   </span>
                 </div>
 

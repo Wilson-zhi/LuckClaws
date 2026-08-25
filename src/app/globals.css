@@ -7,6 +7,7 @@
   background: #f8f9fb;
   --font-heading: "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
   --font-body: "Be Vietnam Pro", "Segoe UI", system-ui, sans-serif;
+  --font-hand: "Shantell Sans Variable", "Segoe Print", cursive;
   --lc-warm-bg: #fff9ef;
   --lc-cream: #fff3df;
   --lc-oatmeal: #f3e5d2;
@@ -140,6 +141,215 @@ img {
   animation: homepage-poster-reveal 1200ms ease-out both, homepage-poster-drift 18000ms ease-in-out 1200ms both;
 }
 
+.lc-hand-note {
+  font-family: var(--font-hand), "Segoe Print", cursive;
+  font-variation-settings: "wght" 620, "BNCE" 18, "INFM" 62, "SPAC" 4;
+  letter-spacing: 0;
+}
+
+.lc-ink-underline {
+  position: relative;
+  width: fit-content;
+}
+
+.lc-ink-underline::after {
+  position: absolute;
+  right: -0.18em;
+  bottom: -0.22em;
+  left: -0.12em;
+  height: 0.22em;
+  border-radius: 999px;
+  background: currentColor;
+  content: "";
+  opacity: 0.42;
+  transform: scaleX(0.72) rotate(-1.5deg);
+  transform-origin: left;
+  transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1), opacity 220ms ease;
+}
+
+.group:hover .lc-ink-underline::after,
+.group:focus-visible .lc-ink-underline::after {
+  opacity: 0.7;
+  transform: scaleX(1) rotate(-1.5deg);
+}
+
+.home-hero-art-note {
+  transform: rotate(-1.5deg);
+  transition: transform 420ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.home-hero:hover .home-hero-art-note {
+  transform: translateY(-2px) rotate(-0.25deg);
+}
+
+.home-hero-paw {
+  transform: translate3d(0, 0, 0) rotate(-8deg);
+  transition: transform 420ms cubic-bezier(0.16, 1, 0.3, 1), color 220ms ease;
+}
+
+.home-hero:hover .home-hero-paw:nth-child(1) {
+  transform: translate3d(3px, -4px, 0) rotate(-4deg);
+}
+
+.home-hero:hover .home-hero-paw:nth-child(2) {
+  transform: translate3d(7px, -8px, 0) rotate(5deg);
+}
+
+.home-hero:hover .home-hero-paw:nth-child(3) {
+  transform: translate3d(11px, -12px, 0) rotate(12deg);
+}
+
+.advisor-tab {
+  position: relative;
+}
+
+.advisor-tab::after {
+  position: absolute;
+  right: 0.9rem;
+  bottom: 0.38rem;
+  left: 3.7rem;
+  height: 2px;
+  border-radius: 999px;
+  background: #ffd894;
+  content: "";
+  opacity: 0;
+  transform: scaleX(0.35) rotate(-1deg);
+  transform-origin: left;
+  transition: opacity 180ms ease, transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.advisor-tab[data-active="true"]::after {
+  opacity: 0.75;
+  transform: scaleX(1) rotate(-1deg);
+}
+
+.advisor-recommendation-enter {
+  animation: advisor-recommendation-enter 360ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.routine-signal {
+  position: relative;
+}
+
+.routine-signal:not(:last-child)::after {
+  margin-left: 0.65rem;
+  margin-right: 0.65rem;
+  color: #c7892e;
+  content: "/";
+  font-family: var(--font-hand), "Segoe Print", cursive;
+  font-weight: 700;
+}
+
+.lookbook-card .lookbook-path {
+  transform: scaleX(0.42);
+  transform-origin: left;
+  transition: transform 440ms cubic-bezier(0.16, 1, 0.3, 1), opacity 240ms ease;
+}
+
+.lookbook-card:hover .lookbook-path,
+.lookbook-card:focus-visible .lookbook-path {
+  opacity: 0.95;
+  transform: scaleX(1);
+}
+
+.lookbook-card .lookbook-paw {
+  transform: translateX(0) rotate(-8deg);
+  transition: transform 440ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.lookbook-card:hover .lookbook-paw,
+.lookbook-card:focus-visible .lookbook-paw {
+  transform: translateX(10px) rotate(8deg);
+}
+
+.discovery-tab {
+  position: relative;
+}
+
+.discovery-tab::after {
+  position: absolute;
+  right: 1.1rem;
+  bottom: 0.42rem;
+  left: 1.1rem;
+  height: 2px;
+  border-radius: 999px;
+  background: #ffd894;
+  content: "";
+  opacity: 0;
+  transform: scaleX(0.3) rotate(-1deg);
+  transition: opacity 180ms ease, transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.discovery-tab[data-active="true"]::after {
+  opacity: 0.8;
+  transform: scaleX(1) rotate(-1deg);
+}
+
+@media (min-width: 1024px) and (max-height: 820px) {
+  #shop-by-routine.home-advisor-section {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+
+  #shop-by-routine .home-advisor-intro {
+    padding: 1rem;
+  }
+
+  .home-advisor-intro .home-advisor-heading {
+    font-size: 3rem;
+  }
+
+  .home-advisor-intro .home-advisor-note {
+    margin-top: 0.5rem;
+  }
+
+  .home-advisor-intro .home-advisor-steps {
+    margin-top: 0.75rem;
+    padding: 0.875rem;
+  }
+
+  .home-advisor-intro .home-advisor-tags {
+    margin-top: 0.5rem;
+  }
+
+  .home-advisor-shell {
+    min-height: 0;
+    overflow: hidden;
+    padding: 0.6rem;
+  }
+
+  .home-advisor-shell .home-advisor-article {
+    margin-top: 0.5rem;
+  }
+
+  .home-advisor-article .home-advisor-copy {
+    gap: 0.5rem;
+    padding: 1rem;
+  }
+
+  .home-advisor-copy .home-advisor-title {
+    margin-top: 0.5rem;
+    font-size: 1.75rem;
+    line-height: 1.02;
+  }
+
+  .home-advisor-copy .home-advisor-description {
+    margin-top: 0.4rem;
+    line-height: 1.4;
+  }
+
+  .home-advisor-copy .home-advisor-detail {
+    min-height: 48px;
+    padding: 0.4rem 0.65rem;
+    line-height: 1.15rem;
+  }
+
+  .home-advisor-copy .home-advisor-link {
+    padding-top: 0.55rem;
+    padding-bottom: 0.55rem;
+  }
+}
+
 .about-poster-media {
   animation: homepage-poster-reveal 1200ms ease-out both, about-poster-drift 22000ms ease-in-out 1200ms both;
 }
@@ -220,6 +430,18 @@ img {
   }
 }
 
+@keyframes advisor-recommendation-enter {
+  from {
+    opacity: 0.55;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html:focus-within {
     scroll-behavior: auto !important;
@@ -243,5 +465,17 @@ img {
 
   .about-poster-media {
     animation: none !important;
+  }
+
+  .home-hero-art-note,
+  .home-hero-paw,
+  .advisor-tab::after,
+  .advisor-recommendation-enter,
+  .lookbook-card .lookbook-path,
+  .lookbook-card .lookbook-paw,
+  .discovery-tab::after,
+  .lc-ink-underline::after {
+    animation: none !important;
+    transition: none !important;
   }
 }

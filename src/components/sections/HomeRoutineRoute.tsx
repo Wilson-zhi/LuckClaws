@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, PawPrint } from "lucide-react";
 import { type PublicCategoryCard } from "@/lib/public-product-data";
 
 const routineSignals = ["Play", "Walk", "Rest", "Comfort", "Support"];
@@ -113,7 +113,7 @@ export function HomeRoutineRoute({ categories }: { categories: PublicCategoryCar
   return (
     <section
       id="routine-lookbook"
-      className="bg-[linear-gradient(180deg,#F3E5D2_0%,#FFF9EF_18%,#FFF6EA_76%,#F7EAD8_100%)] py-12 md:py-16"
+      className="scroll-mt-24 bg-[linear-gradient(180deg,#F3E5D2_0%,#FFF9EF_18%,#FFF6EA_76%,#F7EAD8_100%)] py-12 md:py-16"
     >
       <div className="section-shell">
         <div className="mb-7 grid gap-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
@@ -125,11 +125,13 @@ export function HomeRoutineRoute({ categories }: { categories: PublicCategoryCar
             <p className="mt-3 max-w-2xl text-base leading-7 text-[#6B5540]">
               Move from the guide into clear collection paths for play, walks, rest, comfort, and support.
             </p>
+            <p className="lc-hand-note mt-3 text-lg text-[#9A650B]">picked for real pet days</p>
           </div>
           <div className="flex flex-col gap-4 lg:items-end">
-            <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#6B4A2F] lg:justify-end">
+            <div className="flex flex-wrap items-center gap-y-1.5 text-[#6B4A2F] lg:justify-end" aria-label="Routine paths">
+              <PawPrint aria-hidden className="mr-2 h-4 w-4 rotate-[-8deg] text-primary" />
               {routineSignals.map((signal) => (
-                <span key={signal} className="rounded-full border border-[#E0C39C] bg-[#FFF8ED]/82 px-3 py-1.5">
+                <span key={signal} className="routine-signal lc-hand-note text-sm md:text-base">
                   {signal}
                 </span>
               ))}
@@ -152,7 +154,7 @@ export function HomeRoutineRoute({ categories }: { categories: PublicCategoryCar
             <Link
               key={category.href}
               href={category.href}
-              className="group flex min-h-[420px] snap-start overflow-hidden rounded-[1.75rem] border border-[#E5C9A4] bg-[#FFF8ED] shadow-[0_22px_60px_rgba(92,60,30,0.10)] transition duration-300 hover:-translate-y-1 hover:border-primary/45 hover:shadow-lift focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:hover:translate-y-0 md:min-h-[440px]"
+              className="lookbook-card group flex min-h-[420px] snap-start overflow-hidden rounded-[1.75rem] border border-[#E5C9A4] bg-[#FFF8ED] shadow-[0_22px_60px_rgba(92,60,30,0.10)] transition duration-300 hover:-translate-y-1 hover:border-primary/45 hover:shadow-lift focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:hover:translate-y-0 md:min-h-[440px]"
               aria-label={`Shop ${category.name}`}
             >
               <article className="flex w-full flex-col">
@@ -166,8 +168,9 @@ export function HomeRoutineRoute({ categories }: { categories: PublicCategoryCar
                     className="object-cover object-center transition duration-500 group-hover:scale-[1.04] motion-reduce:group-hover:scale-100"
                   />
                   <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,248,237,0.02)_0%,rgba(44,26,13,0.12)_100%)]" />
-                  <div className="absolute left-4 top-4 rounded-full border border-white/55 bg-white/78 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.16em] text-primary shadow-soft backdrop-blur">
-                    {String(index + 1).padStart(2, "0")} / Path
+                  <div className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full border border-white/55 bg-white/82 px-3 py-1.5 text-primary shadow-soft backdrop-blur">
+                    <PawPrint aria-hidden className="h-3.5 w-3.5 rotate-[-10deg]" />
+                    <span className="lc-hand-note text-xs">Path {String(index + 1).padStart(2, "0")}</span>
                   </div>
                 </div>
                 <div className="flex flex-1 flex-col p-5">
@@ -180,13 +183,19 @@ export function HomeRoutineRoute({ categories }: { categories: PublicCategoryCar
                   <p className="mt-3 text-sm font-medium leading-6 text-[#6B5540]">
                     {categoryBenefit(category)}
                   </p>
-                  <div className="mt-auto flex items-center justify-between gap-3 pt-5">
-                    <span className="text-xs font-extrabold uppercase tracking-[0.12em] text-[#6B4A2F]">
-                      Shop routine
-                    </span>
-                    <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#2C1A0D] text-white transition group-hover:translate-x-0.5 group-hover:bg-primary motion-reduce:group-hover:translate-x-0">
-                      <ArrowRight aria-hidden className="h-5 w-5" />
-                    </span>
+                  <div className="mt-auto pt-5">
+                    <div className="flex items-center gap-2 text-primary" aria-hidden="true">
+                      <span className="lookbook-path h-px flex-1 bg-primary/55 opacity-60" />
+                      <PawPrint className="lookbook-paw h-4 w-4 shrink-0" />
+                    </div>
+                    <div className="mt-3 flex items-center justify-between gap-3">
+                      <span className="text-xs font-extrabold uppercase tracking-[0.12em] text-[#6B4A2F]">
+                        Shop routine
+                      </span>
+                      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#2C1A0D] text-white transition group-hover:translate-x-0.5 group-hover:bg-primary motion-reduce:group-hover:translate-x-0">
+                        <ArrowRight aria-hidden className="h-5 w-5" />
+                      </span>
+                    </div>
                   </div>
                 </div>
               </article>

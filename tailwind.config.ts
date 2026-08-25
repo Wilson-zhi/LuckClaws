@@ -37,7 +37,8 @@ const config: Config = {
       },
       fontFamily: {
         heading: ["var(--font-heading)", "Plus Jakarta Sans", "system-ui", "sans-serif"],
-        body: ["var(--font-body)", "Be Vietnam Pro", "system-ui", "sans-serif"]
+        body: ["var(--font-body)", "Be Vietnam Pro", "system-ui", "sans-serif"],
+        hand: ["var(--font-hand)", "Shantell Sans Variable", "cursive"]
       },
       borderRadius: {
         sm: "0.5rem",
@@ -60,4 +61,3 @@ const config: Config = {
 };
 
 export default config;
-

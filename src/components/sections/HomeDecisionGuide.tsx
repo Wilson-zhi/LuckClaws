@@ -37,22 +37,27 @@ export function HomeDecisionGuide({ guide }: { guide: HomepageDecisionGuideConte
   return (
     <section
       id="shop-by-routine"
-      className="scroll-mt-24 bg-[linear-gradient(180deg,#F3E5D2_0%,#FFF9EF_16%,#FFF9EF_84%,#F7EAD8_100%)] py-6 md:py-7 xl:py-8"
+      className="home-advisor-section scroll-mt-24 bg-[linear-gradient(180deg,#F3E5D2_0%,#FFF9EF_16%,#FFF9EF_84%,#F7EAD8_100%)] py-6 md:py-7 xl:py-8"
     >
       <div className="section-shell">
         <div className="grid gap-7 lg:h-[min(660px,calc(100svh-132px))] lg:grid-cols-[0.78fr_1.22fr] lg:items-stretch">
-          <div className="flex max-w-xl flex-col lg:h-full lg:max-w-none lg:rounded-[2rem] lg:border lg:border-[#E5C9A4] lg:bg-white/36 lg:p-5 lg:shadow-[0_24px_70px_rgba(92,60,30,0.09)] lg:backdrop-blur">
+          <div className="home-advisor-intro flex max-w-xl flex-col lg:min-h-0 lg:max-w-none lg:rounded-[2rem] lg:border lg:border-[#E5C9A4] lg:bg-white/36 lg:p-5 lg:shadow-[0_24px_70px_rgba(92,60,30,0.09)] lg:backdrop-blur">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">{guide.eyebrow}</p>
-              <h2 className="mt-3 max-w-xl font-heading text-4xl font-extrabold leading-[0.98] tracking-tight md:text-5xl xl:text-[3.32rem] 2xl:text-[3.75rem]">
+              <h2 className="home-advisor-heading mt-3 max-w-xl font-heading text-4xl font-extrabold leading-[0.98] tracking-tight md:text-5xl xl:text-[3.32rem] 2xl:text-[3.75rem]">
                 {guide.title}
               </h2>
               <p className="mt-3 max-w-xl text-sm font-medium leading-6 text-[#6B5540] 2xl:text-base 2xl:leading-7">
                 {guide.subtitle}
               </p>
+              <p className="home-advisor-note lc-hand-note mt-3 flex items-center gap-2 text-base text-[#9A650B] 2xl:text-lg">
+                today&apos;s moment
+                <span aria-hidden="true">→</span>
+                a clearer choice
+              </p>
             </div>
 
-            <div className="mt-4 flex max-w-xl flex-col rounded-[1.35rem] border border-[#E5C9A4] bg-white/68 p-4 shadow-soft backdrop-blur lg:flex-1">
+            <div className="home-advisor-steps mt-4 flex max-w-xl flex-col rounded-[1.35rem] border border-[#E5C9A4] bg-white/68 p-4 shadow-soft backdrop-blur lg:flex-1">
               <div className="flex items-center justify-between gap-4 border-b border-[#E5C9A4] pb-2.5">
                 <p className="font-heading text-base font-extrabold text-[#2C1A0D] 2xl:text-lg">{guide.stepsTitle}</p>
                 <span className="rounded-full bg-primary-container/20 px-3 py-1 text-xs font-extrabold uppercase tracking-[0.14em] text-primary">
@@ -78,16 +83,20 @@ export function HomeDecisionGuide({ guide }: { guide: HomepageDecisionGuideConte
               </ol>
             </div>
 
-            <div className="mt-3 flex max-w-xl flex-wrap gap-1.5 text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#6B4A2F]">
+            <div
+              className="home-advisor-tags mt-3 flex max-w-xl flex-wrap items-center gap-y-1.5 text-[#6B4A2F]"
+              aria-label="Routine paths"
+            >
+              <PawPrint aria-hidden className="mr-2 h-4 w-4 rotate-[-10deg] text-primary" />
               {guide.routineTags.map((tag) => (
-                <span key={tag} className="rounded-full border border-[#E5C9A4] bg-[#FFF8ED]/78 px-3 py-1">
+                <span key={tag} className="routine-signal lc-hand-note text-sm 2xl:text-base">
                   {tag}
                 </span>
               ))}
             </div>
           </div>
 
-          <div className="grid rounded-[2rem] border border-[#E5C9A4] bg-white/42 p-3 shadow-[0_28px_80px_rgba(92,60,30,0.12)] backdrop-blur lg:h-full lg:grid-rows-[auto_minmax(0,1fr)]">
+          <div className="home-advisor-shell grid rounded-[2rem] border border-[#E5C9A4] bg-white/42 p-3 shadow-[0_28px_80px_rgba(92,60,30,0.12)] backdrop-blur lg:min-h-0 lg:grid-rows-[auto_minmax(0,1fr)]">
             <div
               className="grid grid-cols-[repeat(4,minmax(150px,1fr))] gap-2 overflow-x-auto pb-1 hide-scrollbar"
               role="tablist"
@@ -103,12 +112,19 @@ export function HomeDecisionGuide({ guide }: { guide: HomepageDecisionGuideConte
                     type="button"
                     role="tab"
                     aria-selected={isActive}
-                    className={`group flex min-h-[58px] items-center gap-2.5 overflow-hidden rounded-[1.15rem] border px-3 text-left shadow-soft transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:transition-none ${
+                    data-active={isActive}
+                    className={`advisor-tab group flex min-h-[58px] items-center gap-2.5 overflow-hidden rounded-[1.15rem] border px-3 text-left shadow-soft transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:transition-none ${
                       isActive
                         ? "border-primary bg-[#2C1A0D] text-white"
                         : "border-[#E5C9A4] bg-white/82 text-[#4E3928] hover:-translate-y-0.5 hover:border-primary/50 hover:bg-white hover:shadow-lift motion-reduce:hover:translate-y-0"
                     }`}
                     onClick={() => setActiveKey(key)}
+                    onFocus={() => setActiveKey(key)}
+                    onPointerEnter={(event) => {
+                      if (event.pointerType === "mouse") {
+                        setActiveKey(key);
+                      }
+                    }}
                   >
                     <span className="flex min-w-0 items-center gap-3">
                       <span
@@ -137,7 +153,8 @@ export function HomeDecisionGuide({ guide }: { guide: HomepageDecisionGuideConte
             </div>
 
             <article
-              className="mt-2 grid min-h-[560px] overflow-hidden rounded-[1.6rem] border border-[#E4C8A3] bg-[#2C1A0D] text-white shadow-lift md:grid-cols-[0.94fr_1.06fr] lg:mt-3 lg:min-h-0"
+              key={activeOption.key}
+              className="home-advisor-article advisor-recommendation-enter mt-2 grid min-h-[560px] overflow-hidden rounded-[1.6rem] border border-[#E4C8A3] bg-[#2C1A0D] text-white shadow-lift md:grid-cols-[0.94fr_1.06fr] lg:mt-3 lg:min-h-0"
               aria-live="polite"
             >
               <div className="relative min-h-[260px] overflow-hidden md:h-full md:min-h-0">
@@ -154,20 +171,20 @@ export function HomeDecisionGuide({ guide }: { guide: HomepageDecisionGuideConte
                   <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#FFD894]">
                     {activeOption.eyebrow}
                   </p>
-                  <p className="mt-1 font-heading text-lg font-extrabold xl:text-xl">A shorter route to shop.</p>
+                  <p className="lc-hand-note mt-1 text-xl text-white xl:text-2xl">A shorter route to shop.</p>
                 </div>
               </div>
 
-              <div className="flex min-h-0 flex-col justify-between gap-3 p-5 xl:p-5 2xl:p-6">
+              <div className="home-advisor-copy flex min-h-0 flex-col justify-between gap-3 p-5 xl:p-5 2xl:p-6">
                 <div>
                   <p className="inline-flex items-center gap-2 rounded-full border border-[#FFD894]/28 bg-[#FFD894]/12 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.18em] text-[#FFD894]">
                     <SearchCheck aria-hidden className="h-4 w-4" />
                     Guided choice
                   </p>
-                  <h3 className="mt-3 max-w-xl font-heading text-[2rem] font-extrabold leading-[1.03] md:text-[2.05rem] xl:text-[2.02rem] 2xl:text-[2.22rem]">
+                  <h3 className="home-advisor-title mt-3 max-w-xl font-heading text-[2rem] font-extrabold leading-[1.03] md:text-[2.05rem] xl:text-[2.02rem] 2xl:text-[2.22rem]">
                     {activeOption.title}
                   </h3>
-                  <p className="mt-2.5 max-w-2xl text-sm font-medium leading-6 text-white/76 2xl:text-base 2xl:leading-7">
+                  <p className="home-advisor-description mt-2.5 max-w-2xl text-sm font-medium leading-6 text-white/76 2xl:text-base 2xl:leading-7">
                     {activeOption.description}
                   </p>
                 </div>
@@ -177,7 +194,7 @@ export function HomeDecisionGuide({ guide }: { guide: HomepageDecisionGuideConte
                     {activeOption.details.map((detail, detailIndex) => (
                       <li
                         key={detail}
-                        className={`min-w-0 rounded-[0.85rem] border border-white/12 bg-white/[0.07] px-3 py-2 text-[11px] font-bold leading-5 text-white/82 [overflow-wrap:anywhere] sm:min-h-[58px] 2xl:px-4 2xl:py-3 2xl:text-xs ${
+                        className={`home-advisor-detail min-w-0 rounded-[0.85rem] border border-white/12 bg-white/[0.07] px-3 py-2 text-[11px] font-bold leading-5 text-white/82 [overflow-wrap:anywhere] sm:min-h-[58px] 2xl:px-4 2xl:py-3 2xl:text-xs ${
                           detailIndex === activeOption.details.length - 1 && activeOption.details.length % 2 === 1
                             ? "sm:col-span-2"
                             : ""
@@ -193,7 +210,7 @@ export function HomeDecisionGuide({ guide }: { guide: HomepageDecisionGuideConte
                       <Link
                         key={link.href}
                         href={link.href}
-                        className={`group inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-extrabold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FFD894] 2xl:px-5 2xl:py-3 ${
+                        className={`home-advisor-link group inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-extrabold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FFD894] 2xl:px-5 2xl:py-3 ${
                           index === 0
                             ? "bg-[#FFD894] text-[#2C1A0D] hover:bg-primary-container hover:shadow-soft"
                             : "border border-white/24 bg-white/10 text-white hover:bg-white hover:text-[#2C1A0D]"

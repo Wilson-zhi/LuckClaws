@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { ArrowRight, CheckCircle2, Plus } from "lucide-react";
+import { ArrowRight, CheckCircle2, PawPrint, Plus } from "lucide-react";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
 import { type Product } from "@/data/products";
 import { trackSelectItem } from "@/lib/ga4-ecommerce";
@@ -183,7 +183,7 @@ export function HomeProductDiscovery({ featuredProduct, products }: HomeProductD
   return (
     <section
       id="best-sellers"
-      className="bg-[linear-gradient(180deg,#F3E5D2_0%,#F3E5D2_82%,#2C1A0D_100%)] pb-16 pt-12 md:pb-20 md:pt-16"
+      className="scroll-mt-24 bg-[linear-gradient(180deg,#F3E5D2_0%,#F3E5D2_82%,#2C1A0D_100%)] pb-16 pt-12 md:pb-20 md:pt-16"
     >
       <div className="section-shell">
         <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
@@ -197,13 +197,18 @@ export function HomeProductDiscovery({ featuredProduct, products }: HomeProductD
             <p className="mt-3 max-w-2xl text-sm font-medium leading-6 text-[#6B5540] md:text-base">
               {activeTabContent.description}
             </p>
+            <p className="lc-hand-note mt-3 flex items-center gap-2 text-base text-[#9A650B] md:text-lg">
+              <PawPrint aria-hidden className="h-4 w-4 rotate-[-10deg]" />
+              a few good picks, no endless scroll
+            </p>
           </div>
           <div className="flex w-full gap-2 overflow-x-auto rounded-full border border-[#E0C39C] bg-[#FFF8ED]/75 p-1 shadow-soft hide-scrollbar md:w-auto">
             {discoveryTabs.map((tab) => (
               <button
                 key={tab.key}
                 type="button"
-                className={`min-w-max rounded-full px-5 py-2.5 text-sm font-extrabold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+                data-active={activeTab === tab.key}
+                className={`discovery-tab min-w-max rounded-full px-5 py-2.5 text-sm font-extrabold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                   activeTab === tab.key
                     ? "bg-[#2C1A0D] text-white shadow-soft"
                     : "text-[#6B4A2F] hover:bg-white hover:text-primary"
@@ -217,7 +222,10 @@ export function HomeProductDiscovery({ featuredProduct, products }: HomeProductD
         </div>
 
         <div className="grid gap-5 lg:grid-cols-[0.98fr_1.02fr]">
-          <article className="grid overflow-hidden rounded-[2rem] border border-[#E3C9A8] bg-[#FFF9EF] shadow-lift md:grid-cols-[0.95fr_1.05fr]">
+          <article
+            key={`${activeTab}-${activeProduct.slug}`}
+            className="advisor-recommendation-enter grid overflow-hidden rounded-[2rem] border border-[#E3C9A8] bg-[#FFF9EF] shadow-lift md:grid-cols-[0.95fr_1.05fr]"
+          >
             <Link
               href={href}
               className="group relative min-h-[300px] overflow-hidden bg-[#F7EAD8] md:min-h-[360px]"
@@ -228,7 +236,7 @@ export function HomeProductDiscovery({ featuredProduct, products }: HomeProductD
                 </span>
               )}
               <Image
-                src={fallbackProductImage(activeProduct)}
+                src={productImage(activeProduct)}
                 alt={activeProduct.alt}
                 fill
                 loading="lazy"
@@ -267,7 +275,7 @@ export function HomeProductDiscovery({ featuredProduct, products }: HomeProductD
                 href={href}
                 className="group mt-5 inline-flex items-center gap-2 rounded-full bg-primary-container px-6 py-3 text-sm font-extrabold text-on-primary-container transition hover:-translate-y-0.5 hover:bg-[#C87500] hover:shadow-soft focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:hover:translate-y-0"
               >
-                View Product
+                <span className="lc-ink-underline">View Product</span>
                 <ArrowRight
                   aria-hidden
                   className="h-4 w-4 transition group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0"

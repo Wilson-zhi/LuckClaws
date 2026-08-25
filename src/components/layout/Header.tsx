@@ -212,7 +212,7 @@ export function Header({ initialNavigationItems }: { initialNavigationItems?: Na
   return (
     <>
       <header className="sticky top-0 z-40 border-b border-[#E8D6BF] bg-[#FFF9EF]/95 shadow-[0_8px_28px_rgba(68,43,20,0.04)] backdrop-blur">
-        <div className="section-shell hidden h-[74px] items-center gap-6 lg:flex">
+        <div className="section-shell hidden h-[74px] items-center gap-6 xl:flex">
           <Link
             href="/"
             className="shrink-0 rounded-full border border-[#E5C99F] bg-white/70 px-4 py-2 font-heading text-xl font-extrabold tracking-tight text-[#6F4300] shadow-soft transition hover:-translate-y-0.5 hover:border-primary hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:hover:translate-y-0"
@@ -286,7 +286,7 @@ export function Header({ initialNavigationItems }: { initialNavigationItems?: Na
           </div>
         </div>
 
-        <div className="section-shell flex h-16 items-center justify-between lg:hidden">
+        <div className="section-shell flex h-16 items-center justify-between xl:hidden">
           <button
             type="button"
             className="grid h-11 w-11 place-items-center rounded-full border border-[#E8D6BF] bg-white/70 text-[#5C4834] transition hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
@@ -317,7 +317,7 @@ export function Header({ initialNavigationItems }: { initialNavigationItems?: Na
         </div>
 
         {menuOpen && (
-          <nav className="border-t border-[#E8D6BF] bg-[#FFF9EF] px-4 py-4 shadow-soft lg:hidden" aria-label="Mobile navigation">
+          <nav className="border-t border-[#E8D6BF] bg-[#FFF9EF] px-4 py-4 shadow-soft xl:hidden" aria-label="Mobile navigation">
             <ul className="grid gap-2">
               {navigationItems.map((item) => (
                 <li key={item.label}>

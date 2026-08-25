@@ -24,7 +24,7 @@ export function HomeRoutineStrip() {
             <p className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#FFD894]">
               Routine route
             </p>
-            <p className="mt-1 font-heading text-lg font-extrabold text-white">
+            <p className="lc-hand-note mt-1 text-xl text-white">
               Choose where to start
             </p>
           </div>
