@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
 import { MicrosoftClarity } from "@/components/analytics/MicrosoftClarity";
+import { NavigationProgress } from "@/components/layout/NavigationProgress";
 import { brandName } from "@/data/products";
 import { defaultOgImage, siteUrl } from "@/lib/seo";
 
@@ -46,6 +47,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en" data-scroll-behavior="smooth">
       <body>
+        <NavigationProgress />
         {children}
         <GoogleAnalytics />
         <MicrosoftClarity />

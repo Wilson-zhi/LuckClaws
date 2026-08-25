@@ -2,8 +2,9 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Heart, Plus, Star } from "lucide-react";
+import { ArrowRight, Plus, Star } from "lucide-react";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
+import { WishlistButton } from "@/components/wishlist/WishlistButton";
 import { type Product } from "@/data/products";
 import { trackSelectItem } from "@/lib/ga4-ecommerce";
 import { getProductPath } from "@/lib/product-links";
@@ -72,31 +73,33 @@ export function ProductCard({
   if (featured) {
     return (
       <article className="group overflow-hidden rounded-lg bg-surface-container-lowest shadow-ambient transition duration-300 hover:-translate-y-1 hover:shadow-lift focus-within:shadow-lift motion-reduce:hover:translate-y-0">
-        <Link
-          href={href}
-          className="relative block aspect-[1.35] overflow-hidden bg-surface-container focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-          onClick={() => trackSelectItem(product, itemListName)}
-        >
-          {displayBadge && (
-            <span className="absolute left-6 top-5 z-10 rounded-full bg-white px-4 py-2 text-xs font-semibold text-primary shadow-soft">
-              {displayBadge}
-            </span>
-          )}
-          <span
-            className="absolute right-5 top-5 z-10 grid h-12 w-12 place-items-center rounded-full bg-white/90 text-on-surface-variant shadow-soft"
-            aria-hidden
+        <div className="relative">
+          <Link
+            href={href}
+            className="relative block aspect-[1.35] overflow-hidden bg-surface-container focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            onClick={() => trackSelectItem(product, itemListName)}
           >
-            <Heart aria-hidden className="h-6 w-6" />
-          </span>
-          <Image
-            src={imageSrc}
-            alt={product.alt}
-            fill
-            loading="eager"
-            sizes="(min-width: 1024px) 520px, 100vw"
-            className="object-cover transition duration-500 group-hover:scale-[1.06]"
+            {displayBadge && (
+              <span className="absolute left-6 top-5 z-10 rounded-full bg-white px-4 py-2 text-xs font-semibold text-primary shadow-soft">
+                {displayBadge}
+              </span>
+            )}
+            <Image
+              src={imageSrc}
+              alt={product.alt}
+              fill
+              loading="eager"
+              sizes="(min-width: 1024px) 520px, 100vw"
+              className="object-cover transition duration-500 group-hover:scale-[1.06]"
+            />
+          </Link>
+          <WishlistButton
+            productId={product.id}
+            productSlug={product.slug}
+            productName={product.name}
+            className="absolute right-5 top-5 z-20 !h-12 !w-12 !p-0"
           />
-        </Link>
+        </div>
         <div className="p-6 md:p-7">
           <div className="flex items-start justify-between gap-6">
             <div>
@@ -140,34 +143,36 @@ export function ProductCard({
         compact && "rounded-md"
       )}
     >
-      <Link
-        href={href}
-        className={cn(
-          "relative block aspect-square overflow-hidden bg-[#F7EAD8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
-          compact && "aspect-[1.12]"
-        )}
-        onClick={() => trackSelectItem(product, itemListName)}
-      >
-        {(product.badge || product.isNew) && (
-          <span className="absolute left-4 top-4 z-10 rounded-full border border-white/70 bg-white/95 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-primary shadow-soft">
-            {product.badge ?? "New"}
-          </span>
-        )}
-        <span
-          className="absolute right-3 top-3 z-10 grid h-9 w-9 place-items-center rounded-full bg-white/90 text-on-surface-variant shadow-soft"
-          aria-hidden
+      <div className="relative">
+        <Link
+          href={href}
+          className={cn(
+            "relative block aspect-square overflow-hidden bg-[#F7EAD8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
+            compact && "aspect-[1.12]"
+          )}
+          onClick={() => trackSelectItem(product, itemListName)}
         >
-          <Heart aria-hidden className="h-5 w-5" />
-        </span>
-        <Image
-          src={imageSrc}
-          alt={product.alt}
-          fill
-          loading="eager"
-          sizes="(min-width: 1024px) 280px, 45vw"
-          className="object-cover transition duration-500 group-hover:scale-[1.055]"
+          {(product.badge || product.isNew) && (
+            <span className="absolute left-4 top-4 z-10 rounded-full border border-white/70 bg-white/95 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-primary shadow-soft">
+              {product.badge ?? "New"}
+            </span>
+          )}
+          <Image
+            src={imageSrc}
+            alt={product.alt}
+            fill
+            loading="eager"
+            sizes="(min-width: 1024px) 280px, 45vw"
+            className="object-cover transition duration-500 group-hover:scale-[1.055]"
+          />
+        </Link>
+        <WishlistButton
+          productId={product.id}
+          productSlug={product.slug}
+          productName={product.name}
+          className="absolute right-3 top-3 z-20 !h-9 !w-9 !p-0"
         />
-      </Link>
+      </div>
       <div className={cn("p-4 md:p-5", compact && "md:p-4")}>
         <div className={cn("flex min-h-[88px] flex-col", compact && "min-h-[74px]")}>
           <p className="text-[11px] font-bold uppercase tracking-widest text-primary/90">

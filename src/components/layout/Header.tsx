@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { getCartTotals, useCartStore } from "@/store/cart-store";
 import { trackViewCart } from "@/lib/ga4-ecommerce";
+import { useWishlistStore } from "@/store/wishlist-store";
 
 type PublicCategoryNavRow = {
   name: string | null;
@@ -28,6 +29,9 @@ export function Header({ initialNavigationItems }: { initialNavigationItems?: Na
   );
   const [navigationItems, setNavigationItems] = useState<NavigationItem[]>(fallbackNavigationItems);
   const items = useCartStore((state) => state.items);
+  const wishlistCount = useWishlistStore((state) => state.productIds.length);
+  const setWishlistProductIds = useWishlistStore((state) => state.setProductIds);
+  const setWishlistSyncReady = useWishlistStore((state) => state.setAccountSyncReady);
   const totals = getCartTotals(items);
 
   useEffect(() => {
@@ -45,28 +49,78 @@ export function Header({ initialNavigationItems }: { initialNavigationItems?: Na
 
     if (!supabase) {
       setAccountHref("/account/login");
+      setWishlistSyncReady(true);
       return;
     }
 
     let active = true;
+    const browserSupabase = supabase;
 
-    supabase.auth.getSession().then(({ data }) => {
+    async function syncAccountWishlist(userId?: string) {
+      if (!userId) {
+        if (active) {
+          setWishlistSyncReady(true);
+        }
+        return;
+      }
+
+      const currentIds = useWishlistStore.getState().productIds;
+      const { data, error } = await browserSupabase
+        .from("wishlist_items")
+        .select("product_id")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false });
+
+      if (!active) {
+        return;
+      }
+
+      if (error) {
+        if (process.env.NODE_ENV === "development") {
+          console.error("Unable to sync account wishlist:", error);
+        }
+        setWishlistSyncReady(true);
+        return;
+      }
+
+      const serverIds = (data ?? []).map((row) => row.product_id as string);
+      const mergedIds = Array.from(new Set([...serverIds, ...currentIds]));
+      const missingRows = currentIds
+        .filter((productId) => !serverIds.includes(productId))
+        .map((productId) => ({ user_id: userId, product_id: productId }));
+
+      if (missingRows.length > 0) {
+        const { error: mergeError } = await browserSupabase.from("wishlist_items").insert(missingRows);
+        if (mergeError && process.env.NODE_ENV === "development") {
+          console.error("Unable to merge local wishlist:", mergeError);
+        }
+      }
+
+      setWishlistProductIds(mergedIds);
+      setWishlistSyncReady(true);
+    }
+
+    browserSupabase.auth.getSession().then(({ data }) => {
       if (active) {
         setAccountHref(data.session ? "/account" : "/account/login");
+        void syncAccountWishlist(data.session?.user.id);
       }
     });
 
     const {
       data: { subscription }
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = browserSupabase.auth.onAuthStateChange((event, session) => {
       setAccountHref(session ? "/account" : "/account/login");
+      if (event !== "INITIAL_SESSION") {
+        void syncAccountWishlist(session?.user.id);
+      }
     });
 
     return () => {
       active = false;
       subscription.unsubscribe();
     };
-  }, []);
+  }, [setWishlistProductIds, setWishlistSyncReady]);
 
   useEffect(() => {
     const supabase = getSupabaseBrowserClient();
@@ -160,13 +214,21 @@ export function Header({ initialNavigationItems }: { initialNavigationItems?: Na
             >
               <Search aria-hidden className="h-6 w-6" />
             </Link>
-            <span
-              className="grid h-10 w-10 place-items-center rounded-full text-primary/45"
-              aria-hidden
-              title="Wishlist will be connected later"
+            <Link
+              href="/wishlist"
+              className={cn(
+                "relative grid h-10 w-10 place-items-center rounded-full border border-transparent transition hover:-translate-y-0.5 hover:border-[#E5C99F] hover:bg-white hover:text-[#3B2512] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:hover:translate-y-0",
+                pathname === "/wishlist" && "border-[#E5C99F] bg-white text-[#3B2512]"
+              )}
+              aria-label={`Wishlist with ${wishlistCount} saved items`}
             >
-              <Heart aria-hidden className="h-6 w-6" />
-            </span>
+              <Heart aria-hidden className={cn("h-6 w-6", wishlistCount > 0 && "fill-current")} />
+              {wishlistCount > 0 && (
+                <span className="absolute -right-2 -top-2 grid h-5 min-w-5 place-items-center rounded-full bg-primary-container px-1 text-xs font-bold text-on-primary-container">
+                  {wishlistCount}
+                </span>
+              )}
+            </Link>
             <button
               type="button"
               className="relative grid h-10 w-10 place-items-center rounded-full border border-transparent transition hover:-translate-y-0.5 hover:border-[#E5C99F] hover:bg-white hover:text-[#3B2512] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:hover:translate-y-0"
@@ -248,6 +310,23 @@ export function Header({ initialNavigationItems }: { initialNavigationItems?: Na
                   onClick={() => setMenuOpen(false)}
                 >
                   Search
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/wishlist"
+                  className={cn(
+                    "flex items-center justify-between rounded-full px-4 py-3 text-sm font-semibold text-[#5C4834] transition hover:bg-white hover:text-primary",
+                    pathname === "/wishlist" && "bg-primary-container text-on-primary-container shadow-soft"
+                  )}
+                  onClick={() => setMenuOpen(false)}
+                >
+                  <span>Wishlist</span>
+                  {wishlistCount > 0 && (
+                    <span className="grid h-6 min-w-6 place-items-center rounded-full bg-white px-1.5 text-xs font-bold text-primary">
+                      {wishlistCount}
+                    </span>
+                  )}
                 </Link>
               </li>
               <li>

@@ -5,6 +5,7 @@ import { useState } from "react";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
 import { BuyNowButton } from "@/components/product/BuyNowButton";
 import { QuantitySelector } from "@/components/cart/QuantitySelector";
+import { WishlistButton } from "@/components/wishlist/WishlistButton";
 import { type Product } from "@/data/products";
 import { cn, formatPrice } from "@/lib/utils";
 
@@ -98,6 +99,13 @@ export function ProductPurchasePanel({ product }: { product: Product }) {
         </AddToCartButton>
         <BuyNowButton product={productForCart} quantity={quantity} className="w-full" />
       </div>
+      <WishlistButton
+        productId={product.id}
+        productSlug={product.slug}
+        productName={product.name}
+        className="mt-3 w-full"
+        showLabel
+      />
     </div>
   );
 }
