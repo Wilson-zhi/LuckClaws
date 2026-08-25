@@ -147,12 +147,12 @@ export function HomeRoutineRoute({ categories }: { categories: PublicCategoryCar
           </div>
         </div>
 
-        <div className="grid items-stretch gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="-mx-4 grid auto-cols-[minmax(280px,82vw)] grid-flow-col items-stretch gap-4 overflow-x-auto overscroll-x-contain px-4 pb-4 snap-x snap-mandatory hide-scrollbar md:mx-0 md:auto-cols-auto md:grid-flow-row md:grid-cols-2 md:overflow-visible md:px-0 md:pb-0 xl:grid-cols-4">
           {visibleCategories.map((category, index) => (
             <Link
               key={category.href}
               href={category.href}
-              className="group flex min-h-[440px] overflow-hidden rounded-[1.75rem] border border-[#E5C9A4] bg-[#FFF8ED] shadow-[0_22px_60px_rgba(92,60,30,0.10)] transition duration-300 hover:-translate-y-1 hover:border-primary/45 hover:shadow-lift focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:hover:translate-y-0"
+              className="group flex min-h-[420px] snap-start overflow-hidden rounded-[1.75rem] border border-[#E5C9A4] bg-[#FFF8ED] shadow-[0_22px_60px_rgba(92,60,30,0.10)] transition duration-300 hover:-translate-y-1 hover:border-primary/45 hover:shadow-lift focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:hover:translate-y-0 md:min-h-[440px]"
               aria-label={`Shop ${category.name}`}
             >
               <article className="flex w-full flex-col">
@@ -162,7 +162,7 @@ export function HomeRoutineRoute({ categories }: { categories: PublicCategoryCar
                     alt={category.alt}
                     fill
                     loading={index < 4 ? "eager" : "lazy"}
-                    sizes="(min-width: 1280px) 330px, (min-width: 768px) 50vw, 100vw"
+                    sizes="(min-width: 1280px) 330px, (min-width: 768px) 50vw, 82vw"
                     className="object-cover object-center transition duration-500 group-hover:scale-[1.04] motion-reduce:group-hover:scale-100"
                   />
                   <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,248,237,0.02)_0%,rgba(44,26,13,0.12)_100%)]" />

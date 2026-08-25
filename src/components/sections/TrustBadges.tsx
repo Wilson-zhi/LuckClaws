@@ -52,14 +52,17 @@ export function TrustBadges({ section }: { section: HomepageServicePromisesConte
             </p>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-            {section.items.map((badge) => {
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+            {section.items.map((badge, index) => {
               const Icon = promiseIcon(badge.icon);
+              const isLastOddItem = section.items.length % 2 === 1 && index === section.items.length - 1;
 
               return (
               <article
                 key={badge.key}
-                className="rounded-[1.25rem] border border-white/12 bg-white/[0.07] p-5 shadow-soft transition hover:-translate-y-1 hover:bg-white/[0.10] motion-reduce:hover:translate-y-0"
+                className={`min-h-[220px] rounded-[1.25rem] border border-white/12 bg-white/[0.07] p-4 shadow-soft transition hover:-translate-y-1 hover:bg-white/[0.10] motion-reduce:hover:translate-y-0 sm:p-5 lg:min-h-[220px] ${
+                  isLastOddItem ? "col-span-2 min-h-[180px] lg:col-span-1 lg:min-h-[220px]" : ""
+                }`}
               >
                 <span className="grid h-11 w-11 place-items-center rounded-full bg-[#FFD894]/12 text-[#FFD894]">
                   <Icon aria-hidden className="h-5 w-5" />

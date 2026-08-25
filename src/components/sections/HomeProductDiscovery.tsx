@@ -3,9 +3,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { ArrowRight, CheckCircle2 } from "lucide-react";
-import { ProductCard } from "@/components/product/ProductCard";
+import { ArrowRight, CheckCircle2, Plus } from "lucide-react";
+import { AddToCartButton } from "@/components/cart/AddToCartButton";
 import { type Product } from "@/data/products";
+import { trackSelectItem } from "@/lib/ga4-ecommerce";
 import { getProductPath } from "@/lib/product-links";
 import { formatPrice } from "@/lib/utils";
 
@@ -76,6 +77,17 @@ function fallbackProductImage(product: Product) {
   return "/images/category-dog-toys.jpg";
 }
 
+function productImage(product: Product) {
+  const image = product.image.trim();
+  const normalized = image.toLowerCase();
+
+  if (!image || normalized.includes("icon") || normalized.includes("logo")) {
+    return fallbackProductImage(product);
+  }
+
+  return image;
+}
+
 function productStory(product: Product) {
   const text = (product.shortDescription || product.description || "").trim();
 
@@ -88,6 +100,57 @@ function productStory(product: Product) {
 
 function uniqueBySlug(products: Product[]) {
   return Array.from(new Map(products.map((product) => [product.slug, product])).values());
+}
+
+function SupportingProductCard({ product }: { product: Product }) {
+  const href = getProductPath(product);
+
+  return (
+    <article className="group grid min-h-[168px] snap-start grid-cols-[112px_minmax(0,1fr)] overflow-hidden rounded-[1.35rem] border border-[#E3C9A8] bg-[#FFF9EF] shadow-soft transition duration-300 hover:-translate-y-0.5 hover:border-primary/45 hover:shadow-lift focus-within:shadow-lift motion-reduce:hover:translate-y-0 lg:min-h-0 lg:grid-cols-[42%_minmax(0,1fr)]">
+      <Link
+        href={href}
+        className="relative block min-h-full overflow-hidden bg-[#F7EAD8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        onClick={() => trackSelectItem(product, "Homepage Everyday Edit")}
+      >
+        {(product.badge || product.isNew) && (
+          <span className="absolute left-3 top-3 z-10 rounded-full border border-white/70 bg-white/92 px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-[0.12em] text-primary shadow-soft">
+            {product.badge ?? "New"}
+          </span>
+        )}
+        <Image
+          src={productImage(product)}
+          alt={product.alt}
+          fill
+          sizes="(min-width: 1024px) 260px, 112px"
+          className="object-cover transition duration-500 group-hover:scale-[1.045] motion-reduce:group-hover:scale-100"
+        />
+      </Link>
+
+      <div className="flex min-w-0 flex-col p-4">
+        <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-primary/90">
+          {product.category}
+        </p>
+        <Link
+          href={href}
+          className="mt-1 line-clamp-2 font-heading text-base font-extrabold leading-tight text-[#24170E] transition hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary lg:text-lg"
+          onClick={() => trackSelectItem(product, "Homepage Everyday Edit")}
+        >
+          {product.name}
+        </Link>
+        <div className="mt-auto flex items-end justify-between gap-3 pt-3">
+          <div className="min-w-0">
+            <p className="font-heading text-lg font-extrabold text-[#24170E]">{formatPrice(product.price)}</p>
+            {product.regularPrice && (
+              <p className="text-xs text-[#6B5540] line-through">{formatPrice(product.regularPrice)}</p>
+            )}
+          </div>
+          <AddToCartButton product={product} variant="icon">
+            <Plus aria-hidden className="h-5 w-5" />
+          </AddToCartButton>
+        </div>
+      </div>
+    </article>
+  );
 }
 
 export function HomeProductDiscovery({ featuredProduct, products }: HomeProductDiscoveryProps) {
@@ -214,9 +277,9 @@ export function HomeProductDiscovery({ featuredProduct, products }: HomeProductD
           </article>
 
           {supportingProducts.length > 0 && (
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-4">
+            <div className="-mx-4 grid auto-cols-[minmax(285px,82vw)] grid-flow-col gap-4 overflow-x-auto overscroll-x-contain px-4 pb-4 snap-x snap-mandatory hide-scrollbar lg:mx-0 lg:auto-cols-auto lg:grid-flow-row lg:grid-rows-3 lg:overflow-visible lg:px-0 lg:pb-0">
               {supportingProducts.map((product) => (
-                <ProductCard key={product.id} product={product} compact itemListName="Homepage Everyday Edit" />
+                <SupportingProductCard key={product.id} product={product} />
               ))}
             </div>
           )}
