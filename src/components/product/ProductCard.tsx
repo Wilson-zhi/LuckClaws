@@ -139,7 +139,7 @@ export function ProductCard({
   return (
     <article
       className={cn(
-        "group overflow-hidden rounded-lg border border-outline-variant/60 bg-surface-container-lowest shadow-ambient transition duration-300 hover:-translate-y-1.5 hover:border-primary/45 hover:shadow-[0_22px_58px_rgba(25,28,30,0.12)] focus-within:shadow-lift motion-reduce:hover:translate-y-0",
+        "group flex h-full min-w-0 flex-col overflow-hidden rounded-lg border border-outline-variant/60 bg-surface-container-lowest shadow-ambient transition duration-300 hover:-translate-y-1.5 hover:border-primary/45 hover:shadow-[0_22px_58px_rgba(25,28,30,0.12)] focus-within:shadow-lift motion-reduce:hover:translate-y-0",
         compact && "rounded-md"
       )}
     >
@@ -173,34 +173,48 @@ export function ProductCard({
           className="absolute right-3 top-3 z-20 !h-9 !w-9 !p-0"
         />
       </div>
-      <div className={cn("p-4 md:p-5", compact && "md:p-4")}>
-        <div className={cn("flex min-h-[88px] flex-col", compact && "min-h-[74px]")}>
-          <p className="text-[11px] font-bold uppercase tracking-widest text-primary/90">
+      <div className={cn("flex flex-1 flex-col p-4 md:p-5", compact && "md:p-4")}>
+        <div
+          className={cn(
+            "grid grid-rows-[1rem_3rem_1.25rem] content-start gap-y-1 md:grid-rows-[1rem_3.5rem_1.25rem]",
+            compact && "md:grid-rows-[1rem_3rem_1.25rem]"
+          )}
+        >
+          <p className="truncate text-[11px] font-bold uppercase tracking-widest text-primary/90">
             {product.category}
           </p>
           <Link
             href={href}
             className={cn(
-              "mt-1 line-clamp-2 font-heading text-base font-bold transition hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary md:text-lg",
+              "line-clamp-2 self-start font-heading text-base font-bold leading-6 transition hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary md:text-lg md:leading-7",
               compact && "md:text-base"
             )}
             onClick={() => trackSelectItem(product, itemListName)}
           >
             {product.name}
           </Link>
-          {product.rating && (
-            <p className="mt-2 flex items-center gap-1 text-xs text-on-surface-variant">
-              <Star aria-hidden className="h-3.5 w-3.5 fill-primary-container text-primary-container" />
-              {product.rating}
-              {product.reviewCount ? ` (${product.reviewCount})` : ""}
-            </p>
-          )}
+          <div className="flex min-h-5 items-center">
+            {product.rating ? (
+              <p className="flex items-center gap-1 text-xs text-on-surface-variant">
+                <Star aria-hidden className="h-3.5 w-3.5 fill-primary-container text-primary-container" />
+                {product.rating}
+                {product.reviewCount ? ` (${product.reviewCount})` : ""}
+              </p>
+            ) : (
+              <span aria-hidden className="block h-5" />
+            )}
+          </div>
         </div>
-        <div className={cn("mt-4 flex items-center justify-between gap-3", compact && "mt-3")}>
-          <div className="flex items-baseline gap-2">
-            <p className="font-semibold text-on-surface">{formatPrice(product.price)}</p>
+        <div
+          className={cn(
+            "mt-auto flex min-h-11 items-center justify-between gap-3 pt-4",
+            compact && "pt-3"
+          )}
+        >
+          <div className="flex min-w-0 items-baseline gap-2 overflow-hidden tabular-nums">
+            <p className="whitespace-nowrap font-semibold text-on-surface">{formatPrice(product.price)}</p>
             {product.regularPrice && (
-              <p className="text-sm text-on-surface-variant line-through">
+              <p className="truncate whitespace-nowrap text-sm text-on-surface-variant line-through">
                 {formatPrice(product.regularPrice)}
               </p>
             )}

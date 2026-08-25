@@ -97,7 +97,7 @@ export function WishlistPageContent({ products }: { products: Product[] }) {
           </Link>
         </div>
       ) : (
-        <div className="mt-9 grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-6 lg:grid-cols-4">
+        <div className="mt-9 grid auto-rows-fr grid-cols-2 items-stretch gap-4 md:grid-cols-3 md:gap-6 lg:grid-cols-4">
           {savedProducts.map((product) => (
             <ProductCard key={product.id} product={product} itemListName="Wishlist" />
           ))}

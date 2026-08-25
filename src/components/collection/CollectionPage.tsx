@@ -392,7 +392,7 @@ export function CollectionPage({ config }: CollectionPageProps) {
               )}
 
               {gridProducts.length > 0 && (
-                <div className="grid grid-cols-2 gap-5 md:grid-cols-3 xl:grid-cols-4 xl:gap-6">
+                <div className="grid auto-rows-fr grid-cols-2 items-stretch gap-5 md:grid-cols-3 xl:grid-cols-4 xl:gap-6">
                   {gridProducts.map((product) => (
                     <ProductCard key={product.id} product={product} itemListName={itemListName} />
                   ))}
