@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { ShoppingBag } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { CircleAlert, ShoppingBag } from "lucide-react";
 import { ViewCartTracker } from "@/components/analytics/EcommerceEventTrackers";
 import { CartAddOnCard } from "@/components/cart/CartAddOnCard";
 import { CartItemRow } from "@/components/cart/CartItemRow";
@@ -10,12 +11,26 @@ import { cartAddOns } from "@/data/products";
 import { useCartStore } from "@/store/cart-store";
 
 export function CartPageContent() {
+  const searchParams = useSearchParams();
   const items = useCartStore((state) => state.items);
+  const checkoutWasEmpty = searchParams.get("checkout") === "empty";
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[1fr_420px]">
-      <ViewCartTracker items={items} />
-      <div>
+    <>
+      {checkoutWasEmpty && items.length === 0 && (
+        <div
+          className="mb-6 flex items-start gap-3 rounded-md border border-primary/25 bg-primary-container/10 px-4 py-3 text-on-surface"
+          role="status"
+        >
+          <CircleAlert aria-hidden className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+          <p>
+            Your cart is empty. Add at least one product before continuing to checkout.
+          </p>
+        </div>
+      )}
+      <div className="grid gap-8 lg:grid-cols-[1fr_420px]">
+        <ViewCartTracker items={items} />
+        <div>
         <div className="rounded-lg bg-surface-container-lowest p-5 shadow-ambient md:p-8">
           {items.length === 0 ? (
             <div className="py-10 text-center">
@@ -63,9 +78,10 @@ export function CartPageContent() {
             ))}
           </div>
         </section>
-      </div>
+        </div>
 
-      <CartOrderSummary />
-    </div>
+        <CartOrderSummary />
+      </div>
+    </>
   );
 }

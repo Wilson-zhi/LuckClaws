@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Lock, Mail, RotateCcw, ShieldCheck, ShoppingBag, Truck, X } from "lucide-react";
 import { CartAddOnCard } from "@/components/cart/CartAddOnCard";
 import { FreeShippingBar } from "@/components/cart/FreeShippingBar";
@@ -19,6 +19,9 @@ type CartDrawerProps = {
 };
 
 export function CartDrawer({ open, onClose }: CartDrawerProps) {
+  const drawerRef = useRef<HTMLElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
   const items = useCartStore((state) => state.items);
   const updateQuantity = useCartStore((state) => state.updateQuantity);
   const removeItem = useCartStore((state) => state.removeItem);
@@ -41,15 +44,56 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
       return;
     }
 
+    previousFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const previousBodyOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         onClose();
+        return;
+      }
+
+      if (event.key !== "Tab" || !drawerRef.current) {
+        return;
+      }
+
+      const focusableElements = Array.from(
+        drawerRef.current.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        )
+      ).filter((element) => !element.hasAttribute("hidden"));
+
+      if (focusableElements.length === 0) {
+        event.preventDefault();
+        drawerRef.current.focus();
+        return;
+      }
+
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+
+      if (event.shiftKey && document.activeElement === firstElement) {
+        event.preventDefault();
+        lastElement.focus();
+      } else if (!event.shiftKey && document.activeElement === lastElement) {
+        event.preventDefault();
+        firstElement.focus();
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
+    const focusTimer = window.setTimeout(() => closeButtonRef.current?.focus(), 0);
 
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      window.clearTimeout(focusTimer);
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = previousBodyOverflow;
+
+      if (previousFocusRef.current?.isConnected) {
+        previousFocusRef.current.focus();
+      }
+    };
   }, [onClose, open]);
 
   if (!open) {
@@ -63,19 +107,25 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
         className="absolute inset-0 bg-on-surface/25 backdrop-blur-sm"
         onClick={onClose}
         aria-label="Close cart drawer"
+        tabIndex={-1}
       />
       <aside
+        ref={drawerRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="cart-drawer-title"
+        tabIndex={-1}
         className="absolute right-0 top-0 flex h-full w-full max-w-[520px] translate-x-0 flex-col bg-surface-container-lowest shadow-lift transition-transform duration-300"
-        aria-label="Cart drawer"
       >
         <div className="flex items-center justify-between border-b border-outline-variant/60 px-6 py-5">
           <div>
-            <h2 className="font-heading text-3xl font-bold">Your Cart</h2>
+            <h2 id="cart-drawer-title" className="font-heading text-3xl font-bold">Your Cart</h2>
             <p className="mt-1 text-sm font-semibold text-on-surface-variant">{itemCountLabel}</p>
           </div>
           <button
+            ref={closeButtonRef}
             type="button"
-            className="grid h-10 w-10 place-items-center rounded-full transition hover:bg-surface-container"
+            className="grid h-11 w-11 place-items-center rounded-full transition hover:bg-surface-container"
             onClick={onClose}
             aria-label="Close cart drawer"
           >
@@ -119,7 +169,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                           </div>
                           <button
                             type="button"
-                            className="text-on-surface-variant hover:text-error"
+                            className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-on-surface-variant transition hover:bg-error/10 hover:text-error"
                             onClick={() => handleRemoveItem(item.id)}
                             aria-label={`Remove ${item.name}`}
                           >
@@ -210,7 +260,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
             </p>
           </div>
 
-          <div className="mt-5 grid grid-cols-4 gap-2 text-[11px] uppercase text-on-surface-variant">
+          <div className="mt-5 grid grid-cols-2 gap-2 text-[11px] uppercase text-on-surface-variant sm:grid-cols-4">
             <span className="flex items-center justify-center gap-1">
               <Truck aria-hidden className="h-4 w-4" /> {`Free over $${FREE_SHIPPING_THRESHOLD}`}
             </span>

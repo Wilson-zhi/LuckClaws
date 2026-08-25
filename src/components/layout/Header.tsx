@@ -18,6 +18,9 @@ type PublicCategoryNavRow = {
   slug: string | null;
 };
 
+let cachedPublicNavigationItems: NavigationItem[] | null = null;
+let publicNavigationRequest: Promise<NavigationItem[] | null> | null = null;
+
 export function Header({ initialNavigationItems }: { initialNavigationItems?: NavigationItem[] }) {
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -123,6 +126,17 @@ export function Header({ initialNavigationItems }: { initialNavigationItems?: Na
   }, [setWishlistProductIds, setWishlistSyncReady]);
 
   useEffect(() => {
+    if (initialNavigationItems && initialNavigationItems.length > 0) {
+      cachedPublicNavigationItems = initialNavigationItems;
+      setNavigationItems(initialNavigationItems);
+      return;
+    }
+
+    if (cachedPublicNavigationItems) {
+      setNavigationItems(cachedPublicNavigationItems);
+      return;
+    }
+
     const supabase = getSupabaseBrowserClient();
 
     if (!supabase) {
@@ -134,41 +148,53 @@ export function Header({ initialNavigationItems }: { initialNavigationItems?: Na
     const browserSupabase = supabase;
 
     async function loadPublicNavigation() {
-      const { data, error } = await browserSupabase
-        .from("product_categories")
-        .select("name, slug")
-        .eq("status", "active")
-        .eq("show_in_nav", true)
-        .order("sort_order", { ascending: true, nullsFirst: false });
+      if (!publicNavigationRequest) {
+        publicNavigationRequest = (async () => {
+          const { data, error } = await browserSupabase
+            .from("product_categories")
+            .select("name, slug")
+            .eq("status", "active")
+            .eq("show_in_nav", true)
+            .order("sort_order", { ascending: true, nullsFirst: false });
+
+          if (error || !data || data.length === 0) {
+            return null;
+          }
+
+          const categoryItems = (data as PublicCategoryNavRow[])
+            .map((category) => {
+              const name = category.name?.trim();
+              const slug = category.slug?.trim();
+
+              return name && slug ? { label: name, href: `/collections/${slug}` } : null;
+            })
+            .filter((item): item is NavigationItem => Boolean(item));
+
+          return categoryItems.length > 0
+            ? [
+                { label: "Shop All", href: "/collections" },
+                ...categoryItems,
+                { label: "About Us", href: "/about" },
+                { label: "Sale", href: "/sale", sale: true }
+              ]
+            : null;
+        })().finally(() => {
+          publicNavigationRequest = null;
+        });
+      }
+
+      const publicNavigationItems = await publicNavigationRequest;
 
       if (!active) {
         return;
       }
 
-      if (error || !data || data.length === 0) {
+      if (publicNavigationItems) {
+        cachedPublicNavigationItems = publicNavigationItems;
+        setNavigationItems(publicNavigationItems);
+      } else {
         setNavigationItems(fallbackNavigationItems);
-        return;
       }
-
-      const categoryItems = (data as PublicCategoryNavRow[])
-        .map((category) => {
-          const name = category.name?.trim();
-          const slug = category.slug?.trim();
-
-          return name && slug ? { label: name, href: `/collections/${slug}` } : null;
-        })
-        .filter((item): item is NavigationItem => Boolean(item));
-
-      setNavigationItems(
-        categoryItems.length > 0
-          ? [
-              { label: "Shop All", href: "/collections" },
-              ...categoryItems,
-              { label: "About Us", href: "/about" },
-              { label: "Sale", href: "/sale", sale: true }
-            ]
-          : fallbackNavigationItems
-      );
     }
 
     void loadPublicNavigation();
@@ -176,7 +202,7 @@ export function Header({ initialNavigationItems }: { initialNavigationItems?: Na
     return () => {
       active = false;
     };
-  }, [fallbackNavigationItems]);
+  }, [fallbackNavigationItems, initialNavigationItems]);
 
   return (
     <>
@@ -209,7 +235,7 @@ export function Header({ initialNavigationItems }: { initialNavigationItems?: Na
           <div className="flex items-center gap-2 text-primary">
             <Link
               href="/search"
-              className="grid h-10 w-10 place-items-center rounded-full border border-transparent transition hover:-translate-y-0.5 hover:border-[#E5C99F] hover:bg-white hover:text-[#3B2512] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:hover:translate-y-0"
+              className="grid h-11 w-11 place-items-center rounded-full border border-transparent transition hover:-translate-y-0.5 hover:border-[#E5C99F] hover:bg-white hover:text-[#3B2512] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:hover:translate-y-0"
               aria-label="Search"
             >
               <Search aria-hidden className="h-6 w-6" />
@@ -217,7 +243,7 @@ export function Header({ initialNavigationItems }: { initialNavigationItems?: Na
             <Link
               href="/wishlist"
               className={cn(
-                "relative grid h-10 w-10 place-items-center rounded-full border border-transparent transition hover:-translate-y-0.5 hover:border-[#E5C99F] hover:bg-white hover:text-[#3B2512] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:hover:translate-y-0",
+                "relative grid h-11 w-11 place-items-center rounded-full border border-transparent transition hover:-translate-y-0.5 hover:border-[#E5C99F] hover:bg-white hover:text-[#3B2512] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:hover:translate-y-0",
                 pathname === "/wishlist" && "border-[#E5C99F] bg-white text-[#3B2512]"
               )}
               aria-label={`Wishlist with ${wishlistCount} saved items`}
@@ -231,7 +257,7 @@ export function Header({ initialNavigationItems }: { initialNavigationItems?: Na
             </Link>
             <button
               type="button"
-              className="relative grid h-10 w-10 place-items-center rounded-full border border-transparent transition hover:-translate-y-0.5 hover:border-[#E5C99F] hover:bg-white hover:text-[#3B2512] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:hover:translate-y-0"
+              className="relative grid h-11 w-11 place-items-center rounded-full border border-transparent transition hover:-translate-y-0.5 hover:border-[#E5C99F] hover:bg-white hover:text-[#3B2512] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:hover:translate-y-0"
               onClick={() => {
                 trackViewCart(items);
                 setDrawerOpen(true);
@@ -247,7 +273,7 @@ export function Header({ initialNavigationItems }: { initialNavigationItems?: Na
             </button>
             <Link
               href={accountHref}
-              className="grid h-10 w-10 place-items-center rounded-full border border-transparent transition hover:-translate-y-0.5 hover:border-[#E5C99F] hover:bg-white hover:text-[#3B2512] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:hover:translate-y-0"
+              className="grid h-11 w-11 place-items-center rounded-full border border-transparent transition hover:-translate-y-0.5 hover:border-[#E5C99F] hover:bg-white hover:text-[#3B2512] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:hover:translate-y-0"
               aria-label="Account"
             >
               <User aria-hidden className="h-6 w-6" />
@@ -258,7 +284,7 @@ export function Header({ initialNavigationItems }: { initialNavigationItems?: Na
         <div className="section-shell flex h-16 items-center justify-between lg:hidden">
           <button
             type="button"
-            className="grid h-10 w-10 place-items-center rounded-full border border-[#E8D6BF] bg-white/70 text-[#5C4834] transition hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            className="grid h-11 w-11 place-items-center rounded-full border border-[#E8D6BF] bg-white/70 text-[#5C4834] transition hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             onClick={() => setMenuOpen((value) => !value)}
             aria-label={menuOpen ? "Close menu" : "Open menu"}
           >
@@ -269,7 +295,7 @@ export function Header({ initialNavigationItems }: { initialNavigationItems?: Na
           </Link>
           <button
             type="button"
-            className="relative grid h-10 w-10 place-items-center rounded-full border border-[#E8D6BF] bg-white/70 text-primary transition hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            className="relative grid h-11 w-11 place-items-center rounded-full border border-[#E8D6BF] bg-white/70 text-primary transition hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             onClick={() => {
               trackViewCart(items);
               setDrawerOpen(true);

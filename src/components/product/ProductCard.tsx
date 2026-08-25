@@ -88,7 +88,7 @@ export function ProductCard({
               src={imageSrc}
               alt={product.alt}
               fill
-              loading="eager"
+              loading="lazy"
               sizes="(min-width: 1024px) 520px, 100vw"
               className="object-cover transition duration-500 group-hover:scale-[1.06]"
             />
@@ -161,7 +161,7 @@ export function ProductCard({
             src={imageSrc}
             alt={product.alt}
             fill
-            loading="eager"
+            loading="lazy"
             sizes="(min-width: 1024px) 280px, 45vw"
             className="object-cover transition duration-500 group-hover:scale-[1.055]"
           />
@@ -170,7 +170,7 @@ export function ProductCard({
           productId={product.id}
           productSlug={product.slug}
           productName={product.name}
-          className="absolute right-3 top-3 z-20 !h-9 !w-9 !p-0"
+          className="absolute right-3 top-3 z-20 !h-11 !w-11 !p-0"
         />
       </div>
       <div className={cn("flex flex-1 flex-col p-4 md:p-5", compact && "md:p-4")}>

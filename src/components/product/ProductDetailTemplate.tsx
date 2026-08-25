@@ -25,6 +25,7 @@ import { ProductGallery } from "@/components/product/ProductGallery";
 import { ProductPurchasePanel } from "@/components/product/ProductPurchasePanel";
 import { CompactTrustBar, type CompactTrustItem } from "@/components/sections/CompactTrustBar";
 import { type Product } from "@/data/products";
+import { type NavigationItem } from "@/data/navigation";
 import {
   getBestForItems,
   getCareInstructions,
@@ -76,10 +77,12 @@ function getHighlightIcon(icon: string | undefined, fallbackIndex: number) {
 
 export function ProductDetailTemplate({
   product,
-  relatedProducts: providedRelatedProducts
+  relatedProducts: providedRelatedProducts,
+  navigationItems
 }: {
   product: Product;
   relatedProducts?: Product[];
+  navigationItems?: NavigationItem[];
 }) {
   const relatedProducts = providedRelatedProducts ?? getRelatedProducts(product);
   const highlights = product.productHighlights?.length ? product.productHighlights : getProductHighlights(product);
@@ -119,7 +122,7 @@ export function ProductDetailTemplate({
       ];
 
   return (
-    <SiteShell>
+    <SiteShell navigationItems={navigationItems}>
       <ViewItemTracker product={product} />
       <ViewItemListTracker products={relatedProducts} itemListName={itemListName} />
       <script

@@ -28,7 +28,11 @@ import { SiteShell } from "@/components/layout/SiteShell";
 import { brandName } from "@/data/products";
 import { type HomepageTrustBadgeIconKey } from "@/lib/homepage-content";
 import { getPublicHomepageSettings } from "@/lib/homepage-settings";
-import { getPublicHomepageCategories, getPublicHomepageProducts } from "@/lib/public-product-data";
+import {
+  getPublicHeaderNavigationItems,
+  getPublicHomepageCategories,
+  getPublicHomepageProducts
+} from "@/lib/public-product-data";
 import { absoluteUrl, createSeoMetadata, iconPath } from "@/lib/seo";
 import { freeShippingLabel } from "@/lib/shipping";
 
@@ -153,9 +157,10 @@ function homepageTrustLabel(key: string, label: string) {
 }
 
 export default async function HomePage() {
-  const [{ featuredProduct, bestSellers }, homepageSettings] = await Promise.all([
+  const [{ featuredProduct, bestSellers }, homepageSettings, navigationItems] = await Promise.all([
     getPublicHomepageProducts(),
-    getPublicHomepageSettings()
+    getPublicHomepageSettings(),
+    getPublicHeaderNavigationItems()
   ]);
   const { hero, categorySection, storySection, decisionGuide, servicePromises, newsletter } = homepageSettings;
   const heroEyebrow = polishedHeroEyebrow(hero.eyebrow);
@@ -194,7 +199,7 @@ export default async function HomePage() {
   };
 
   return (
-    <SiteShell>
+    <SiteShell navigationItems={navigationItems}>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationStructuredData) }}

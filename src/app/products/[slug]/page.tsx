@@ -2,7 +2,11 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ProductDetailTemplate } from "@/components/product/ProductDetailTemplate";
 import { brandName, mainProduct } from "@/data/products";
-import { getPublicProductBySlug, getPublicRelatedProducts } from "@/lib/public-product-data";
+import {
+  getPublicHeaderNavigationItems,
+  getPublicProductBySlug,
+  getPublicRelatedProducts
+} from "@/lib/public-product-data";
 import { getProductPathBySlug } from "@/lib/product-links";
 import { createProductMetadata } from "@/lib/product-seo";
 import { createSeoMetadata } from "@/lib/seo";
@@ -39,5 +43,16 @@ export default async function ProductPage({ params }: ProductRouteProps) {
     notFound();
   }
 
-  return <ProductDetailTemplate product={product} relatedProducts={await getPublicRelatedProducts(product)} />;
+  const [relatedProducts, navigationItems] = await Promise.all([
+    getPublicRelatedProducts(product),
+    getPublicHeaderNavigationItems()
+  ]);
+
+  return (
+    <ProductDetailTemplate
+      product={product}
+      relatedProducts={relatedProducts}
+      navigationItems={navigationItems}
+    />
+  );
 }

@@ -1,5 +1,6 @@
 import "server-only";
 
+import { cache } from "react";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import {
   bestSellers as staticBestSellers,
@@ -781,7 +782,7 @@ function categoryMetadataFromRow(row: SupabaseCategoryMetadataRow): CategoryMeta
   };
 }
 
-async function fetchCategoryMetadata() {
+const fetchCategoryMetadata = cache(async function fetchCategoryMetadata() {
   const supabase = getCategoryReadClient();
 
   if (!supabase) {
@@ -810,7 +811,7 @@ async function fetchCategoryMetadata() {
 
     return categoryMap;
   }, new Map<string, CategoryMetadata>());
-}
+});
 
 async function fetchActiveCategoryMetadataBySlug(slug: string) {
   const supabase = getCategoryReadClient();
@@ -991,14 +992,17 @@ function sortProductsForStorefront(products: Product[]) {
 }
 
 async function fetchSupabaseActiveProducts() {
+  const categoryMetadataPromise = fetchCategoryMetadata();
   const rows = await fetchProductRows();
 
   if (!rows || rows.length === 0) {
     return null;
   }
 
-  const imageRowsByProductId = await fetchImageRowsByProductId(rows.map((row) => row.id));
-  const categoryMetadata = await fetchCategoryMetadata();
+  const [imageRowsByProductId, categoryMetadata] = await Promise.all([
+    fetchImageRowsByProductId(rows.map((row) => row.id)),
+    categoryMetadataPromise
+  ]);
   const products = rows
     .filter((row) => row.status === "active")
     .map((row) => mapSupabaseProduct(row, imageRowsByProductId.get(row.id) ?? [], categoryMetadata))
@@ -1008,6 +1012,7 @@ async function fetchSupabaseActiveProducts() {
 }
 
 async function fetchSupabaseProductBySlug(slug: string): Promise<ProductLookupResult> {
+  const categoryMetadataPromise = fetchCategoryMetadata();
   const rows = await fetchProductRows(slug);
 
   if (!rows) {
@@ -1036,8 +1041,10 @@ async function fetchSupabaseProductBySlug(slug: string): Promise<ProductLookupRe
     };
   }
 
-  const imageRowsByProductId = await fetchImageRowsByProductId([row.id]);
-  const categoryMetadata = await fetchCategoryMetadata();
+  const [imageRowsByProductId, categoryMetadata] = await Promise.all([
+    fetchImageRowsByProductId([row.id]),
+    categoryMetadataPromise
+  ]);
 
   return {
     product: mapSupabaseProduct(row, imageRowsByProductId.get(row.id) ?? [], categoryMetadata),
@@ -1184,11 +1191,14 @@ export async function getPublicCollectionConfig(
   key: keyof typeof collectionConfigs
 ): Promise<CollectionConfig> {
   const config = collectionConfigs[key];
-  const categoryMap = await fetchCategoryMetadata();
+  const [categoryMap, catalogProducts] = await Promise.all([
+    fetchCategoryMetadata(),
+    getPublicProducts()
+  ]);
   const category = categoryMap.get(config.slug) ?? null;
   const activeCategories = activeCategoriesFromMap(categoryMap);
   const collectionSlug = category?.status === "active" ? category.slug : config.slug;
-  const products = productsForCollection(collectionSlug, await getPublicProducts());
+  const products = productsForCollection(collectionSlug, catalogProducts);
 
   return collectionConfigWithCategory(
     config,
@@ -1199,9 +1209,10 @@ export async function getPublicCollectionConfig(
 }
 
 export async function getPublicCollectionConfigBySlug(slug: string) {
-  const [category, categoryMap] = await Promise.all([
+  const [category, categoryMap, catalogProducts] = await Promise.all([
     fetchActiveCategoryMetadataBySlug(slug),
-    fetchCategoryMetadata()
+    fetchCategoryMetadata(),
+    getPublicProducts()
   ]);
   const activeCategories = activeCategoriesFromMap(categoryMap);
 
@@ -1219,7 +1230,7 @@ export async function getPublicCollectionConfigBySlug(slug: string) {
     mobileFilters: [`All ${category.name}`],
     products: []
   };
-  const products = productsForCollection(category.slug, await getPublicProducts());
+  const products = productsForCollection(category.slug, catalogProducts);
 
   return collectionConfigWithCategory(baseConfig, category, products, activeCategories);
 }

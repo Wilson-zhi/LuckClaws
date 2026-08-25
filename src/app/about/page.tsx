@@ -17,6 +17,7 @@ import { AboutSupportModule } from "@/components/about/AboutSupportModule";
 import { SiteShell } from "@/components/layout/SiteShell";
 import { brandName } from "@/data/products";
 import { getPublicAboutContent } from "@/lib/about-paw-settings";
+import { getPublicHeaderNavigationItems } from "@/lib/public-product-data";
 import { createSeoMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -111,7 +112,10 @@ function SectionLabel({ children, dark = false }: { children: React.ReactNode; d
 }
 
 export default async function AboutPage() {
-  const aboutContent = await getPublicAboutContent();
+  const [aboutContent, navigationItems] = await Promise.all([
+    getPublicAboutContent(),
+    getPublicHeaderNavigationItems()
+  ]);
   const { hero, pawPath, collectionSection, collectionCards } = aboutContent;
   const aboutContentSource = aboutContent.diagnostics.source;
   const heroPosterImage = isLogoLikeMedia(hero.heroImageUrl)
@@ -120,7 +124,7 @@ export default async function AboutPage() {
   const heroUsesVideo = isVideoMedia(heroPosterImage);
 
   return (
-    <SiteShell>
+    <SiteShell navigationItems={navigationItems}>
       <div
         aria-hidden="true"
         hidden

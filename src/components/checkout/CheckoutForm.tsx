@@ -15,6 +15,8 @@ import {
 import { CompactTrustBar, type CompactTrustItem } from "@/components/sections/CompactTrustBar";
 import { freeShippingLabel, standardShippingSentence, variableShippingSentence } from "@/lib/shipping";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { readBuyNowCheckoutItem } from "@/lib/buy-now-checkout";
+import { useCartStore } from "@/store/cart-store";
 
 type SavedAddress = {
   id: string;
@@ -105,7 +107,38 @@ export function CheckoutForm() {
   const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState("manual");
   const [manualCountry, setManualCountry] = useState(defaultCountry);
+  const [checkoutAccessReady, setCheckoutAccessReady] = useState(false);
   const emailTouchedRef = useRef(false);
+
+  useEffect(() => {
+    const verifyCheckoutAccess = () => {
+      const cartHasItems = useCartStore.getState().items.length > 0;
+
+      if (isBuyNowMode) {
+        if (readBuyNowCheckoutItem()) {
+          setCheckoutAccessReady(true);
+          return;
+        }
+
+        if (cartHasItems) {
+          router.replace("/checkout/information");
+          return;
+        }
+      } else if (cartHasItems) {
+        setCheckoutAccessReady(true);
+        return;
+      }
+
+      router.replace("/cart?checkout=empty");
+    };
+
+    if (useCartStore.persist.hasHydrated()) {
+      verifyCheckoutAccess();
+      return;
+    }
+
+    return useCartStore.persist.onFinishHydration(verifyCheckoutAccess);
+  }, [isBuyNowMode, router]);
 
   useEffect(() => {
     const savedInfo = readCheckoutInfo();
@@ -237,6 +270,15 @@ export function CheckoutForm() {
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
+    const checkoutHasItems = isBuyNowMode
+      ? Boolean(readBuyNowCheckoutItem())
+      : useCartStore.getState().items.length > 0;
+
+    if (!checkoutHasItems) {
+      router.replace("/cart?checkout=empty");
+      return;
+    }
+
     const normalizedInfo = normalizeCheckoutInfo(checkoutInfo);
     const validationErrors = validateCheckoutInfo(normalizedInfo);
 
@@ -258,6 +300,17 @@ export function CheckoutForm() {
 
     router.push(`/checkout/payment${isBuyNowMode ? "?mode=buy-now" : ""}`);
   };
+
+  if (!checkoutAccessReady) {
+    return (
+      <section className="rounded-lg border border-outline-variant bg-surface-container-low p-6 shadow-soft md:p-8" aria-live="polite">
+        <h1 className="font-heading text-3xl font-bold">Checking your cart</h1>
+        <p className="mt-3 text-on-surface-variant">
+          Confirming your items before checkout.
+        </p>
+      </section>
+    );
+  }
 
   return (
     <form className="space-y-8" aria-label="Checkout information form" onSubmit={handleSubmit} noValidate>

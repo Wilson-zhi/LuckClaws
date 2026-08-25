@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
-import { ArrowRight, Heart, ShieldCheck, SlidersHorizontal, Truck, X } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { ArrowRight, ChevronDown, Heart, ShieldCheck, SlidersHorizontal, Truck, X } from "lucide-react";
 import { ViewItemListTracker } from "@/components/analytics/EcommerceEventTrackers";
 import { FilterControls, FilterSidebar, type FilterOption } from "@/components/collection/FilterSidebar";
 import { SiteShell } from "@/components/layout/SiteShell";
@@ -17,6 +17,7 @@ type CollectionPageProps = {
 };
 
 const allFilterValue = "__all__";
+const collectionPageSize = 12;
 
 const priceRanges = [
   { label: "Under $15", value: "under-15" },
@@ -171,6 +172,7 @@ export function CollectionPage({ config }: CollectionPageProps) {
   const [selectedMaterials, setSelectedMaterials] = useState<string[]>([]);
   const [selectedPrice, setSelectedPrice] = useState(allFilterValue);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [visibleProductCount, setVisibleProductCount] = useState(collectionPageSize);
 
   const totalCount = config.products.length;
   const itemListName = `${config.title} Collection`;
@@ -247,6 +249,12 @@ export function CollectionPage({ config }: CollectionPageProps) {
   const gridProducts = featuredProduct
     ? filteredProducts.filter((product) => product.id !== featuredProduct.id)
     : filteredProducts;
+  const visibleGridProducts = gridProducts.slice(0, visibleProductCount);
+  const remainingProductCount = Math.max(0, gridProducts.length - visibleGridProducts.length);
+
+  useEffect(() => {
+    setVisibleProductCount(collectionPageSize);
+  }, [config.slug, selectedCategory, selectedMaterials, selectedPrice]);
 
   const clearFilters = () => {
     setSelectedCategory(allFilterValue);
@@ -392,11 +400,25 @@ export function CollectionPage({ config }: CollectionPageProps) {
               )}
 
               {gridProducts.length > 0 && (
-                <div className="grid auto-rows-fr grid-cols-2 items-stretch gap-5 md:grid-cols-3 xl:grid-cols-4 xl:gap-6">
-                  {gridProducts.map((product) => (
-                    <ProductCard key={product.id} product={product} itemListName={itemListName} />
-                  ))}
-                </div>
+                <>
+                  <div className="grid auto-rows-fr grid-cols-2 items-stretch gap-5 md:grid-cols-3 xl:grid-cols-4 xl:gap-6">
+                    {visibleGridProducts.map((product) => (
+                      <ProductCard key={product.id} product={product} itemListName={itemListName} />
+                    ))}
+                  </div>
+                  {remainingProductCount > 0 && (
+                    <div className="mt-8 flex justify-center">
+                      <button
+                        type="button"
+                        className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-primary bg-white px-6 py-3 font-bold text-primary transition hover:-translate-y-0.5 hover:bg-primary-container/10 hover:shadow-soft focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:hover:translate-y-0"
+                        onClick={() => setVisibleProductCount((count) => count + collectionPageSize)}
+                      >
+                        Show {Math.min(collectionPageSize, remainingProductCount)} more
+                        <ChevronDown aria-hidden className="h-4 w-4" />
+                      </button>
+                    </div>
+                  )}
+                </>
               )}
             </>
           )}

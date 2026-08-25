@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { ArrowRight, Heart, Search, ShieldCheck, Star, Truck } from "lucide-react";
+import { ArrowRight, ChevronDown, Heart, Search, ShieldCheck, Star, Truck } from "lucide-react";
 import { ViewItemListTracker } from "@/components/analytics/EcommerceEventTrackers";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
 import { SiteShell } from "@/components/layout/SiteShell";
@@ -12,6 +12,7 @@ import { ProductCard } from "@/components/product/ProductCard";
 import { SearchFilterChips } from "@/components/search/SearchFilterChips";
 import { CompactTrustBar, type CompactTrustItem } from "@/components/sections/CompactTrustBar";
 import { mainProduct, products, type Product } from "@/data/products";
+import { type NavigationItem } from "@/data/navigation";
 import { trackSearch, trackSelectItem } from "@/lib/ga4-ecommerce";
 import { getProductPath } from "@/lib/product-links";
 import { freeShippingLabel } from "@/lib/shipping";
@@ -40,6 +41,7 @@ const emptyStateLinks = [
 ];
 
 const popularSearches = ["snuffle mat", "dog toys", "cat toys", "harness", "pet bed"];
+const searchResultPageSize = 12;
 
 function normalizeSearchTerm(value: string) {
   return value.trim().toLowerCase();
@@ -237,19 +239,23 @@ function RelatedCollections() {
 type SearchPageContentProps = {
   products?: Product[];
   featuredProductSlug?: string;
+  navigationItems?: NavigationItem[];
 };
 
 export function SearchPageContent({
   products: catalogProducts = products,
-  featuredProductSlug = mainProduct.slug
+  featuredProductSlug = mainProduct.slug,
+  navigationItems
 }: SearchPageContentProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const query = searchParams.get("q")?.trim() ?? "";
   const [searchValue, setSearchValue] = useState(query);
+  const [visibleResultCount, setVisibleResultCount] = useState(searchResultPageSize);
 
   useEffect(() => {
     setSearchValue(query);
+    setVisibleResultCount(searchResultPageSize);
   }, [query]);
 
   const filteredProducts = useMemo(() => {
@@ -265,6 +271,8 @@ export function SearchPageContent({
   const itemListName = query ? `Search Results - ${query}` : "Search Results";
   const featuredProduct = filteredProducts.find((product) => product.slug === featuredProductSlug);
   const resultProducts = filteredProducts.filter((product) => product.slug !== featuredProductSlug);
+  const visibleResultProducts = resultProducts.slice(0, visibleResultCount);
+  const remainingResultCount = Math.max(0, resultProducts.length - visibleResultProducts.length);
   const resultsSummary = getResultsSummary(filteredProducts.length, query);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -282,7 +290,7 @@ export function SearchPageContent({
   };
 
   return (
-    <SiteShell>
+    <SiteShell navigationItems={navigationItems}>
       <ViewItemListTracker products={filteredProducts} itemListName={itemListName} />
 
       <section className="section-shell py-10 md:py-14">
@@ -370,10 +378,22 @@ export function SearchPageContent({
                 </div>
 
                 <div className="grid grid-cols-2 gap-5 md:grid-cols-3 xl:grid-cols-4 xl:gap-6">
-                  {resultProducts.map((product) => (
+                  {visibleResultProducts.map((product) => (
                     <ProductCard key={product.id} product={product} itemListName={itemListName} />
                   ))}
                 </div>
+                {remainingResultCount > 0 && (
+                  <div className="mt-8 flex justify-center">
+                    <button
+                      type="button"
+                      className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-primary bg-white px-6 py-3 font-bold text-primary transition hover:-translate-y-0.5 hover:bg-primary-container/10 hover:shadow-soft focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:hover:translate-y-0"
+                      onClick={() => setVisibleResultCount((count) => count + searchResultPageSize)}
+                    >
+                      Show {Math.min(searchResultPageSize, remainingResultCount)} more
+                      <ChevronDown aria-hidden className="h-4 w-4" />
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>

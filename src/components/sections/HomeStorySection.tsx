@@ -83,7 +83,7 @@ export function HomeStorySection({ story }: { story: HomepageStorySectionContent
                   <StoryIcon icon={item.icon} />
                 </span>
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary/80">
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">
                     {String(index + 1).padStart(2, "0")}
                   </p>
                   <h3 className="mt-2 font-heading text-xl font-extrabold leading-tight text-[#24170E] xl:text-2xl">

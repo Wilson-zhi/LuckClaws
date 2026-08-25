@@ -231,7 +231,7 @@ export function HomeProductDiscovery({ featuredProduct, products }: HomeProductD
                 src={fallbackProductImage(activeProduct)}
                 alt={activeProduct.alt}
                 fill
-                loading="eager"
+                loading="lazy"
                 sizes="(min-width: 1024px) 620px, 100vw"
                 className="object-cover transition duration-500 group-hover:scale-[1.045] motion-reduce:group-hover:scale-100"
               />

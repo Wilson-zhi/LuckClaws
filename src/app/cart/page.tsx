@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
 import { FreeShippingBar } from "@/components/cart/FreeShippingBar";
 import { CartPageContent } from "@/components/cart/CartPageContent";
 import { SiteShell } from "@/components/layout/SiteShell";
@@ -25,7 +26,15 @@ export default function CartPage() {
           &larr; Continue Shopping
         </Link>
         <div className="mt-10">
-          <CartPageContent />
+          <Suspense
+            fallback={(
+              <div className="rounded-lg bg-surface-container-lowest p-6 text-sm text-on-surface-variant shadow-soft">
+                Loading your cart...
+              </div>
+            )}
+          >
+            <CartPageContent />
+          </Suspense>
         </div>
       </section>
     </SiteShell>

@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { SiteShell } from "@/components/layout/SiteShell";
 import { SearchPageContent } from "@/components/search/SearchPageContent";
 import { brandName, mainProduct } from "@/data/products";
-import { getPublicProducts } from "@/lib/public-product-data";
+import { getPublicHeaderNavigationItems, getPublicProducts } from "@/lib/public-product-data";
 import { createSeoMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = {
@@ -18,11 +18,18 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function SearchPage() {
-  const products = await getPublicProducts();
+  const [products, navigationItems] = await Promise.all([
+    getPublicProducts(),
+    getPublicHeaderNavigationItems()
+  ]);
 
   return (
     <Suspense fallback={<SearchPageFallback />}>
-      <SearchPageContent products={products} featuredProductSlug={mainProduct.slug} />
+      <SearchPageContent
+        products={products}
+        featuredProductSlug={mainProduct.slug}
+        navigationItems={navigationItems}
+      />
     </Suspense>
   );
 }
