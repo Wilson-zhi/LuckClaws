@@ -11,7 +11,7 @@ type CollectionRouteProps = {
   }>;
 };
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export async function generateMetadata({ params }: CollectionRouteProps): Promise<Metadata> {
   const { slug } = await params;

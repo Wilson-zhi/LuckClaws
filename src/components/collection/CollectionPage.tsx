@@ -167,6 +167,15 @@ function productCountLabel(count: number) {
   return `${count} ${count === 1 ? "product" : "products"}`;
 }
 
+function collectionArtWord(slug: string) {
+  if (slug.includes("dog-toys") || slug.includes("cat-toys")) return "PLAY";
+  if (slug.includes("walking")) return "WALK";
+  if (slug.includes("apparel")) return "WEAR";
+  if (slug.includes("bed")) return "REST";
+  if (slug === "sale") return "SAVE";
+  return "SHOP";
+}
+
 export function CollectionPage({ config }: CollectionPageProps) {
   const [selectedCategory, setSelectedCategory] = useState(allFilterValue);
   const [selectedMaterials, setSelectedMaterials] = useState<string[]>([]);
@@ -287,7 +296,7 @@ export function CollectionPage({ config }: CollectionPageProps) {
   return (
     <SiteShell navigationItems={config.headerNavigationItems}>
       <ViewItemListTracker products={filteredProducts} itemListName={itemListName} />
-      <section className="section-shell py-10 md:py-14">
+      <section className="collection-masthead section-shell py-10 md:py-14">
         <nav className="text-sm font-semibold text-on-surface-variant" aria-label="Breadcrumb">
           <Link href="/" className="hover:text-primary">
             Home
@@ -305,8 +314,13 @@ export function CollectionPage({ config }: CollectionPageProps) {
         </nav>
 
         <div className="mt-8 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-          <div>
-            <h1 className="font-heading text-4xl font-extrabold md:text-5xl">{config.title}</h1>
+          <div className="collection-masthead-copy relative isolate min-w-0">
+            <span className="collection-art-word" aria-hidden>
+              {collectionArtWord(config.slug)}
+            </span>
+            <h1 className="collection-title font-heading text-4xl font-extrabold md:text-5xl">
+              {config.title}
+            </h1>
             <p className="mt-4 max-w-3xl text-lg leading-8 text-on-surface-variant">
               {config.description}
             </p>

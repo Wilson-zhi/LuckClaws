@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import "@fontsource-variable/shantell-sans/full.css";
+import "@fontsource-variable/shantell-sans/index.css";
 import "./globals.css";
 import { AnalyticsConsent } from "@/components/analytics/AnalyticsConsent";
 import { NavigationProgress } from "@/components/layout/NavigationProgress";

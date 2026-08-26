@@ -43,7 +43,7 @@ import {
 } from "@/lib/shipping";
 import { formatPrice } from "@/lib/utils";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export async function generateMetadata(): Promise<Metadata> {
   const product = await getPublicProductBySlug(mainProduct.slug);

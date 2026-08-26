@@ -13,6 +13,16 @@ type CompactTrustBarProps = {
   className?: string;
 };
 
+function trustArtWord(key: string) {
+  const normalized = key.toLowerCase();
+
+  if (normalized.includes("ship") || normalized.includes("truck")) return "ship";
+  if (normalized.includes("support") || normalized.includes("damage") || normalized.includes("return")) return "care";
+  if (normalized.includes("secure") || normalized.includes("lock")) return "safe";
+  if (normalized.includes("material") || normalized.includes("heart") || normalized.includes("leaf")) return "kind";
+  return "trust";
+}
+
 export function CompactTrustBar({ items, columns = "balanced", className = "" }: CompactTrustBarProps) {
   const columnClass =
     columns === "wide"
@@ -24,10 +34,13 @@ export function CompactTrustBar({ items, columns = "balanced", className = "" }:
       {items.map(({ key, label, Icon }) => (
         <div
           key={key}
-          className="flex min-h-16 snap-start items-center gap-3 rounded-md border border-[#E8D6BF] bg-white/80 px-4 py-3 text-sm font-semibold leading-5 text-[#5C4834] shadow-soft transition duration-200 hover:-translate-y-0.5 hover:border-primary/50 hover:bg-white hover:shadow-ambient motion-reduce:hover:translate-y-0"
+          className="compact-trust-item relative flex min-h-16 snap-start items-center gap-3 overflow-hidden rounded-md border border-[#E8D6BF] bg-white/80 px-4 py-3 text-sm font-semibold leading-5 text-[#5C4834] shadow-soft transition duration-200 hover:-translate-y-0.5 hover:border-primary/50 hover:bg-white hover:shadow-ambient motion-reduce:hover:translate-y-0"
         >
           <Icon aria-hidden className="h-5 w-5 shrink-0 text-primary" />
           <span className="min-w-0 leading-5">{label}</span>
+          <span className="lc-hand-note compact-trust-word" aria-hidden>
+            {trustArtWord(key)}
+          </span>
         </div>
       ))}
     </div>

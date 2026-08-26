@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, PawPrint, Plus, Star } from "lucide-react";
+import { useState } from "react";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
 import { WishlistButton } from "@/components/wishlist/WishlistButton";
 import { type Product } from "@/data/products";
@@ -120,10 +121,22 @@ export function ProductCard({
   const secondaryImageSrc = productCardSecondaryImage(product, imageSrc);
   const routineNote = productRoutineNote(product);
   const routineWord = productRoutineWord(product);
+  const [secondaryRequested, setSecondaryRequested] = useState(false);
+  const [secondaryLoaded, setSecondaryLoaded] = useState(false);
+  const secondaryPreviewReady = Boolean(secondaryImageSrc && secondaryLoaded);
+  const requestSecondaryPreview = () => {
+    if (secondaryImageSrc && !secondaryRequested) {
+      setSecondaryRequested(true);
+    }
+  };
 
   if (featured) {
     return (
-      <article className="group overflow-hidden rounded-lg bg-surface-container-lowest shadow-ambient transition duration-300 hover:-translate-y-1 hover:shadow-lift focus-within:shadow-lift motion-reduce:hover:translate-y-0">
+      <article
+        className="group overflow-hidden rounded-lg bg-surface-container-lowest shadow-ambient transition duration-300 hover:-translate-y-1 hover:shadow-lift focus-within:shadow-lift motion-reduce:hover:translate-y-0"
+        onMouseEnter={requestSecondaryPreview}
+        onFocusCapture={requestSecondaryPreview}
+      >
         <div className="relative">
           <Link
             href={href}
@@ -141,21 +154,24 @@ export function ProductCard({
               fill
               loading={priority ? undefined : "lazy"}
               priority={priority}
+              quality={75}
               sizes="(min-width: 1024px) 520px, 100vw"
               className={cn(
                 "product-card-primary-image object-cover transition duration-500",
-                secondaryImageSrc ? "has-secondary" : "group-hover:scale-[1.06]"
+                secondaryPreviewReady ? "has-secondary" : "group-hover:scale-[1.06]"
               )}
             />
-            {secondaryImageSrc ? (
+            {secondaryImageSrc && secondaryRequested ? (
               <Image
                 src={secondaryImageSrc}
                 alt=""
                 fill
                 loading="lazy"
+                quality={75}
                 sizes="(min-width: 1024px) 520px, 100vw"
                 className="product-card-secondary-image object-cover"
                 aria-hidden="true"
+                onLoad={() => setSecondaryLoaded(true)}
               />
             ) : null}
             <span className="product-card-routine-word is-featured" aria-hidden="true">
@@ -215,6 +231,8 @@ export function ProductCard({
         "group flex h-full min-w-0 flex-col overflow-hidden rounded-lg border border-outline-variant/60 bg-surface-container-lowest shadow-ambient transition duration-300 hover:-translate-y-1.5 hover:border-primary/45 hover:shadow-[0_22px_58px_rgba(25,28,30,0.12)] focus-within:shadow-lift motion-reduce:hover:translate-y-0",
         compact && "rounded-md"
       )}
+      onMouseEnter={requestSecondaryPreview}
+      onFocusCapture={requestSecondaryPreview}
     >
       <div className="relative">
         <Link
@@ -236,21 +254,24 @@ export function ProductCard({
             fill
             loading={priority ? undefined : "lazy"}
             priority={priority}
+            quality={70}
             sizes="(min-width: 1024px) 280px, 45vw"
             className={cn(
               "product-card-primary-image object-cover transition duration-500 motion-reduce:transition-none motion-reduce:group-hover:scale-100",
-              secondaryImageSrc ? "has-secondary" : "group-hover:scale-[1.055]"
+              secondaryPreviewReady ? "has-secondary" : "group-hover:scale-[1.055]"
             )}
           />
-          {secondaryImageSrc ? (
+          {secondaryImageSrc && secondaryRequested ? (
             <Image
               src={secondaryImageSrc}
               alt=""
               fill
               loading="lazy"
+              quality={70}
               sizes="(min-width: 1024px) 280px, 45vw"
               className="product-card-secondary-image object-cover"
               aria-hidden="true"
+              onLoad={() => setSecondaryLoaded(true)}
             />
           ) : null}
           <span className="product-card-routine-word" aria-hidden="true">
@@ -276,9 +297,14 @@ export function ProductCard({
             compact && "md:grid-rows-[1rem_3rem_1.25rem]"
           )}
         >
-          <p className="truncate text-[11px] font-bold uppercase tracking-widest text-primary/90">
-            {product.category}
-          </p>
+          <div className="flex min-w-0 items-center gap-2 overflow-hidden">
+            <p className="product-card-kicker truncate text-[11px] font-bold uppercase text-primary/90">
+              {product.category}
+            </p>
+            <span className="lc-hand-note product-card-path-label shrink-0 text-[11px] text-[#A36A0A]" aria-hidden>
+              {routineWord.toLowerCase()}
+            </span>
+          </div>
           <Link
             href={href}
             className={cn(
@@ -308,7 +334,7 @@ export function ProductCard({
           )}
         >
           <div className="flex min-w-0 items-baseline gap-2 overflow-hidden tabular-nums">
-            <p className="whitespace-nowrap font-semibold text-on-surface">{formatPrice(product.price)}</p>
+            <p className="product-card-price whitespace-nowrap text-on-surface">{formatPrice(product.price)}</p>
             {product.regularPrice && (
               <p className="truncate whitespace-nowrap text-sm text-on-surface-variant line-through">
                 {formatPrice(product.regularPrice)}
@@ -322,7 +348,7 @@ export function ProductCard({
         <Link
           href={href}
           className={cn(
-            "mt-4 inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wide text-primary transition hover:translate-x-0.5 hover:text-[#5B3300] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:hover:translate-x-0",
+            "product-card-detail-link mt-4 inline-flex items-center gap-1 text-xs font-bold uppercase text-primary transition hover:translate-x-0.5 hover:text-[#5B3300] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:hover:translate-x-0",
             compact && "mt-3"
           )}
           onClick={() => trackSelectItem(product, itemListName)}

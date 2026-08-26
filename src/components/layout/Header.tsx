@@ -3,7 +3,7 @@
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
-import { Heart, Menu, Search, ShoppingBag, User, X } from "lucide-react";
+import { Heart, Menu, PawPrint, Search, ShoppingBag, User, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { topLevelNavigation, type NavigationItem } from "@/data/navigation";
 import { brandName } from "@/data/products";
@@ -223,13 +223,14 @@ export function Header({ initialNavigationItems }: { initialNavigationItems?: Na
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-[#E8D6BF] bg-[#FFF9EF]/95 shadow-[0_8px_28px_rgba(68,43,20,0.04)] backdrop-blur">
+      <header className="sticky top-0 z-40 border-b border-[#E8D6BF] bg-[#FFF9EF]/98 shadow-[0_8px_28px_rgba(68,43,20,0.04)]">
         <div className="section-shell hidden h-[74px] items-center gap-6 xl:flex">
           <Link
             href="/"
-            className="shrink-0 rounded-full border border-[#E5C99F] bg-white/70 px-4 py-2 font-heading text-xl font-extrabold tracking-tight text-[#6F4300] shadow-soft transition hover:-translate-y-0.5 hover:border-primary hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:hover:translate-y-0"
+            className="site-brand-mark inline-flex shrink-0 items-center gap-2 rounded-full border border-[#E5C99F] bg-white/70 px-4 py-2 font-heading text-xl font-extrabold text-[#6F4300] shadow-soft transition hover:-translate-y-0.5 hover:border-primary hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:hover:translate-y-0"
           >
-            {brandName}
+            <PawPrint aria-hidden className="h-4 w-4" />
+            <span>{brandName}</span>
           </Link>
           <nav className="min-w-0 flex-1" aria-label="Primary navigation">
             <ul className="flex items-center justify-center gap-1.5 text-sm font-semibold text-[#5C4834]">
@@ -238,7 +239,7 @@ export function Header({ initialNavigationItems }: { initialNavigationItems?: Na
                   <Link
                     href={item.href}
                     className={cn(
-                      "rounded-full px-3 py-2 whitespace-nowrap transition duration-200 hover:bg-white hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
+                      "site-nav-link rounded-full px-3 py-2 whitespace-nowrap transition duration-200 hover:bg-white hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
                       pathname === item.href && "bg-[#F4D7A5] text-[#5B3300] shadow-soft",
                       item.sale && "text-error hover:bg-[#FFF1EA]"
                     )}

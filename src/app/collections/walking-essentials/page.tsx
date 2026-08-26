@@ -3,7 +3,7 @@ import { CollectionPage } from "@/components/collection/CollectionPage";
 import { getPublicCollectionConfigForSlug } from "@/lib/public-product-data";
 import { createSeoMetadata } from "@/lib/seo";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export async function generateMetadata(): Promise<Metadata> {
   const config = await getPublicCollectionConfigForSlug("walking-essentials", "walkingEssentials");
