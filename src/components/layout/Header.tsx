@@ -224,7 +224,7 @@ export function Header({ initialNavigationItems }: { initialNavigationItems?: Na
   return (
     <>
       <header className="sticky top-0 z-40 border-b border-[#E8D6BF] bg-[#FFF9EF]/98 shadow-[0_8px_28px_rgba(68,43,20,0.04)]">
-        <div className="section-shell hidden h-[74px] items-center gap-6 xl:flex">
+        <div className="section-shell hidden h-[78px] items-center gap-5 xl:flex">
           <Link
             href="/"
             className="site-brand-mark inline-flex shrink-0 items-center gap-2 rounded-full border border-[#E5C99F] bg-white/70 px-4 py-2 font-heading text-xl font-extrabold text-[#6F4300] shadow-soft transition hover:-translate-y-0.5 hover:border-primary hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:hover:translate-y-0"
@@ -233,14 +233,14 @@ export function Header({ initialNavigationItems }: { initialNavigationItems?: Na
             <span>{brandName}</span>
           </Link>
           <nav className="min-w-0 flex-1" aria-label="Primary navigation">
-            <ul className="flex items-center justify-center gap-1.5 text-sm font-semibold text-[#5C4834]">
+            <ul className="flex items-center justify-center gap-0.5 text-[15px] font-bold text-[#4F3926] 2xl:gap-1 2xl:text-base">
               {navigationItems.map((item) => (
                 <li key={item.label}>
                   <Link
                     href={item.href}
                     className={cn(
-                      "site-nav-link rounded-full px-3 py-2 whitespace-nowrap transition duration-200 hover:bg-white hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
-                      pathname === item.href && "bg-[#F4D7A5] text-[#5B3300] shadow-soft",
+                      "site-nav-link rounded-full px-3 py-2.5 whitespace-nowrap transition duration-200 hover:bg-white hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
+                      pathname === item.href && "is-active bg-[#F4D7A5] text-[#5B3300] shadow-soft",
                       item.sale && "text-error hover:bg-[#FFF1EA]"
                     )}
                   >

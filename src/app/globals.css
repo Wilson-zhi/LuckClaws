@@ -163,7 +163,38 @@ img {
 
 .site-nav-link {
   position: relative;
-  letter-spacing: -0.01em;
+  display: inline-flex;
+  min-height: 2.625rem;
+  align-items: center;
+  font-family: var(--font-heading), "Segoe UI", sans-serif;
+  font-weight: 750;
+  line-height: 1;
+  letter-spacing: 0;
+  text-rendering: optimizeLegibility;
+}
+
+.site-nav-link::after {
+  position: absolute;
+  right: 0.85rem;
+  bottom: 0.34rem;
+  left: 0.85rem;
+  height: 2px;
+  border-radius: 999px;
+  background: currentColor;
+  content: "";
+  opacity: 0.42;
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.site-nav-link:hover::after,
+.site-nav-link:focus-visible::after {
+  transform: scaleX(1);
+}
+
+.site-nav-link.is-active::after {
+  transform: scaleX(0.42);
 }
 
 .collection-masthead {
@@ -1623,6 +1654,7 @@ img {
 
   .home-hero-art-note,
   .home-hero-paw,
+  .site-nav-link::after,
   .advisor-tab::after,
   .advisor-recommendation-enter,
   .lookbook-card .lookbook-path,
