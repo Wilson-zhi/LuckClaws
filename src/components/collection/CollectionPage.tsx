@@ -343,7 +343,7 @@ export function CollectionPage({ config }: CollectionPageProps) {
         </div>
       </section>
 
-      <section className="bg-surface-container-low py-4">
+      <section className="storefront-trust-band py-5">
         <CompactTrustBar items={trustItems} columns="wide" className="section-shell" />
       </section>
 
