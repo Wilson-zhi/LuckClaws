@@ -257,6 +257,7 @@ export function AboutJourneyExperience({
   const [activeRoutineKey, setActiveRoutineKey] = useState(routines[0]?.routeKey ?? "play");
   const [activePromiseIndex, setActivePromiseIndex] = useState(0);
   const [activeCollectionKey, setActiveCollectionKey] = useState(availableCollections[0]?.cardKey ?? "");
+  const journeyRef = useRef<HTMLElement | null>(null);
   const touchStartX = useRef<number | null>(null);
   const touchCanChangeChapter = useRef(true);
 
@@ -281,6 +282,15 @@ export function AboutJourneyExperience({
 
     if (typeof window !== "undefined") {
       window.history.replaceState(null, "", `#about-${journeySteps[boundedIndex].key}`);
+
+      const journeyTop = journeyRef.current?.getBoundingClientRect().top;
+      if (typeof journeyTop === "number") {
+        const headerHeight = document.querySelector("header")?.getBoundingClientRect().height ?? 0;
+        window.scrollTo({
+          top: Math.max(0, journeyTop + window.scrollY - headerHeight),
+          behavior: "auto"
+        });
+      }
     }
   }
 
@@ -347,6 +357,7 @@ export function AboutJourneyExperience({
 
   return (
     <section
+      ref={journeyRef}
       className="about-journey"
       aria-label="About LUCK CLAWS interactive story"
       onTouchStart={handleTouchStart}
@@ -694,7 +705,7 @@ export function AboutJourneyExperience({
           <span>Previous</span>
         </button>
         <div className="about-journey-progress" aria-hidden="true">
-          <span style={{ width: `${progress}%` }} />
+          <span style={{ transform: `scaleX(${progress / 100})` }} />
         </div>
         <button
           type="button"
