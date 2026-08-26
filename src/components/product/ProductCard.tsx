@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Plus, Star } from "lucide-react";
+import { ArrowRight, PawPrint, Plus, Star } from "lucide-react";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
 import { WishlistButton } from "@/components/wishlist/WishlistButton";
 import { type Product } from "@/data/products";
@@ -14,6 +14,7 @@ type ProductCardProps = {
   product: Product;
   featured?: boolean;
   compact?: boolean;
+  priority?: boolean;
   itemListName?: string;
   badgeLabel?: string;
 };
@@ -59,16 +60,66 @@ function productCardImage(product: Product) {
   return image;
 }
 
+function productCardSecondaryImage(product: Product, primaryImage: string) {
+  return product.gallery
+    ?.map((image) => image.trim())
+    .find((image) => {
+      const normalized = image.toLowerCase();
+
+      return image && image !== primaryImage && !normalized.includes("icon") && !normalized.includes("logo");
+    });
+}
+
+function productRoutineNote(product: Product) {
+  switch (product.category) {
+    case "Dog Toys":
+    case "Cat Toys":
+      return "picked for play days";
+    case "Walking Essentials":
+      return "ready for walk time";
+    case "Beds & Blankets":
+      return "made for slower moments";
+    case "Pet Apparel":
+      return "everyday comfort, considered";
+    default:
+      return "a useful everyday pick";
+  }
+}
+
+function productRoutineWord(product: Product) {
+  switch (product.category) {
+    case "Dog Toys":
+    case "Cat Toys":
+      return "PLAY";
+    case "Walking Essentials":
+      return "WALK";
+    case "Beds & Blankets":
+      return "REST";
+    case "Pet Apparel":
+      return "WEAR";
+    case "Dog Treats":
+      return "TREAT";
+    case "Dining":
+      return "DINE";
+    default:
+      return "PICK";
+  }
+}
+
 export function ProductCard({
   product,
   featured = false,
   compact = false,
+  priority = false,
   itemListName,
   badgeLabel
 }: ProductCardProps) {
   const href = getProductPath(product);
   const displayBadge = badgeLabel ?? product.badge;
   const imageSrc = productCardImage(product);
+  const secondaryImageSrc = productCardSecondaryImage(product, imageSrc);
+  const routineNote = productRoutineNote(product);
+  const routineWord = productRoutineWord(product);
 
   if (featured) {
     return (
@@ -88,10 +139,32 @@ export function ProductCard({
               src={imageSrc}
               alt={product.alt}
               fill
-              loading="lazy"
+              loading={priority ? undefined : "lazy"}
+              priority={priority}
               sizes="(min-width: 1024px) 520px, 100vw"
-              className="object-cover transition duration-500 group-hover:scale-[1.06]"
+              className={cn(
+                "product-card-primary-image object-cover transition duration-500",
+                secondaryImageSrc ? "has-secondary" : "group-hover:scale-[1.06]"
+              )}
             />
+            {secondaryImageSrc ? (
+              <Image
+                src={secondaryImageSrc}
+                alt=""
+                fill
+                loading="lazy"
+                sizes="(min-width: 1024px) 520px, 100vw"
+                className="product-card-secondary-image object-cover"
+                aria-hidden="true"
+              />
+            ) : null}
+            <span className="product-card-routine-word is-featured" aria-hidden="true">
+              {routineWord}
+            </span>
+            <span className="product-card-note lc-hand-note absolute bottom-4 left-4 z-10 inline-flex items-center gap-1.5 rounded-full bg-[#2C1A0D]/90 px-3 py-1.5 text-xs text-[#FFD894] shadow-soft">
+              <PawPrint aria-hidden className="h-3.5 w-3.5" />
+              {routineNote}
+            </span>
           </Link>
           <WishlistButton
             productId={product.id}
@@ -161,10 +234,33 @@ export function ProductCard({
             src={imageSrc}
             alt={product.alt}
             fill
-            loading="lazy"
+            loading={priority ? undefined : "lazy"}
+            priority={priority}
             sizes="(min-width: 1024px) 280px, 45vw"
-            className="object-cover transition duration-500 group-hover:scale-[1.055]"
+            className={cn(
+              "product-card-primary-image object-cover transition duration-500 motion-reduce:transition-none motion-reduce:group-hover:scale-100",
+              secondaryImageSrc ? "has-secondary" : "group-hover:scale-[1.055]"
+            )}
           />
+          {secondaryImageSrc ? (
+            <Image
+              src={secondaryImageSrc}
+              alt=""
+              fill
+              loading="lazy"
+              sizes="(min-width: 1024px) 280px, 45vw"
+              className="product-card-secondary-image object-cover"
+              aria-hidden="true"
+            />
+          ) : null}
+          <span className="product-card-routine-word" aria-hidden="true">
+            {routineWord}
+          </span>
+          <span className="product-card-note lc-hand-note absolute bottom-3 left-3 z-10 inline-flex max-w-[calc(100%_-_1.5rem)] items-center gap-1.5 rounded-full bg-[#2C1A0D]/90 px-2.5 py-1 text-[11px] text-[#FFD894] shadow-soft">
+            <PawPrint aria-hidden className="h-3 w-3 shrink-0" />
+            <span className="truncate">{routineNote}</span>
+          </span>
+          <span className="product-card-trace absolute inset-x-0 bottom-0 z-10 h-1 bg-primary-container" aria-hidden />
         </Link>
         <WishlistButton
           productId={product.id}
@@ -191,7 +287,7 @@ export function ProductCard({
             )}
             onClick={() => trackSelectItem(product, itemListName)}
           >
-            {product.name}
+            <span className="lc-product-title">{product.name}</span>
           </Link>
           <div className="flex min-h-5 items-center">
             {product.rating ? (

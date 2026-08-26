@@ -7,11 +7,16 @@ import { cn } from "@/lib/utils";
 import { useWishlistStore } from "@/store/wishlist-store";
 
 export const WISHLIST_FEEDBACK_EVENT = "luck-claws:wishlist-feedback";
+export type WishlistFeedbackAction = "saved" | "removed" | "error";
 
-function announceWishlistFeedback(message: string, tone: "success" | "error" = "success") {
+function announceWishlistFeedback(
+  message: string,
+  action: WishlistFeedbackAction,
+  tone: "success" | "error" = "success"
+) {
   window.dispatchEvent(
     new CustomEvent(WISHLIST_FEEDBACK_EVENT, {
-      detail: { message, tone }
+      detail: { message, tone, action }
     })
   );
 }
@@ -44,7 +49,8 @@ export function WishlistButton({
     const nextSaved = !saved;
     toggleProduct(productId);
     announceWishlistFeedback(
-      nextSaved ? `${productName} saved to your wishlist.` : `${productName} removed from your wishlist.`
+      nextSaved ? `${productName} saved to your wishlist.` : `${productName} removed from your wishlist.`,
+      nextSaved ? "saved" : "removed"
     );
 
     const supabase = getSupabaseBrowserClient();
@@ -82,6 +88,7 @@ export function WishlistButton({
 
       announceWishlistFeedback(
         "Saved on this device, but account sync is temporarily unavailable.",
+        "error",
         "error"
       );
     }

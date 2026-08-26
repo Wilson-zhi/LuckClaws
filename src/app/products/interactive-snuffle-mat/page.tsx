@@ -1,24 +1,26 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   CheckCircle2,
   Heart,
-  ListChecks,
-  Mail,
   Package,
   ShieldCheck,
   Truck
 } from "lucide-react";
-import { AddBundleButton } from "@/components/cart/AddBundleButton";
 import { ViewItemListTracker, ViewItemTracker } from "@/components/analytics/EcommerceEventTrackers";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
 import { ProductAccordion } from "@/components/product/ProductAccordion";
 import { ProductBenefits } from "@/components/product/ProductBenefits";
-import { ProductCard } from "@/components/product/ProductCard";
+import { ProductBundleBuilder } from "@/components/product/ProductBundleBuilder";
+import { ProductChapterNav } from "@/components/product/ProductChapterNav";
+import { ProductDeliveryRoute } from "@/components/product/ProductDeliveryRoute";
+import { ProductFieldNotes } from "@/components/product/ProductFieldNotes";
 import { ProductGallery } from "@/components/product/ProductGallery";
 import { ProductPurchasePanel } from "@/components/product/ProductPurchasePanel";
+import { ProductRecommendationRail } from "@/components/product/ProductRecommendationRail";
+import { ProductRoutineGuide } from "@/components/product/ProductRoutineGuide";
+import { ProductUseRitual } from "@/components/product/ProductUseRitual";
 import { CompactTrustBar, type CompactTrustItem } from "@/components/sections/CompactTrustBar";
 import { SiteShell } from "@/components/layout/SiteShell";
 import {
@@ -32,7 +34,6 @@ import {
   getPublicProducts,
   pickPublicProductsByStaticProducts
 } from "@/lib/public-product-data";
-import { getProductPath } from "@/lib/product-links";
 import { createProductJsonLd, createProductMetadata } from "@/lib/product-seo";
 import {
   freeShippingLabel,
@@ -198,8 +199,6 @@ export default async function ProductPage() {
   const bestForItems = product.bestFor?.length ? product.bestFor : bestFor;
   const careInstructionItems = product.careInstructions?.length ? product.careInstructions : careInstructions;
   const faqItems = product.productFaqs?.length ? product.productFaqs : productFaqs;
-  const galleryImages = product.gallery?.length ? product.gallery : [product.image];
-
   return (
     <SiteShell>
       <ViewItemTracker product={product} />
@@ -208,7 +207,7 @@ export default async function ProductPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      <section className="section-shell py-8 md:py-14">
+      <section id="product-overview" className="section-shell scroll-mt-20 py-8 md:scroll-mt-[156px] md:py-14 xl:scroll-mt-[166px]">
         <nav className="mb-6 text-sm text-on-surface-variant" aria-label="Breadcrumb">
           <Link href="/" className="hover:text-primary">
             Home
@@ -236,183 +235,48 @@ export default async function ProductPage() {
             <CompactTrustBar items={trustItems} className="mt-7" />
 
             <div className="mt-7">
-              <ProductAccordion items={accordions} />
+              <ProductAccordion
+                items={accordions}
+                defaultOpenIndex={0}
+                note="the useful bits, right where you need them"
+              />
             </div>
           </div>
         </div>
       </section>
+
+      <ProductChapterNav pairTargetId="product-pairings" />
+
+      <ProductRoutineGuide
+        productName={product.name}
+        benefits={product.benefits ?? product.productHighlights?.map((highlight) => highlight.text) ?? []}
+        bestFor={bestForItems}
+        careInstructions={careInstructionItems}
+      />
 
       <ProductBenefits product={product} />
 
-      <section className="section-shell py-14 md:py-20">
-        <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-          <div className="ambient-card p-6 md:p-8">
-            <div className="flex items-center gap-3">
-              <span className="grid h-11 w-11 place-items-center rounded-full bg-primary-container/20 text-primary">
-                <ListChecks aria-hidden className="h-5 w-5" />
-              </span>
-              <h2 className="font-heading text-2xl font-bold">Details at a Glance</h2>
-            </div>
-            <dl className="mt-6 divide-y divide-outline-variant/70">
-              {productSpecs.map(([label, value]) => (
-                <div key={label} className="grid gap-1 py-3 text-sm sm:grid-cols-[160px_1fr] sm:gap-5">
-                  <dt className="font-semibold text-on-surface">{label}</dt>
-                  <dd className="text-on-surface-variant">{value}</dd>
-                </div>
-              ))}
-            </dl>
-          </div>
+      <ProductUseRitual
+        productName={product.name}
+        productType={product.productType}
+        bestFor={bestForItems}
+        careInstructions={careInstructionItems}
+        safetyNotice={product.safetyNotice}
+      />
 
-          <div className="grid gap-6">
-            <div className="ambient-card p-6 md:p-8">
-              <h2 className="font-heading text-2xl font-bold">Best For</h2>
-              <div className="mt-5 grid gap-6 sm:grid-cols-2">
-                <div>
-                  <p className="text-sm font-bold uppercase tracking-wide text-primary">Best for</p>
-                  <ul className="mt-3 space-y-3 text-sm text-on-surface-variant">
-                    {bestForItems.map((item) => (
-                      <li key={item} className="flex gap-2">
-                        <CheckCircle2 aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div>
-                  <p className="text-sm font-bold uppercase tracking-wide text-on-surface-variant">
-                    Not ideal for
-                  </p>
-                  <ul className="mt-3 space-y-3 text-sm text-on-surface-variant">
-                    {notIdealFor.map((item) => (
-                      <li key={item} className="flex gap-2">
-                        <CheckCircle2 aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </div>
+      <ProductFieldNotes
+        productName={product.name}
+        details={productSpecs}
+        bestFor={bestForItems}
+        careInstructions={careInstructionItems}
+        cautionItems={notIdealFor}
+      />
 
-            <div className="ambient-card p-6 md:p-8">
-              <h2 className="font-heading text-2xl font-bold">Care Instructions</h2>
-              <ul className="mt-5 grid gap-3 text-sm text-on-surface-variant sm:grid-cols-2">
-                {careInstructionItems.map((item) => (
-                  <li key={item} className="flex gap-2">
-                    <CheckCircle2 aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
+      <ProductDeliveryRoute shippingItems={shippingReturns} faqItems={faqItems} />
 
-      <section className="section-shell pb-14 md:pb-20">
-        <div className="grid gap-6 lg:grid-cols-[0.85fr_1.15fr]">
-          <div className="ambient-card p-6 md:p-8">
-            <h2 className="font-heading text-2xl font-bold">Shipping & Returns</h2>
-            <ul className="mt-5 space-y-3 text-sm text-on-surface-variant">
-              {shippingReturns.map((item) => (
-                <li key={item} className="flex gap-2">
-                  <CheckCircle2 aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-            <p className="mt-5 flex gap-2 text-sm leading-6 text-on-surface-variant">
-              <Mail aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-              <span>
-                Contact{" "}
-                <a href="mailto:support@luckclaws.com" className="font-semibold text-primary underline underline-offset-4">
-                  support@luckclaws.com
-                </a>{" "}
-                for order help.
-              </span>
-            </p>
-          </div>
+      <ProductBundleBuilder products={bundleProducts} />
 
-          <div className="ambient-card p-6 md:p-8">
-            <h2 className="font-heading text-2xl font-bold">Product Questions</h2>
-            <div className="mt-4">
-              <ProductAccordion items={faqItems} />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="section-shell py-14 md:py-20">
-        <h2 className="font-heading text-2xl font-bold">Frequently Bought Together</h2>
-        <div className="mt-6 rounded-lg bg-surface-container-lowest p-6 shadow-ambient">
-          <div className="grid gap-6 md:grid-cols-[1fr_auto_1fr_auto_1fr_1.4fr] md:items-center">
-            {bundleProducts.map((bundleProduct, index) => (
-              <div key={bundleProduct.id} className="flex items-center gap-4 md:block md:text-center">
-                {index > 0 && <span className="hidden text-2xl text-on-surface-variant md:block">+</span>}
-                <Link
-                  href={getProductPath(bundleProduct)}
-                  className="relative h-20 w-20 shrink-0 overflow-hidden rounded-md bg-surface-container md:mx-auto md:block md:h-28 md:w-28"
-                  aria-label={`View ${bundleProduct.name}`}
-                >
-                  <Image src={bundleProduct.image} alt={bundleProduct.alt} fill sizes="112px" className="object-cover" />
-                </Link>
-                <div className="mt-2">
-                  <Link href={getProductPath(bundleProduct)} className="text-sm font-semibold hover:text-primary">
-                    {index === 0 ? "This item" : bundleProduct.name}
-                  </Link>
-                  <p className="text-sm text-primary">{formatPrice(bundleProduct.price)}</p>
-                </div>
-              </div>
-            ))}
-            <div className="md:col-start-6">
-              <p className="text-sm font-semibold">Total Price:</p>
-              <p className="font-heading text-xl font-bold">
-                {formatPrice(bundleProducts.reduce((sum, item) => sum + item.price, 0))}
-              </p>
-              <AddBundleButton
-                products={bundleProducts}
-                className="mt-4 w-full"
-              >
-                Add All {bundleProducts.length} to Cart
-              </AddBundleButton>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="gallery" className="section-shell pb-14 md:pb-20">
-        <div className="mb-6 flex items-center justify-between gap-4">
-          <div>
-            <h2 className="font-heading text-2xl font-bold">Product Gallery</h2>
-            <p className="mt-1 text-sm text-on-surface-variant">Additional views of the Interactive Snuffle Mat.</p>
-          </div>
-        </div>
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-          {galleryImages.map((image, index) => (
-            <div key={image} className="relative aspect-square overflow-hidden rounded-md bg-surface-container shadow-soft">
-              <Image
-                src={image}
-                alt={`LUCK CLAWS ${product.name} gallery image ${index + 1}`}
-                fill
-                sizes="(min-width: 1024px) 300px, 50vw"
-                className="object-cover"
-              />
-              <span className="absolute bottom-3 left-3 rounded-full bg-white px-2 py-1 text-xs font-bold text-primary">
-                &#9733; {index === 2 ? "4.8" : "5.0"}
-              </span>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="section-shell pb-28 md:pb-20">
-        <h2 className="font-heading text-2xl font-bold">You Might Also Like</h2>
-        <div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
-          {recommendedCatalogProducts.map((recommendedProduct) => (
-            <ProductCard key={recommendedProduct.id} product={recommendedProduct} />
-          ))}
-        </div>
-      </section>
+      <ProductRecommendationRail products={recommendedCatalogProducts} itemListName="You Might Also Like" />
 
       <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-outline-variant bg-surface-container-lowest p-3 shadow-lift md:hidden">
         <div className="mx-auto flex max-w-screen-sm items-center gap-3">

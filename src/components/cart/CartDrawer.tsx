@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
-import { Lock, Mail, RotateCcw, ShieldCheck, ShoppingBag, Truck, X } from "lucide-react";
+import { CheckCircle2, Lock, Mail, RotateCcw, ShieldCheck, ShoppingBag, Truck, X } from "lucide-react";
 import { CartAddOnCard } from "@/components/cart/CartAddOnCard";
 import { FreeShippingBar } from "@/components/cart/FreeShippingBar";
 import { QuantitySelector } from "@/components/cart/QuantitySelector";
@@ -16,9 +16,14 @@ import { getCartTotals, productById, useCartStore } from "@/store/cart-store";
 type CartDrawerProps = {
   open: boolean;
   onClose: () => void;
+  recentlyAdded?: {
+    productName: string;
+    quantity: number;
+    token: number;
+  } | null;
 };
 
-export function CartDrawer({ open, onClose }: CartDrawerProps) {
+export function CartDrawer({ open, onClose, recentlyAdded = null }: CartDrawerProps) {
   const drawerRef = useRef<HTMLElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
@@ -104,7 +109,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
     <div className="fixed inset-0 z-50 transition">
       <button
         type="button"
-        className="absolute inset-0 bg-on-surface/25 backdrop-blur-sm"
+        className="cart-drawer-backdrop absolute inset-0 bg-on-surface/25 backdrop-blur-sm"
         onClick={onClose}
         aria-label="Close cart drawer"
         tabIndex={-1}
@@ -115,7 +120,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
         aria-modal="true"
         aria-labelledby="cart-drawer-title"
         tabIndex={-1}
-        className="absolute right-0 top-0 flex h-full w-full max-w-[520px] translate-x-0 flex-col bg-surface-container-lowest shadow-lift transition-transform duration-300"
+        className="cart-drawer-panel absolute right-0 top-0 flex h-full w-full max-w-[520px] translate-x-0 flex-col bg-surface-container-lowest shadow-lift"
       >
         <div className="flex items-center justify-between border-b border-outline-variant/60 px-6 py-5">
           <div>
@@ -132,6 +137,33 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
             <X aria-hidden className="h-6 w-6" />
           </button>
         </div>
+
+        {recentlyAdded && hasItems ? (
+          <div
+            key={recentlyAdded.token}
+            className="cart-added-ticket relative isolate overflow-hidden border-b border-[#587060] bg-[#2F493D] px-6 py-4 text-white"
+            role="status"
+            aria-live="polite"
+          >
+            <span className="cart-added-word" aria-hidden="true">ADDED</span>
+            <div className="relative z-10 flex items-center gap-3">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#FFD78D] text-[#2C1A0D] shadow-soft">
+                <CheckCircle2 aria-hidden className="h-5 w-5" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#FFD78D]">
+                  Added to your routine
+                </p>
+                <p className="mt-1 truncate font-heading text-base font-extrabold text-white">
+                  {recentlyAdded.productName}
+                </p>
+              </div>
+              <p className="shrink-0 text-xs font-bold tabular-nums text-[#FFD78D]">
+                {recentlyAdded.quantity} {recentlyAdded.quantity === 1 ? "item" : "items"}
+              </p>
+            </div>
+          </div>
+        ) : null}
 
         <div className="flex-1 overflow-y-auto px-6 py-6">
           {hasItems ? (

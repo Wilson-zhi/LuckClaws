@@ -393,6 +393,7 @@ export function CollectionPage({ config }: CollectionPageProps) {
                   <ProductCard
                     product={featuredProduct}
                     featured
+                    priority
                     itemListName={itemListName}
                     badgeLabel={config.featuredLabel}
                   />
@@ -402,8 +403,13 @@ export function CollectionPage({ config }: CollectionPageProps) {
               {gridProducts.length > 0 && (
                 <>
                   <div className="grid auto-rows-fr grid-cols-2 items-stretch gap-5 md:grid-cols-3 xl:grid-cols-4 xl:gap-6">
-                    {visibleGridProducts.map((product) => (
-                      <ProductCard key={product.id} product={product} itemListName={itemListName} />
+                    {visibleGridProducts.map((product, index) => (
+                      <ProductCard
+                        key={product.id}
+                        product={product}
+                        priority={!featuredProduct && index === 0}
+                        itemListName={itemListName}
+                      />
                     ))}
                   </div>
                   {remainingProductCount > 0 && (

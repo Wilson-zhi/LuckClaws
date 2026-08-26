@@ -23,12 +23,19 @@ type PublicCategoryNavRow = {
   slug: string | null;
 };
 
+type RecentlyAddedItem = {
+  productName: string;
+  quantity: number;
+  token: number;
+};
+
 let cachedPublicNavigationItems: NavigationItem[] | null = null;
 let publicNavigationRequest: Promise<NavigationItem[] | null> | null = null;
 
 export function Header({ initialNavigationItems }: { initialNavigationItems?: NavigationItem[] }) {
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [recentlyAdded, setRecentlyAdded] = useState<RecentlyAddedItem | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountHref, setAccountHref] = useState("/account/login");
   const fallbackNavigationItems = useMemo(
@@ -43,7 +50,12 @@ export function Header({ initialNavigationItems }: { initialNavigationItems?: Na
   const totals = getCartTotals(items);
 
   useEffect(() => {
-    const openCartDrawer = () => {
+    const openCartDrawer = (event: Event) => {
+      const detail = (event as CustomEvent<Partial<RecentlyAddedItem>>).detail;
+      const productName = typeof detail?.productName === "string" ? detail.productName.trim() : "";
+      const quantity = typeof detail?.quantity === "number" && detail.quantity > 0 ? Math.floor(detail.quantity) : 1;
+
+      setRecentlyAdded(productName ? { productName, quantity, token: Date.now() } : null);
       trackViewCart(useCartStore.getState().items);
       setDrawerOpen(true);
     };
@@ -264,6 +276,7 @@ export function Header({ initialNavigationItems }: { initialNavigationItems?: Na
               type="button"
               className="relative grid h-11 w-11 place-items-center rounded-full border border-transparent transition hover:-translate-y-0.5 hover:border-[#E5C99F] hover:bg-white hover:text-[#3B2512] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:hover:translate-y-0"
               onClick={() => {
+                setRecentlyAdded(null);
                 trackViewCart(items);
                 setDrawerOpen(true);
               }}
@@ -302,6 +315,7 @@ export function Header({ initialNavigationItems }: { initialNavigationItems?: Na
             type="button"
             className="relative grid h-11 w-11 place-items-center rounded-full border border-[#E8D6BF] bg-white/70 text-primary transition hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             onClick={() => {
+              setRecentlyAdded(null);
               trackViewCart(items);
               setDrawerOpen(true);
             }}
@@ -373,7 +387,7 @@ export function Header({ initialNavigationItems }: { initialNavigationItems?: Na
           </nav>
         )}
       </header>
-      <CartDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
+      <CartDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} recentlyAdded={recentlyAdded} />
     </>
   );
 }
