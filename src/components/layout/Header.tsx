@@ -223,50 +223,55 @@ export function Header({ initialNavigationItems }: { initialNavigationItems?: Na
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-[#E8D6BF] bg-[#FFF9EF]/98 shadow-[0_8px_28px_rgba(68,43,20,0.04)]">
-        <div className="section-shell hidden h-[78px] items-center gap-5 xl:flex">
+      <header className="site-header sticky top-0 z-40">
+        <div className="site-header-shell hidden xl:grid">
           <Link
             href="/"
-            className="site-brand-mark inline-flex shrink-0 items-center gap-2 rounded-full border border-[#E5C99F] bg-white/70 px-4 py-2 font-heading text-xl font-extrabold text-[#6F4300] shadow-soft transition hover:-translate-y-0.5 hover:border-primary hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:hover:translate-y-0"
+            className="site-wordmark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
           >
-            <PawPrint aria-hidden className="h-4 w-4" />
-            <span>{brandName}</span>
+            <span className="site-wordmark-seal" aria-hidden>
+              <PawPrint className="h-5 w-5" />
+            </span>
+            <span className="site-wordmark-copy">
+              <strong>{brandName}</strong>
+              <small>Play · Walk · Rest</small>
+            </span>
           </Link>
-          <nav className="min-w-0 flex-1" aria-label="Primary navigation">
-            <ul className="flex items-center justify-center gap-0.5 text-[15px] font-bold text-[#4F3926] 2xl:gap-1 2xl:text-base">
+          <nav className="site-primary-nav" aria-label="Primary navigation">
+            <ul className="site-nav-list">
               {navigationItems.map((item) => (
                 <li key={item.label}>
                   <Link
                     href={item.href}
                     className={cn(
-                      "site-nav-link rounded-full px-3 py-2.5 whitespace-nowrap transition duration-200 hover:bg-white hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
-                      pathname === item.href && "is-active bg-[#F4D7A5] text-[#5B3300] shadow-soft",
-                      item.sale && "text-error hover:bg-[#FFF1EA]"
+                      "site-nav-link focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
+                      pathname === item.href && "is-active",
+                      item.sale && "is-sale"
                     )}
                   >
-                    {item.label}
+                    <span>{item.label}</span>
                   </Link>
                 </li>
               ))}
             </ul>
           </nav>
-          <div className="flex items-center gap-2 text-primary">
+          <div className="site-header-actions">
             <Link
               href="/search"
-              className="grid h-11 w-11 place-items-center rounded-full border border-transparent transition hover:-translate-y-0.5 hover:border-[#E5C99F] hover:bg-white hover:text-[#3B2512] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:hover:translate-y-0"
+              className="site-action-button focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               aria-label="Search"
             >
-              <Search aria-hidden className="h-6 w-6" />
+              <Search aria-hidden className="h-[1.35rem] w-[1.35rem]" />
             </Link>
             <Link
               href="/wishlist"
               className={cn(
-                "relative grid h-11 w-11 place-items-center rounded-full border border-transparent transition hover:-translate-y-0.5 hover:border-[#E5C99F] hover:bg-white hover:text-[#3B2512] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:hover:translate-y-0",
-                pathname === "/wishlist" && "border-[#E5C99F] bg-white text-[#3B2512]"
+                "site-action-button relative focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
+                pathname === "/wishlist" && "is-active"
               )}
               aria-label={`Wishlist with ${wishlistCount} saved items`}
             >
-              <Heart aria-hidden className={cn("h-6 w-6", wishlistCount > 0 && "fill-current")} />
+              <Heart aria-hidden className={cn("h-[1.35rem] w-[1.35rem]", wishlistCount > 0 && "fill-current")} />
               {wishlistCount > 0 && (
                 <span className="absolute -right-2 -top-2 grid h-5 min-w-5 place-items-center rounded-full bg-primary-container px-1 text-xs font-bold text-on-primary-container">
                   {wishlistCount}
@@ -275,7 +280,7 @@ export function Header({ initialNavigationItems }: { initialNavigationItems?: Na
             </Link>
             <button
               type="button"
-              className="relative grid h-11 w-11 place-items-center rounded-full border border-transparent transition hover:-translate-y-0.5 hover:border-[#E5C99F] hover:bg-white hover:text-[#3B2512] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:hover:translate-y-0"
+              className="site-action-button relative focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               onClick={() => {
                 setRecentlyAdded(null);
                 trackViewCart(items);
@@ -283,7 +288,7 @@ export function Header({ initialNavigationItems }: { initialNavigationItems?: Na
               }}
               aria-label={`Open cart with ${totals.count} items`}
             >
-              <ShoppingBag aria-hidden className="h-6 w-6" />
+              <ShoppingBag aria-hidden className="h-[1.35rem] w-[1.35rem]" />
               {totals.count > 0 && (
                 <span className="absolute -right-2 -top-2 grid h-5 min-w-5 place-items-center rounded-full bg-primary-container px-1 text-xs font-bold text-on-primary-container">
                   {totals.count}
@@ -292,10 +297,10 @@ export function Header({ initialNavigationItems }: { initialNavigationItems?: Na
             </button>
             <Link
               href={accountHref}
-              className="grid h-11 w-11 place-items-center rounded-full border border-transparent transition hover:-translate-y-0.5 hover:border-[#E5C99F] hover:bg-white hover:text-[#3B2512] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:hover:translate-y-0"
+              className="site-action-button focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               aria-label="Account"
             >
-              <User aria-hidden className="h-6 w-6" />
+              <User aria-hidden className="h-[1.35rem] w-[1.35rem]" />
             </Link>
           </div>
         </div>
@@ -309,8 +314,9 @@ export function Header({ initialNavigationItems }: { initialNavigationItems?: Na
           >
             {menuOpen ? <X aria-hidden className="h-5 w-5" /> : <Menu aria-hidden className="h-5 w-5" />}
           </button>
-          <Link href="/" className="font-heading text-sm font-extrabold tracking-wide text-[#6F4300]">
-            {brandName}
+          <Link href="/" className="site-mobile-wordmark">
+            <PawPrint aria-hidden className="h-4 w-4" />
+            <span>{brandName}</span>
           </Link>
           <button
             type="button"
@@ -339,7 +345,7 @@ export function Header({ initialNavigationItems }: { initialNavigationItems?: Na
                   <Link
                     href={item.href}
                     className={cn(
-                      "block rounded-full px-4 py-3 text-sm font-semibold text-[#5C4834] transition hover:bg-white hover:text-primary",
+                      "site-mobile-nav-link block rounded-full px-4 py-3 text-[#5C4834] transition hover:bg-white hover:text-primary",
                       pathname === item.href && "bg-primary-container text-on-primary-container shadow-soft",
                       item.sale && "text-error"
                     )}
@@ -352,7 +358,7 @@ export function Header({ initialNavigationItems }: { initialNavigationItems?: Na
               <li>
                 <Link
                   href="/search"
-                  className="block rounded-full px-4 py-3 text-sm font-semibold text-[#5C4834] transition hover:bg-white hover:text-primary"
+                  className="site-mobile-nav-link block rounded-full px-4 py-3 text-[#5C4834] transition hover:bg-white hover:text-primary"
                   onClick={() => setMenuOpen(false)}
                 >
                   Search
@@ -362,7 +368,7 @@ export function Header({ initialNavigationItems }: { initialNavigationItems?: Na
                 <Link
                   href="/wishlist"
                   className={cn(
-                    "flex items-center justify-between rounded-full px-4 py-3 text-sm font-semibold text-[#5C4834] transition hover:bg-white hover:text-primary",
+                    "site-mobile-nav-link flex items-center justify-between rounded-full px-4 py-3 text-[#5C4834] transition hover:bg-white hover:text-primary",
                     pathname === "/wishlist" && "bg-primary-container text-on-primary-container shadow-soft"
                   )}
                   onClick={() => setMenuOpen(false)}
@@ -378,7 +384,7 @@ export function Header({ initialNavigationItems }: { initialNavigationItems?: Na
               <li>
                 <Link
                   href={accountHref}
-                  className="block rounded-full px-4 py-3 text-sm font-semibold text-[#5C4834] transition hover:bg-white hover:text-primary"
+                  className="site-mobile-nav-link block rounded-full px-4 py-3 text-[#5C4834] transition hover:bg-white hover:text-primary"
                   onClick={() => setMenuOpen(false)}
                 >
                   Account
