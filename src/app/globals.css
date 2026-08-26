@@ -565,12 +565,12 @@ img {
   transform: scaleX(1) rotate(-1.5deg);
 }
 
-.home-hero-art-note {
+.home-hero-feature {
   transform: rotate(-1.5deg);
   transition: transform 420ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.home-hero:hover .home-hero-art-note {
+.home-hero:hover .home-hero-feature {
   transform: translateY(-2px) rotate(-0.25deg);
 }
 
@@ -1925,7 +1925,7 @@ img {
     animation: none !important;
   }
 
-  .home-hero-art-note,
+  .home-hero-feature,
   .home-hero-paw,
   .site-wordmark-seal,
   .site-nav-link,

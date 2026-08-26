@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Award, PawPrint } from "lucide-react";
+import { ArrowRight, Award, MessagesSquare, PawPrint, Route, ShieldCheck } from "lucide-react";
 import { type Product } from "@/data/products";
 import { formatPrice } from "@/lib/utils";
 
@@ -21,7 +21,11 @@ type HomePosterHeroProps = {
   products: Product[];
 };
 
-const heroBadges = ["Secure checkout", "Support when needed", "Clear product paths"];
+const heroBadges = [
+  { label: "Secure checkout", Icon: ShieldCheck },
+  { label: "Support when needed", Icon: MessagesSquare },
+  { label: "Clear product paths", Icon: Route }
+];
 
 function fallbackProductImage(product: Product) {
   const normalized = `${product.name} ${product.slug} ${product.category}`.toLowerCase();
@@ -95,51 +99,53 @@ export function HomePosterHero({
           />
         )}
 
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(24,13,6,0.96)_0%,rgba(24,13,6,0.78)_36%,rgba(24,13,6,0.30)_66%,rgba(24,13,6,0.54)_100%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_76%_18%,rgba(245,158,11,0.23),transparent_30%),radial-gradient(circle_at_18%_86%,rgba(255,249,239,0.18),transparent_24%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(24,13,6,0.96)_0%,rgba(24,13,6,0.76)_37%,rgba(24,13,6,0.24)_68%,rgba(24,13,6,0.46)_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(25,14,7,0.44)_0%,rgba(25,14,7,0.04)_34%,rgba(25,14,7,0.54)_100%)]" />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#2C1A0D]/90 to-transparent" />
 
-        <div className="relative z-10 mx-auto flex min-h-[calc(100svh-72px)] max-w-[1600px] flex-col justify-between px-5 py-6 sm:px-8 md:min-h-[calc(100svh-88px)] md:px-10 md:py-8 lg:px-16 xl:px-20">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <span className="inline-flex rounded-full border border-white/25 bg-white/[0.14] px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-[#FFD894] backdrop-blur">
-              {eyebrow}
-            </span>
-            <div className="hidden flex-wrap gap-2 md:flex">
-              {heroBadges.map((badge) => (
-                <span
-                  key={badge}
-                  className="rounded-full border border-white/30 bg-[#2C1A0D]/[0.62] px-3 py-2 text-xs font-bold text-white shadow-soft backdrop-blur"
-                >
-                  {badge}
+        <div className="relative z-10 mx-auto flex min-h-[calc(100svh-72px)] max-w-[1600px] flex-col justify-between px-5 py-5 sm:px-8 md:min-h-[calc(100svh-88px)] md:px-10 md:py-7 lg:px-16 xl:px-20">
+          <div className="home-hero-rail flex items-center justify-between gap-5 border-b border-white/20 pb-4">
+            <div className="flex min-w-0 items-center gap-3 text-[#FFE0A6]">
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-[#FFD894]/45 bg-[#2C1A0D]/55 backdrop-blur-sm">
+                <PawPrint aria-hidden className="h-[1.1rem] w-[1.1rem]" />
+              </span>
+              <span className="truncate text-[11px] font-extrabold uppercase tracking-[0.2em] sm:text-xs">
+                {eyebrow}
+              </span>
+            </div>
+            <div className="hidden items-center divide-x divide-white/20 md:flex">
+              {heroBadges.map(({ label, Icon }) => (
+                <span key={label} className="flex items-center gap-2 px-3 text-[11px] font-bold text-white/90 first:pl-0 last:pr-0 lg:px-4">
+                  <Icon aria-hidden className="h-4 w-4 text-[#FFD894]" />
+                  <span>{label}</span>
                 </span>
               ))}
             </div>
           </div>
 
-          <div className="grid gap-8 pb-12 lg:grid-cols-[minmax(0,0.95fr)_minmax(330px,0.42fr)] lg:items-end lg:pb-16">
+          <div className="grid gap-8 pb-8 pt-12 sm:pt-14 lg:grid-cols-[minmax(0,1fr)_minmax(340px,0.43fr)] lg:items-end lg:pb-12 lg:pt-16">
             <div className="max-w-5xl">
-              <p className="mb-5 inline-flex items-center gap-2 rounded-full bg-primary-container px-4 py-2 text-xs font-extrabold uppercase tracking-wide text-on-primary-container shadow-soft">
+              <div className="home-hero-feature mb-5 inline-flex max-w-full flex-wrap items-center gap-x-2 gap-y-1 border-y border-[#FFD894]/40 py-2 text-[#FFD894]">
                 <Award aria-hidden className="h-4 w-4" />
-                {featuredLabel}
-              </p>
-              <h1 className="max-w-5xl font-heading text-[clamp(3.35rem,8.6vw,9.6rem)] font-extrabold leading-[0.86] tracking-[-0.045em] text-white [text-shadow:0_8px_34px_rgba(0,0,0,0.34)]">
-                {title}
-              </h1>
-              <p className="mt-6 max-w-2xl text-base font-semibold leading-7 text-white [text-shadow:0_4px_18px_rgba(0,0,0,0.50)] md:text-xl md:leading-8">
-                {subtitle}
-              </p>
-              <div className="home-hero-art-note mt-4 flex w-fit items-center gap-3 text-[#FFD894]">
-                <p className="lc-hand-note text-lg leading-none md:text-xl">{featuredText}</p>
-                <span className="flex items-center gap-1.5" aria-hidden="true">
+                <span className="text-[11px] font-extrabold uppercase tracking-[0.14em]">{featuredLabel}</span>
+                <span className="h-1 w-1 rounded-full bg-[#FFD894]/70" aria-hidden />
+                <span className="lc-hand-note text-xs leading-none sm:text-base">{featuredText}</span>
+                <span className="ml-0.5 flex items-center gap-1" aria-hidden="true">
                   {[0, 1, 2].map((step) => (
                     <PawPrint
                       key={step}
-                      className={`home-hero-paw ${step === 0 ? "h-3.5 w-3.5" : step === 1 ? "h-4 w-4" : "h-[1.15rem] w-[1.15rem]"}`}
+                      className={`home-hero-paw ${step === 0 ? "h-3 w-3" : step === 1 ? "h-3.5 w-3.5" : "h-4 w-4"}`}
                     />
                   ))}
                 </span>
               </div>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <h1 className="home-poster-title max-w-[10.8ch] font-heading text-[clamp(3.35rem,7.4vw,8.4rem)] font-extrabold leading-[0.88] tracking-[-0.04em] text-white [text-shadow:0_8px_34px_rgba(0,0,0,0.34)]">
+                {title}
+              </h1>
+              <p className="mt-6 max-w-[42rem] text-base font-semibold leading-7 text-white/95 [text-shadow:0_4px_18px_rgba(0,0,0,0.50)] md:text-lg md:leading-8">
+                {subtitle}
+              </p>
+              <div className="mt-7 flex flex-col gap-3 sm:flex-row">
                 <Link
                   href={primaryButtonLink}
                   className="group inline-flex items-center justify-center gap-2 rounded-full bg-primary-container px-6 py-3 text-sm font-extrabold text-on-primary-container transition hover:-translate-y-0.5 hover:bg-[#C87500] hover:shadow-lift focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white motion-reduce:hover:translate-y-0"
@@ -162,31 +168,36 @@ export function HomePosterHero({
             {products.length > 0 && (
               <aside
                 aria-label="Quick product picks"
-                className="w-full max-w-xl overflow-hidden rounded-2xl bg-[#FFF8ED] text-[#24170E] shadow-[0_22px_60px_rgba(20,11,5,0.34)] ring-1 ring-[#F2D9AE] lg:justify-self-end"
+                className="home-hero-picks w-full max-w-[27rem] overflow-hidden rounded-2xl border border-[#FFD894]/35 bg-[#2B190C]/[0.82] text-white shadow-[0_24px_70px_rgba(15,8,3,0.42)] backdrop-blur-md lg:justify-self-end"
               >
-                <div className="flex items-end justify-between gap-4 border-b border-[#E8D4B4] px-4 py-3.5 sm:px-5">
-                  <div>
-                    <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#94600A]">Quick picks</p>
-                    <p className="mt-1 font-heading text-sm font-extrabold text-[#24170E] sm:text-base">
-                      A shorter route to shop.
-                    </p>
+                <div className="flex items-center justify-between gap-4 border-b border-white/15 px-4 py-4 sm:px-5">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#FFD894] text-[#38200E] shadow-soft">
+                      <PawPrint aria-hidden className="h-5 w-5" />
+                    </span>
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#FFD894]">Quick picks</p>
+                      <p className="mt-1 truncate font-heading text-sm font-extrabold text-white sm:text-base">
+                        A shorter route to shop.
+                      </p>
+                    </div>
                   </div>
-                  <span className="shrink-0 text-right">
-                    <span className="block rounded-full bg-[#F6E2BC] px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#6E4300]">
+                  <span className="shrink-0 text-right text-[#FFE0A6]">
+                    <span className="block text-[10px] font-extrabold uppercase tracking-[0.14em]">
                       {products.length} {products.length === 1 ? "pick" : "picks"}
                     </span>
-                    <span className="lc-hand-note mt-1.5 block text-xs text-[#8E5700]">sniff out a favorite</span>
+                    <span className="lc-hand-note mt-1 block text-xs">ready to explore</span>
                   </span>
                 </div>
 
-                <div className="divide-y divide-[#E8D4B4]">
+                <div className="divide-y divide-white/15">
                   {products.map((product) => (
                     <Link
                       key={product.id}
                       href={product.productUrl}
-                      className="group grid min-h-[88px] grid-cols-[4rem_minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 transition-colors duration-200 hover:bg-[#F8E7C9] focus-visible:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-[#8E5700] sm:gap-4 sm:px-5"
+                      className="group grid min-h-[88px] grid-cols-[3.75rem_minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 transition-colors duration-200 hover:bg-white/[0.09] focus-visible:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-[#FFD894] sm:gap-4 sm:px-5"
                     >
-                      <span className="relative h-16 w-16 overflow-hidden rounded-xl bg-[#F7EAD8]">
+                      <span className="relative h-[3.75rem] w-[3.75rem] overflow-hidden rounded-full border border-[#FFD894]/35 bg-[#F7EAD8]">
                         <Image
                           src={fallbackProductImage(product)}
                           alt={product.alt}
@@ -197,18 +208,18 @@ export function HomePosterHero({
                         />
                       </span>
                       <span className="min-w-0">
-                        <span className="block text-[10px] font-extrabold uppercase tracking-[0.1em] text-[#8E5700] sm:text-[11px]">
+                        <span className="block text-[10px] font-extrabold uppercase tracking-[0.1em] text-[#FFD894] sm:text-[11px]">
                           {product.category}
                         </span>
-                        <span className="mt-1 block font-heading text-sm font-extrabold leading-5 text-[#24170E] sm:text-base">
+                        <span className="mt-1 block font-heading text-sm font-extrabold leading-5 text-white sm:text-base">
                           {product.name}
                         </span>
                       </span>
                       <span className="flex shrink-0 items-center gap-2 pl-1">
-                        <span className="font-heading text-sm font-extrabold tabular-nums text-[#7B4A00]">
+                        <span className="font-heading text-sm font-extrabold tabular-nums text-[#FFE0A6]">
                           {formatPrice(product.price)}
                         </span>
-                        <span className="grid h-8 w-8 place-items-center rounded-full bg-[#2C1A0D] text-[#FFD894] transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transition-none motion-reduce:group-hover:translate-x-0">
+                        <span className="grid h-8 w-8 place-items-center rounded-full bg-[#FFD894] text-[#38200E] transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transition-none motion-reduce:group-hover:translate-x-0">
                           <ArrowRight aria-hidden className="h-4 w-4" />
                         </span>
                       </span>
