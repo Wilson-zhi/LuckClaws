@@ -879,89 +879,173 @@ img {
   line-height: 1.7;
 }
 
-.about-scroll-compass-orbit {
+.about-scroll-compass-map {
   position: relative;
-  width: 15.5rem;
-  height: 15.5rem;
-  margin-top: 1.5rem;
+  width: min(100%, 22rem);
+  height: 18rem;
+  margin-top: 1.35rem;
+  transform-origin: center;
 }
 
-.about-scroll-compass-ring {
+.about-scroll-compass-path {
   position: absolute;
-  border: 1px solid rgba(65, 34, 9, 0.38);
+  top: 53%;
+  left: 50%;
+  width: 7.6rem;
+  border-top: 3px dashed rgba(63, 35, 12, 0.24);
+  transform-origin: left center;
+  transition: border-color 220ms ease;
+}
+
+.about-scroll-compass-path-moment {
+  transform: rotate(-90deg);
+}
+
+.about-scroll-compass-path-route {
+  transform: rotate(19deg);
+}
+
+.about-scroll-compass-path-help {
+  transform: rotate(151deg);
+}
+
+.about-scroll-compass-map[data-selection="0"] .about-scroll-compass-path-moment,
+.about-scroll-compass-map[data-selection="1"] .about-scroll-compass-path-route,
+.about-scroll-compass-map[data-selection="2"] .about-scroll-compass-path-help {
+  border-color: #2a1608;
+}
+
+.about-scroll-compass-sticker {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  width: 10rem;
+  min-height: 4.25rem;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.62rem 0.72rem;
+  border: 2px solid #2a1608;
+  border-radius: 14px;
+  color: #2a1608;
+  box-shadow: 0 8px 18px rgba(67, 34, 7, 0.16);
+  opacity: 0.76;
+  transition: opacity 220ms ease, box-shadow 240ms ease, transform 280ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.about-scroll-compass-sticker-moment {
+  top: 0;
+  left: 50%;
+  background: #fff4df;
+  transform: translateX(-50%) rotate(-2deg) scale(0.94);
+}
+
+.about-scroll-compass-sticker-route {
+  top: 44%;
+  right: 0;
+  background: #dce8d1;
+  transform: translateY(-50%) rotate(2deg) scale(0.94);
+}
+
+.about-scroll-compass-sticker-help {
+  bottom: 0;
+  left: 0;
+  background: #ef9b76;
+  transform: rotate(-3deg) scale(0.94);
+}
+
+.about-scroll-compass-sticker[data-active="true"] {
+  z-index: 4;
+  box-shadow: 0 13px 26px rgba(67, 34, 7, 0.24);
+  opacity: 1;
+}
+
+.about-scroll-compass-sticker-moment[data-active="true"] {
+  transform: translateX(-50%) rotate(-2deg) scale(1.04);
+}
+
+.about-scroll-compass-sticker-route[data-active="true"] {
+  transform: translateY(-50%) rotate(2deg) scale(1.04);
+}
+
+.about-scroll-compass-sticker-help[data-active="true"] {
+  transform: rotate(-3deg) scale(1.04);
+}
+
+.about-scroll-compass-sticker-icon {
+  display: grid;
+  width: 2.4rem;
+  height: 2.4rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1.5px solid #2a1608;
   border-radius: 50%;
+  background: rgba(255, 248, 236, 0.58);
 }
 
-.about-scroll-compass-ring-outer {
-  inset: 0;
+.about-scroll-compass-sticker small,
+.about-scroll-compass-core small {
+  display: block;
+  font-size: 0.55rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  line-height: 1.1;
+  text-transform: uppercase;
 }
 
-.about-scroll-compass-ring-inner {
-  inset: 2.55rem;
+.about-scroll-compass-sticker strong {
+  display: block;
+  margin-top: 0.18rem;
+  font-family: var(--font-heading), sans-serif;
+  font-size: 0.82rem;
+  font-weight: 850;
+  line-height: 1.05;
 }
 
 .about-scroll-compass-core {
   position: absolute;
-  top: 50%;
+  top: 53%;
   left: 50%;
-  display: grid;
-  width: 4.7rem;
-  height: 4.7rem;
-  place-items: center;
-  border-radius: 50%;
-  background: #2a1608;
-  color: #ffd477;
-  box-shadow: 0 18px 36px rgba(67, 34, 7, 0.22);
-  transform: translate(-50%, -50%);
-}
-
-.about-scroll-compass-hand {
-  position: absolute;
-  top: calc(50% - 2px);
-  left: 50%;
-  width: 42%;
-  height: 4px;
-  border-radius: 999px;
-  background: #2a1608;
-  transform: rotate(24deg);
-  transform-origin: left center;
-  will-change: transform;
-}
-
-.about-scroll-compass-hand::after {
-  position: absolute;
-  top: 50%;
-  right: -0.3rem;
-  width: 0.75rem;
-  height: 0.75rem;
+  z-index: 3;
+  display: flex;
+  width: 6.8rem;
+  height: 6.8rem;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 0.42rem;
   border: 2px solid #2a1608;
   border-radius: 50%;
-  background: #fff6e6;
-  content: "";
-  transform: translateY(-50%);
+  outline: 2px dashed rgba(42, 22, 8, 0.38);
+  outline-offset: 0.45rem;
+  background: #2a1608;
+  color: #ffd477;
+  box-shadow: 0 16px 32px rgba(67, 34, 7, 0.24);
+  transform: translate(-50%, -50%) rotate(2deg);
 }
 
-.about-scroll-compass-word {
+.about-scroll-compass-core small {
+  color: #fff4df;
+  text-align: center;
+}
+
+.about-scroll-compass-spark {
   position: absolute;
-  font-family: var(--font-heading), sans-serif;
-  font-size: 0.68rem;
-  font-weight: 800;
+  width: 1.2rem;
+  height: 1.2rem;
+  color: #2a1608;
+  opacity: 0.62;
 }
 
-.about-scroll-compass-word-play {
-  top: -0.35rem;
-  left: 50%;
-  transform: translateX(-50%);
+.about-scroll-compass-spark-one {
+  top: 1.2rem;
+  right: 2.2rem;
+  transform: rotate(12deg);
 }
 
-.about-scroll-compass-word-walk {
-  top: 50%;
-  right: -1.2rem;
-}
-
-.about-scroll-compass-word-rest {
-  bottom: 0;
-  left: 0.3rem;
+.about-scroll-compass-spark-two {
+  bottom: 2.3rem;
+  left: 10.7rem;
+  transform: rotate(-14deg) scale(0.8);
 }
 
 .about-scroll-principles {
@@ -1513,10 +1597,39 @@ img {
     font-size: 3.35rem;
   }
 
-  .about-scroll-compass-orbit {
-    width: 12.5rem;
-    height: 12.5rem;
-    margin-top: 1rem;
+  .about-scroll-compass-map {
+    width: 18rem;
+    height: 14.5rem;
+    margin-top: 0.75rem;
+  }
+
+  .about-scroll-compass-sticker {
+    width: 9.25rem;
+    min-height: 3.7rem;
+    padding: 0.5rem 0.58rem;
+  }
+
+  .about-scroll-compass-sticker small {
+    font-size: 0.48rem;
+    letter-spacing: 0.055em;
+  }
+
+  .about-scroll-compass-sticker strong {
+    font-size: 0.75rem;
+  }
+
+  .about-scroll-compass-sticker-icon {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .about-scroll-compass-core {
+    width: 5.6rem;
+    height: 5.6rem;
+  }
+
+  .about-scroll-compass-path {
+    width: 6.25rem;
   }
 
   .about-scroll-principle-line {
@@ -1682,9 +1795,9 @@ img {
     font-size: 3.2rem;
   }
 
-  .about-scroll-compass-orbit {
-    width: 15rem;
-    height: 15rem;
+  .about-scroll-compass-map {
+    width: min(100%, 22rem);
+    height: 18rem;
     margin-right: auto;
     margin-left: auto;
   }
@@ -1841,7 +1954,7 @@ img {
   }
 
   .about-scroll-hero-media,
-  .about-scroll-compass-hand,
+  .about-scroll-compass-map,
   .about-scroll-principle-line,
   .about-scroll-route-visual,
   .about-scroll-standard-row,
@@ -1849,6 +1962,10 @@ img {
     clip-path: none !important;
     transition: none !important;
     transform: none !important;
+  }
+
+  .about-scroll-compass-sticker {
+    transition: none !important;
   }
 
   .about-scroll-principle-detail,

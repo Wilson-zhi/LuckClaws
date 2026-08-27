@@ -103,6 +103,12 @@ const storyPoints: StoryPoint[] = [
   }
 ];
 
+const compassBadges = [
+  { label: "Moment", note: "Start here", Icon: PawPrint, tone: "moment" },
+  { label: "Short route", note: "Fewer detours", Icon: MapPinned, tone: "route" },
+  { label: "Help nearby", note: "Never hidden", Icon: Heart, tone: "help" }
+] as const;
+
 const promisePoints: PromisePoint[] = [
   {
     title: "Clear product details",
@@ -406,7 +412,12 @@ export function AboutJourneyExperience({
 
         timeline
           .to(".about-scroll-hero-media", { scale: 1.1, xPercent: -1.5, duration: 1 }, 0)
-          .to(".about-scroll-compass-hand", { rotation: 310, duration: 1 }, 0.68)
+          .fromTo(
+            ".about-scroll-compass-map",
+            { scale: 0.82, rotation: -4 },
+            { scale: 1, rotation: 0, duration: 0.5, ease: "power3.out" },
+            0.62
+          )
           .fromTo(
             ".about-scroll-principle-line",
             { xPercent: 8 },
@@ -639,16 +650,37 @@ export function AboutJourneyExperience({
           <div className="about-scroll-compass-copy">
             <h2>{hero.compassTitle}</h2>
             <p>{hero.compassDescription}</p>
-            <div className="about-scroll-compass-orbit" aria-hidden="true">
-              <span className="about-scroll-compass-ring about-scroll-compass-ring-outer" />
-              <span className="about-scroll-compass-ring about-scroll-compass-ring-inner" />
-              <span className="about-scroll-compass-hand" />
+            <div
+              className="about-scroll-compass-map"
+              data-selection={activeStoryIndex}
+              aria-hidden="true"
+            >
+              <span className="about-scroll-compass-path about-scroll-compass-path-moment" />
+              <span className="about-scroll-compass-path about-scroll-compass-path-route" />
+              <span className="about-scroll-compass-path about-scroll-compass-path-help" />
+
+              {compassBadges.map(({ label, note, Icon, tone }, index) => (
+                <span
+                  key={label}
+                  className={`about-scroll-compass-sticker about-scroll-compass-sticker-${tone}`}
+                  data-active={index === activeStoryIndex}
+                >
+                  <span className="about-scroll-compass-sticker-icon">
+                    <Icon className="h-5 w-5" />
+                  </span>
+                  <span>
+                    <small>{note}</small>
+                    <strong>{label}</strong>
+                  </span>
+                </span>
+              ))}
+
               <span className="about-scroll-compass-core">
                 <PawPrint className="h-8 w-8" />
+                <small>Today&apos;s need</small>
               </span>
-              <span className="about-scroll-compass-word about-scroll-compass-word-play">PLAY</span>
-              <span className="about-scroll-compass-word about-scroll-compass-word-walk">WALK</span>
-              <span className="about-scroll-compass-word about-scroll-compass-word-rest">REST</span>
+              <Sparkles className="about-scroll-compass-spark about-scroll-compass-spark-one" />
+              <Sparkles className="about-scroll-compass-spark about-scroll-compass-spark-two" />
             </div>
           </div>
 
