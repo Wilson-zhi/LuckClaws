@@ -2,9 +2,11 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import {
-  ArrowLeft,
   ArrowRight,
   Check,
   CheckCircle2,
@@ -32,6 +34,8 @@ import {
   type AboutPawContent,
   type AboutPawRouteContent
 } from "@/lib/about-paw-content";
+
+gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 type AboutJourneyExperienceProps = {
   hero: AboutHeroContent;
@@ -219,7 +223,7 @@ function HeroMedia({ hero, source, video }: { hero: AboutHeroContent; source: st
     return (
       <video
         aria-label={hero.heroImageAlt}
-        className="about-journey-hero-media"
+        className="about-scroll-hero-media"
         src={source}
         autoPlay
         muted
@@ -236,7 +240,7 @@ function HeroMedia({ hero, source, video }: { hero: AboutHeroContent; source: st
       fill
       priority
       sizes="100vw"
-      className="about-journey-hero-media object-cover"
+      className="about-scroll-hero-media object-cover"
     />
   );
 }
@@ -258,10 +262,9 @@ export function AboutJourneyExperience({
   const [activePromiseIndex, setActivePromiseIndex] = useState(0);
   const [activeCollectionKey, setActiveCollectionKey] = useState(availableCollections[0]?.cardKey ?? "");
   const journeyRef = useRef<HTMLElement | null>(null);
-  const touchStartX = useRef<number | null>(null);
-  const touchCanChangeChapter = useRef(true);
+  const activeIndexRef = useRef(0);
+  const storyScrollTriggerRef = useRef<ScrollTrigger | null>(null);
 
-  const activeStep = journeySteps[activeStepIndex];
   const activeStory = storyPoints[activeStoryIndex] ?? storyPoints[0];
   const activeRoutine = routines.find((route) => route.routeKey === activeRoutineKey) ?? routines[0];
   const activePromise = promisePoints[activePromiseIndex] ?? promisePoints[0];
@@ -274,263 +277,326 @@ export function AboutJourneyExperience({
   const ActiveStoryIcon = activeStory.Icon;
   const ActiveRouteIcon = iconForKey(activeRoutine.iconKey);
   const ActivePromiseIcon = activePromise.Icon;
-  const progress = ((activeStepIndex + 1) / journeySteps.length) * 100;
+
+  useGSAP(
+    () => {
+      const mediaQuery = gsap.matchMedia();
+
+      mediaQuery.add("(min-width: 861px) and (prefers-reduced-motion: no-preference)", () => {
+        const panels = gsap.utils.toArray<HTMLElement>("[data-about-panel]");
+        const stage = journeyRef.current?.querySelector<HTMLElement>(".about-scroll-stage");
+
+        if (!journeyRef.current || !stage || panels.length !== journeySteps.length) {
+          return;
+        }
+
+        gsap.set(panels, {
+          autoAlpha: 0,
+          filter: "blur(8px)",
+          pointerEvents: "none",
+          yPercent: 8
+        });
+        gsap.set(panels[0], {
+          autoAlpha: 1,
+          filter: "blur(0px)",
+          pointerEvents: "auto",
+          yPercent: 0
+        });
+
+        const timeline = gsap.timeline({
+          defaults: { ease: "none" },
+          scrollTrigger: {
+            trigger: journeyRef.current,
+            start: "top top+=84",
+            end: () => `+=${Math.max(window.innerHeight * 5.2, 4200)}`,
+            pin: stage,
+            pinSpacing: true,
+            anticipatePin: 1,
+            scrub: 0.65,
+            invalidateOnRefresh: true,
+            onUpdate: (self) => {
+              const nextIndex = Math.min(
+                journeySteps.length - 1,
+                Math.round(self.progress * (journeySteps.length - 1))
+              );
+
+              if (nextIndex !== activeIndexRef.current) {
+                activeIndexRef.current = nextIndex;
+                setActiveStepIndex(nextIndex);
+                window.history.replaceState(null, "", `#about-${journeySteps[nextIndex].key}`);
+              }
+            }
+          }
+        });
+
+        storyScrollTriggerRef.current = timeline.scrollTrigger ?? null;
+
+        journeySteps.forEach((step, index) => timeline.addLabel(step.key, index));
+
+        for (let index = 1; index < panels.length; index += 1) {
+          timeline
+            .to(
+              panels[index - 1],
+              {
+                autoAlpha: 0,
+                filter: "blur(10px)",
+                pointerEvents: "none",
+                yPercent: -7,
+                duration: 0.3
+              },
+              index - 0.5
+            )
+            .fromTo(
+              panels[index],
+              {
+                autoAlpha: 0,
+                filter: "blur(10px)",
+                pointerEvents: "none",
+                yPercent: 8
+              },
+              {
+                autoAlpha: 1,
+                filter: "blur(0px)",
+                pointerEvents: "auto",
+                yPercent: 0,
+                duration: 0.36
+              },
+              index - 0.36
+            );
+        }
+
+        timeline
+          .to(".about-scroll-hero-media", { scale: 1.1, xPercent: -1.5, duration: 1 }, 0)
+          .to(".about-scroll-compass-hand", { rotation: 310, duration: 1 }, 0.68)
+          .fromTo(
+            ".about-scroll-principle-line",
+            { xPercent: 8 },
+            { xPercent: 0, stagger: 0.06, duration: 0.34 },
+            0.7
+          )
+          .fromTo(
+            ".about-scroll-route-visual",
+            { clipPath: "inset(0 0 0 100%)", xPercent: 6 },
+            { clipPath: "inset(0 0 0 0%)", xPercent: 0, duration: 0.38 },
+            1.08
+          )
+          .fromTo(
+            ".about-scroll-standard-row",
+            { xPercent: 6 },
+            { xPercent: 0, stagger: 0.05, duration: 0.35 },
+            2.62
+          )
+          .fromTo(
+            ".about-scroll-collection-frame",
+            { yPercent: 12, rotation: 2 },
+            { yPercent: 0, rotation: 0, duration: 0.48 },
+            3.52
+          );
+
+        timeline.call(() => undefined, [], journeySteps.length - 1);
+
+        return () => {
+          storyScrollTriggerRef.current = null;
+        };
+      });
+
+      mediaQuery.add("(max-width: 860px)", () => {
+        const panels = gsap.utils.toArray<HTMLElement>("[data-about-panel]");
+        const observers = panels.map((panel, index) =>
+          ScrollTrigger.create({
+            trigger: panel,
+            start: "top 55%",
+            end: "bottom 45%",
+            onEnter: () => {
+              activeIndexRef.current = index;
+              setActiveStepIndex(index);
+            },
+            onEnterBack: () => {
+              activeIndexRef.current = index;
+              setActiveStepIndex(index);
+            }
+          })
+        );
+
+        return () => observers.forEach((observer) => observer.kill());
+      });
+
+      return () => mediaQuery.revert();
+    },
+    { scope: journeyRef }
+  );
 
   function moveToStep(nextIndex: number) {
     const boundedIndex = Math.max(0, Math.min(journeySteps.length - 1, nextIndex));
-    setActiveStepIndex(boundedIndex);
+    const trigger = storyScrollTriggerRef.current;
 
-    if (typeof window !== "undefined") {
-      window.history.replaceState(null, "", `#about-${journeySteps[boundedIndex].key}`);
-
-      const journeyTop = journeyRef.current?.getBoundingClientRect().top;
-      if (typeof journeyTop === "number") {
-        const headerHeight = document.querySelector("header")?.getBoundingClientRect().height ?? 0;
-        window.scrollTo({
-          top: Math.max(0, journeyTop + window.scrollY - headerHeight),
-          behavior: "auto"
-        });
-      }
-    }
-  }
-
-  useEffect(() => {
-    const requestedStep = window.location.hash.replace("#about-", "") as JourneyStepKey;
-    const requestedIndex = journeySteps.findIndex((step) => step.key === requestedStep);
-
-    if (requestedIndex >= 0) {
-      setActiveStepIndex(requestedIndex);
-    }
-  }, []);
-
-  useEffect(() => {
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.altKey || event.ctrlKey || event.metaKey) {
-        return;
-      }
-
-      if (["ArrowRight", "ArrowDown", "PageDown"].includes(event.key)) {
-        event.preventDefault();
-        moveToStep(activeStepIndex + 1);
-      }
-
-      if (["ArrowLeft", "ArrowUp", "PageUp"].includes(event.key)) {
-        event.preventDefault();
-        moveToStep(activeStepIndex - 1);
-      }
-
-      if (event.key === "Home") {
-        event.preventDefault();
-        moveToStep(0);
-      }
-
-      if (event.key === "End") {
-        event.preventDefault();
-        moveToStep(journeySteps.length - 1);
-      }
-    }
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [activeStepIndex]);
-
-  function handleTouchStart(event: React.TouchEvent<HTMLElement>) {
-    touchStartX.current = event.touches[0]?.clientX ?? null;
-    touchCanChangeChapter.current = !(event.target as HTMLElement).closest("[data-about-horizontal-scroll]");
-  }
-
-  function handleTouchEnd(event: React.TouchEvent<HTMLElement>) {
-    if (touchStartX.current === null) {
+    if (trigger) {
+      const destination = trigger.start + (trigger.end - trigger.start) * (boundedIndex / (journeySteps.length - 1));
+      window.scrollTo({ top: destination, behavior: "smooth" });
       return;
     }
 
-    const endX = event.changedTouches[0]?.clientX ?? touchStartX.current;
-    const distance = endX - touchStartX.current;
-    touchStartX.current = null;
-
-    if (!touchCanChangeChapter.current || Math.abs(distance) < 56) {
-      return;
-    }
-
-    moveToStep(activeStepIndex + (distance < 0 ? 1 : -1));
+    document.getElementById(`about-${journeySteps[boundedIndex].key}`)?.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
   }
 
   return (
-    <section
-      ref={journeyRef}
-      className="about-journey"
-      aria-label="About LUCK CLAWS interactive story"
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-    >
-      <nav className="about-journey-nav" aria-label="About story chapters">
-        <div className="about-journey-nav-meta">
-          <span>{String(activeStepIndex + 1).padStart(2, "0")}</span>
-          <span aria-hidden="true">/</span>
-          <span>{String(journeySteps.length).padStart(2, "0")}</span>
-          <strong>{activeStep.label}</strong>
-        </div>
-        <div className="about-journey-nav-track">
+    <section ref={journeyRef} className="about-scroll-story" aria-label="About LUCK CLAWS scroll story">
+      <div className="about-scroll-stage">
+        <div
+          className="about-scroll-rail"
+          data-step={journeySteps[activeStepIndex].key}
+          aria-label="About story chapters"
+        >
+          <span className="about-scroll-rail-current" aria-live="polite">
+            {String(activeStepIndex + 1).padStart(2, "0")}
+            <span aria-hidden="true"> / {String(journeySteps.length).padStart(2, "0")}</span>
+          </span>
+          <div className="about-scroll-rail-line" aria-hidden="true">
+            <span style={{ transform: `scaleY(${activeStepIndex / (journeySteps.length - 1)})` }} />
+          </div>
           {journeySteps.map((step, index) => (
             <button
               key={step.key}
               type="button"
-              className="about-journey-nav-stop"
+              className="about-scroll-rail-stop"
               data-active={index === activeStepIndex}
               data-complete={index < activeStepIndex}
               aria-current={index === activeStepIndex ? "step" : undefined}
-              aria-label={`Open chapter ${index + 1}: ${step.label}`}
+              aria-label={`Go to ${step.label}`}
               onClick={() => moveToStep(index)}
             >
-              <span className="about-journey-nav-dot" />
-              <span className="about-journey-nav-label">{step.shortLabel}</span>
+              <span className="about-scroll-rail-dot" />
+              <span className="about-scroll-rail-label">{step.shortLabel}</span>
             </button>
           ))}
         </div>
-      </nav>
 
-      <div
-        key={activeStep.key}
-        className={`about-journey-scene about-journey-scene-${activeStep.key}`}
-        role="region"
-        aria-labelledby={`about-journey-title-${activeStep.key}`}
-        aria-live="polite"
-      >
-        {activeStep.key === "welcome" && (
-          <div className="about-journey-welcome">
-            <div className="about-journey-welcome-media">
-              <HeroMedia hero={hero} source={heroPosterImage} video={heroUsesVideo} />
-              <div className="about-journey-welcome-wash" />
-            </div>
-            <div className="about-journey-welcome-content">
-              <div className="about-journey-stamp">
-                <PawPrint aria-hidden className="h-5 w-5" />
-                <span>{hero.eyebrow}</span>
-              </div>
-              <h1 id="about-journey-title-welcome" className="about-journey-display">
-                {hero.title}
-              </h1>
-              <p className="about-journey-lead">{hero.description}</p>
-              <div className="about-journey-actions">
-                <button
-                  type="button"
-                  className="about-journey-action about-journey-action-primary"
-                  onClick={() => moveToStep(1)}
-                >
-                  {hero.primaryCtaLabel}
-                  <ArrowRight aria-hidden className="h-5 w-5" />
-                </button>
-                <Link className="about-journey-action about-journey-action-secondary" href={hero.secondaryCtaHref}>
-                  {hero.secondaryCtaLabel}
-                </Link>
-              </div>
-            </div>
-            <div className="about-journey-welcome-note" aria-hidden="true">
-              <span>Play</span>
-              <span>Walk</span>
-              <span>Rest</span>
-              <span>Comfort</span>
-              <span>Support</span>
+        <article
+          id="about-welcome"
+          data-about-panel
+          className="about-scroll-panel about-scroll-panel-welcome"
+        >
+          <div className="about-scroll-welcome-media">
+            <HeroMedia hero={hero} source={heroPosterImage} video={heroUsesVideo} />
+            <div className="about-scroll-welcome-wash" />
+          </div>
+          <div className="about-scroll-welcome-copy">
+            <p className="about-scroll-signature">
+              <PawPrint aria-hidden className="h-5 w-5" />
+              {hero.eyebrow}
+            </p>
+            <h1>{hero.title}</h1>
+            <p className="about-scroll-lead">{hero.description}</p>
+            <div className="about-scroll-actions">
+              <button type="button" className="about-scroll-action about-scroll-action-primary" onClick={() => moveToStep(1)}>
+                {hero.primaryCtaLabel}
+                <ArrowRight aria-hidden className="h-5 w-5" />
+              </button>
+              <Link className="about-scroll-action about-scroll-action-quiet" href={hero.secondaryCtaHref}>
+                {hero.secondaryCtaLabel}
+              </Link>
             </div>
           </div>
-        )}
+          <div className="about-scroll-routine-marquee" aria-hidden="true">
+            Play · Walk · Rest · Comfort · Support
+          </div>
+        </article>
 
-        {activeStep.key === "compass" && (
-          <div className="about-journey-compass">
-            <div className="about-journey-compass-copy">
-              <p className="about-journey-kicker">Our point of view</p>
-              <h2 id="about-journey-title-compass" className="about-journey-section-title">
-                {hero.compassTitle}
-              </h2>
-              <p className="about-journey-section-copy">{hero.compassDescription}</p>
-              <div className="about-compass-orbit" aria-hidden="true">
-                <span className="about-compass-orbit-ring about-compass-orbit-ring-one" />
-                <span className="about-compass-orbit-ring about-compass-orbit-ring-two" />
-                <span className="about-compass-hand" style={{ transform: `rotate(${activeStoryIndex * 120 + 25}deg)` }} />
-                <span className="about-compass-center">
-                  <PawPrint className="h-8 w-8" />
-                </span>
-              </div>
-            </div>
-
-            <div className="about-principle-stage">
-              <div className="about-principle-tabs" role="tablist" aria-label="LUCK CLAWS shopping principles">
-                {storyPoints.map(({ title, Icon }, index) => (
-                  <button
-                    key={title}
-                    type="button"
-                    role="tab"
-                    aria-selected={index === activeStoryIndex}
-                    aria-controls="about-principle-panel"
-                    className="about-principle-tab"
-                    data-active={index === activeStoryIndex}
-                    onClick={() => setActiveStoryIndex(index)}
-                  >
-                    <span>{String(index + 1).padStart(2, "0")}</span>
-                    <Icon aria-hidden className="h-5 w-5" />
-                    <strong>{title}</strong>
-                  </button>
-                ))}
-              </div>
-              <div key={activeStory.title} id="about-principle-panel" role="tabpanel" className="about-principle-panel">
-                <span className="about-principle-icon">
-                  <ActiveStoryIcon aria-hidden className="h-7 w-7" />
-                </span>
-                <h3>{activeStory.title}</h3>
-                <p>{activeStory.text}</p>
-                <strong>{activeStory.proof}</strong>
-              </div>
+        <article
+          id="about-compass"
+          data-about-panel
+          className="about-scroll-panel about-scroll-panel-compass"
+        >
+          <div className="about-scroll-compass-copy">
+            <h2>{hero.compassTitle}</h2>
+            <p>{hero.compassDescription}</p>
+            <div className="about-scroll-compass-orbit" aria-hidden="true">
+              <span className="about-scroll-compass-ring about-scroll-compass-ring-outer" />
+              <span className="about-scroll-compass-ring about-scroll-compass-ring-inner" />
+              <span className="about-scroll-compass-hand" />
+              <span className="about-scroll-compass-core">
+                <PawPrint className="h-8 w-8" />
+              </span>
+              <span className="about-scroll-compass-word about-scroll-compass-word-play">PLAY</span>
+              <span className="about-scroll-compass-word about-scroll-compass-word-walk">WALK</span>
+              <span className="about-scroll-compass-word about-scroll-compass-word-rest">REST</span>
             </div>
           </div>
-        )}
 
-        {activeStep.key === "routine" && activeRoutine && (
-          <div className="about-journey-routine" id="paw-path">
-            <div className="about-routine-media">
-              <Image
-                key={activeRouteMedia.image}
-                src={activeRouteMedia.image}
-                alt={activeRouteMedia.alt}
-                fill
-                sizes="(min-width: 1024px) 58vw, 100vw"
-                className="about-routine-media-image object-cover"
-              />
-              <div className="about-routine-media-wash" />
-              <div className="about-routine-route-word" aria-hidden="true">
-                {activeRoutine.label}
-              </div>
-              <div className="about-routine-note">
-                <span>{activeRouteMedia.tone}</span>
-                <strong>{activeRoutine.noteText}</strong>
-              </div>
+          <div className="about-scroll-principles" role="tablist" aria-label="LUCK CLAWS shopping principles">
+            {storyPoints.map(({ title, Icon }, index) => (
+              <button
+                key={title}
+                type="button"
+                role="tab"
+                aria-selected={index === activeStoryIndex}
+                className="about-scroll-principle-line"
+                data-active={index === activeStoryIndex}
+                onClick={() => setActiveStoryIndex(index)}
+              >
+                <span>{String(index + 1).padStart(2, "0")}</span>
+                <Icon aria-hidden className="h-6 w-6" />
+                <strong>{title}</strong>
+                <ArrowRight aria-hidden className="h-5 w-5" />
+              </button>
+            ))}
+            <div key={activeStory.title} className="about-scroll-principle-detail" role="tabpanel">
+              <ActiveStoryIcon aria-hidden className="h-7 w-7" />
+              <p>{activeStory.text}</p>
+              <strong>{activeStory.proof}</strong>
             </div>
+          </div>
+        </article>
 
-            <div className="about-routine-copy">
-              <p className="about-journey-kicker">{pawPath.header.sectionLabel}</p>
-              <h2 id="about-journey-title-routine" className="about-journey-section-title">
-                {pawPath.header.title}
-              </h2>
-              <p className="about-journey-section-copy">{pawPath.header.subtitle}</p>
-              <p className="about-routine-supporting-line">{pawPath.header.supportingLine}</p>
+        {activeRoutine && (
+          <article
+            id="about-routine"
+            data-about-panel
+            className="about-scroll-panel about-scroll-panel-routine"
+          >
+            <div className="about-scroll-route-copy" id="paw-path">
+              <h2>{pawPath.header.title}</h2>
+              <p>{pawPath.header.subtitle}</p>
+              <p className="about-scroll-route-supporting">{pawPath.header.supportingLine}</p>
 
-              <div key={activeRoutine.routeKey} className="about-routine-recommendation">
-                <span className="about-routine-recommendation-icon">
+              <div className="about-scroll-route-selector" role="tablist" aria-label="Choose a pet routine">
+                {routines.map((route) => {
+                  const Icon = iconForKey(route.iconKey);
+                  const selected = route.routeKey === activeRoutine.routeKey;
+
+                  return (
+                    <button
+                      key={route.routeKey}
+                      type="button"
+                      role="tab"
+                      aria-selected={selected}
+                      className="about-scroll-route-button"
+                      data-active={selected}
+                      onClick={() => setActiveRoutineKey(route.routeKey)}
+                    >
+                      <Icon aria-hidden className="h-5 w-5" />
+                      <span>{route.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div key={activeRoutine.routeKey} className="about-scroll-route-result">
+                <span className="about-scroll-route-result-icon">
                   <ActiveRouteIcon aria-hidden className="h-6 w-6" />
                 </span>
                 <div>
-                  <p>Selected route</p>
                   <h3>{activeRoutine.recommendationTitle}</h3>
-                  <span>{activeRoutine.recommendationDescription}</span>
+                  <p>{activeRoutine.recommendationDescription}</p>
                 </div>
               </div>
 
-              <div className="about-routine-links">
+              <div className="about-scroll-route-links">
                 {routeLinks(activeRoutine).map((link, index) => (
-                  <Link
-                    key={`${activeRoutine.routeKey}-${link.href}`}
-                    href={link.href}
-                    className={index === 0 ? "about-routine-link-primary" : "about-routine-link-secondary"}
-                  >
+                  <Link key={`${activeRoutine.routeKey}-${link.href}`} href={link.href} data-primary={index === 0}>
                     {link.label}
                     <ArrowRight aria-hidden className="h-4 w-4" />
                   </Link>
@@ -538,188 +604,133 @@ export function AboutJourneyExperience({
               </div>
             </div>
 
-            <div
-              className="about-routine-selector"
-              role="tablist"
-              aria-label="Choose a pet routine"
-              data-about-horizontal-scroll
-            >
-              {routines.map((route) => {
-                const Icon = iconForKey(route.iconKey);
-                const selected = route.routeKey === activeRoutine.routeKey;
-
-                return (
-                  <button
-                    key={route.routeKey}
-                    type="button"
-                    role="tab"
-                    aria-selected={selected}
-                    className="about-routine-selector-button"
-                    data-active={selected}
-                    onClick={() => setActiveRoutineKey(route.routeKey)}
-                  >
-                    <Icon aria-hidden className="h-5 w-5" />
-                    <span>{route.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="about-routine-notes" aria-label="Paw Path guiding notes">
-              {notes.slice(0, 4).map((note) => {
-                const Icon = iconForKey(note.iconKey);
-
-                return (
-                  <span key={note.noteKey}>
-                    <Icon aria-hidden className="h-4 w-4" />
-                    <strong>{note.keyword}</strong> {note.secondaryText}
-                  </span>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {activeStep.key === "standards" && (
-          <div className="about-journey-standards">
-            <div className="about-standards-intro">
-              <p className="about-journey-kicker">A practical promise</p>
-              <h2 id="about-journey-title-standards" className="about-journey-section-title">
-                What you can expect from {brandName}
-              </h2>
-              <p className="about-journey-section-copy">
-                Trust is easier to build when the useful details stay visible. Open each promise to see what it means in the store.
-              </p>
-              <div className="about-standards-word" aria-hidden="true">EXPECT</div>
-            </div>
-
-            <div className="about-standards-list">
-              {promisePoints.map(({ title, Icon }, index) => {
-                const selected = index === activePromiseIndex;
-
-                return (
-                  <button
-                    key={title}
-                    type="button"
-                    className="about-standard-row"
-                    data-active={selected}
-                    aria-expanded={selected}
-                    onClick={() => setActivePromiseIndex(index)}
-                  >
-                    <span className="about-standard-index">{String(index + 1).padStart(2, "0")}</span>
-                    <span className="about-standard-icon">
-                      <Icon aria-hidden className="h-5 w-5" />
-                    </span>
-                    <strong>{title}</strong>
-                    <ArrowRight aria-hidden className="about-standard-arrow h-5 w-5" />
-                  </button>
-                );
-              })}
-              <div key={activePromise.title} className="about-standard-detail" aria-live="polite">
-                <span className="about-standard-detail-icon">
-                  <ActivePromiseIcon aria-hidden className="h-6 w-6" />
-                </span>
-                <div>
-                  <h3>{activePromise.title}</h3>
-                  <p>{activePromise.text}</p>
-                  <strong>{activePromise.detail}</strong>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeStep.key === "next" && activeCollection && (
-          <div className="about-journey-next">
-            <div className="about-next-media">
+            <div className="about-scroll-route-visual">
               <Image
-                key={activeCollection.imageUrl}
-                src={activeCollection.imageUrl}
-                alt={activeCollection.imageAlt}
+                key={activeRouteMedia.image}
+                src={activeRouteMedia.image}
+                alt={activeRouteMedia.alt}
                 fill
-                sizes="(min-width: 1024px) 58vw, 100vw"
-                className="about-next-media-image object-cover"
+                sizes="(min-width: 861px) 58vw, 100vw"
+                className="object-cover"
               />
-              <div className="about-next-media-wash" />
-              <div className="about-next-collection-name">
-                <span>Selected collection</span>
-                <strong>{activeCollection.title}</strong>
+              <div className="about-scroll-route-wash" />
+              <span className="about-scroll-route-word" aria-hidden="true">{activeRoutine.label}</span>
+              <div className="about-scroll-route-caption">
+                <span>{activeRouteMedia.tone}</span>
+                <strong>{activeRoutine.noteText}</strong>
+              </div>
+              <div className="about-scroll-route-notes">
+                {notes.slice(0, 4).map((note) => {
+                  const Icon = iconForKey(note.iconKey);
+
+                  return (
+                    <span key={note.noteKey}>
+                      <Icon aria-hidden className="h-4 w-4" />
+                      <strong>{note.keyword}</strong> {note.secondaryText}
+                    </span>
+                  );
+                })}
               </div>
             </div>
+          </article>
+        )}
 
-            <div className="about-next-copy">
-              <p className="about-journey-kicker">{collectionSection.eyebrow}</p>
-              <h2 id="about-journey-title-next" className="about-journey-section-title">
-                {collectionSection.title}
-              </h2>
-              <p className="about-journey-section-copy">{collectionSection.subtitle}</p>
-              <div className="about-next-actions">
-                <Link href={activeCollection.href} className="about-journey-action about-journey-action-primary">
+        <article
+          id="about-standards"
+          data-about-panel
+          className="about-scroll-panel about-scroll-panel-standards"
+        >
+          <div className="about-scroll-standards-copy">
+            <h2>What you can expect from {brandName}</h2>
+            <p>Useful details should stay visible before checkout, and support should never feel hidden.</p>
+            <div className="about-scroll-expect-word" aria-hidden="true">EXPECT</div>
+          </div>
+
+          <div className="about-scroll-standards-list">
+            {promisePoints.map(({ title, Icon }, index) => (
+              <button
+                key={title}
+                type="button"
+                className="about-scroll-standard-row"
+                data-active={index === activePromiseIndex}
+                aria-expanded={index === activePromiseIndex}
+                onClick={() => setActivePromiseIndex(index)}
+              >
+                <span>{String(index + 1).padStart(2, "0")}</span>
+                <Icon aria-hidden className="h-6 w-6" />
+                <strong>{title}</strong>
+                <ArrowRight aria-hidden className="h-5 w-5" />
+              </button>
+            ))}
+            <div key={activePromise.title} className="about-scroll-standard-detail" aria-live="polite">
+              <span>
+                <ActivePromiseIcon aria-hidden className="h-6 w-6" />
+              </span>
+              <div>
+                <h3>{activePromise.title}</h3>
+                <p>{activePromise.text}</p>
+                <strong>{activePromise.detail}</strong>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        {activeCollection && (
+          <article
+            id="about-next"
+            data-about-panel
+            className="about-scroll-panel about-scroll-panel-next"
+          >
+            <div className="about-scroll-next-copy">
+              <h2>{collectionSection.title}</h2>
+              <p>{collectionSection.subtitle}</p>
+              <div className="about-scroll-next-actions">
+                <Link href={activeCollection.href} className="about-scroll-action about-scroll-action-primary">
                   Explore {activeCollection.title}
                   <ArrowRight aria-hidden className="h-5 w-5" />
                 </Link>
-                <Link href={collectionSection.viewAllHref} className="about-journey-action about-journey-action-secondary">
+                <Link href={collectionSection.viewAllHref} className="about-scroll-action about-scroll-action-quiet">
                   {collectionSection.viewAllLabel}
                 </Link>
               </div>
-
-              <div className="about-next-support">
+              <div className="about-scroll-support-line">
                 <Mail aria-hidden className="h-5 w-5" />
-                <div>
-                  <strong>Need a clearer next step?</strong>
-                  <p>
-                    Email: <a href="mailto:support@luckclaws.com">support@luckclaws.com</a>
-                  </p>
-                </div>
+                <p>
+                  Need a clearer next step? <a href="mailto:support@luckclaws.com">support@luckclaws.com</a>
+                </p>
                 <Link href="/contact">Contact Us</Link>
               </div>
             </div>
 
-            <div className="about-next-selector" aria-label="Choose a collection" data-about-horizontal-scroll>
-              {availableCollections.map((collection) => (
-                <button
-                  key={collection.cardKey}
-                  type="button"
-                  className="about-next-selector-button"
-                  data-active={collection.cardKey === activeCollection.cardKey}
-                  onClick={() => setActiveCollectionKey(collection.cardKey)}
-                >
-                  <span>{collection.title}</span>
-                  <ArrowRight aria-hidden className="h-4 w-4" />
-                </button>
-              ))}
+            <div className="about-scroll-collection-frame">
+              <div className="about-scroll-collection-media">
+                <Image
+                  key={activeCollection.imageUrl}
+                  src={activeCollection.imageUrl}
+                  alt={activeCollection.imageAlt}
+                  fill
+                  sizes="(min-width: 861px) 52vw, 100vw"
+                  className="object-cover"
+                />
+                <div className="about-scroll-collection-wash" />
+                <strong>{activeCollection.title}</strong>
+              </div>
+              <div className="about-scroll-collection-selector" aria-label="Choose a collection">
+                {availableCollections.map((collection) => (
+                  <button
+                    key={collection.cardKey}
+                    type="button"
+                    data-active={collection.cardKey === activeCollection.cardKey}
+                    onClick={() => setActiveCollectionKey(collection.cardKey)}
+                  >
+                    <span>{collection.title}</span>
+                    <ArrowRight aria-hidden className="h-4 w-4" />
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          </article>
         )}
-      </div>
-
-      <div className="about-journey-controls">
-        <button
-          type="button"
-          className="about-journey-control-button"
-          onClick={() => moveToStep(activeStepIndex - 1)}
-          disabled={activeStepIndex === 0}
-          aria-label="Previous About chapter"
-        >
-          <ArrowLeft aria-hidden className="h-5 w-5" />
-          <span>Previous</span>
-        </button>
-        <div className="about-journey-progress" aria-hidden="true">
-          <span style={{ transform: `scaleX(${progress / 100})` }} />
-        </div>
-        <button
-          type="button"
-          className="about-journey-control-button about-journey-control-button-next"
-          onClick={() => moveToStep(activeStepIndex === journeySteps.length - 1 ? 0 : activeStepIndex + 1)}
-          aria-label={activeStepIndex === journeySteps.length - 1 ? "Restart About story" : "Next About chapter"}
-        >
-          <span>{activeStepIndex === journeySteps.length - 1 ? "Restart" : "Next"}</span>
-          {activeStepIndex === journeySteps.length - 1 ? (
-            <RotateCcw aria-hidden className="h-5 w-5" />
-          ) : (
-            <ArrowRight aria-hidden className="h-5 w-5" />
-          )}
-        </button>
       </div>
     </section>
   );
