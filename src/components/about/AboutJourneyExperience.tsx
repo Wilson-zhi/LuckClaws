@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, type CSSProperties, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -225,6 +225,8 @@ function HeroMedia({ hero, source, video }: { hero: AboutHeroContent; source: st
         aria-label={hero.heroImageAlt}
         className="about-scroll-hero-media"
         src={source}
+        poster="/images/about-dogs-running.jpg"
+        preload="metadata"
         autoPlay
         muted
         loop
@@ -243,6 +245,44 @@ function HeroMedia({ hero, source, video }: { hero: AboutHeroContent; source: st
       className="about-scroll-hero-media object-cover"
     />
   );
+}
+
+function journeyIndexForHref(href: string) {
+  if (href === "#paw-path") {
+    return journeySteps.findIndex((step) => step.key === "routine");
+  }
+
+  if (!href.startsWith("#about-")) {
+    return -1;
+  }
+
+  const key = href.replace("#about-", "") as JourneyStepKey;
+  return journeySteps.findIndex((step) => step.key === key);
+}
+
+function handleTabKey(
+  event: ReactKeyboardEvent<HTMLButtonElement>,
+  currentIndex: number,
+  total: number,
+  selectIndex: (index: number) => void
+) {
+  let nextIndex = currentIndex;
+
+  if (["ArrowRight", "ArrowDown"].includes(event.key)) {
+    nextIndex = (currentIndex + 1) % total;
+  } else if (["ArrowLeft", "ArrowUp"].includes(event.key)) {
+    nextIndex = (currentIndex - 1 + total) % total;
+  } else if (event.key === "Home") {
+    nextIndex = 0;
+  } else if (event.key === "End") {
+    nextIndex = total - 1;
+  } else {
+    return;
+  }
+
+  event.preventDefault();
+  selectIndex(nextIndex);
+  event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>('[role="tab"]')[nextIndex]?.focus();
 }
 
 export function AboutJourneyExperience({
@@ -277,6 +317,10 @@ export function AboutJourneyExperience({
   const ActiveStoryIcon = activeStory.Icon;
   const ActiveRouteIcon = iconForKey(activeRoutine.iconKey);
   const ActivePromiseIcon = activePromise.Icon;
+  const heroPrimaryStepIndex = journeyIndexForHref(hero.primaryCtaHref);
+  const progressStyle = {
+    "--about-scroll-progress": activeStepIndex / (journeySteps.length - 1)
+  } as CSSProperties;
 
   useGSAP(
     () => {
@@ -292,13 +336,11 @@ export function AboutJourneyExperience({
 
         gsap.set(panels, {
           autoAlpha: 0,
-          filter: "blur(8px)",
           pointerEvents: "none",
           yPercent: 8
         });
         gsap.set(panels[0], {
           autoAlpha: 1,
-          filter: "blur(0px)",
           pointerEvents: "auto",
           yPercent: 0
         });
@@ -339,7 +381,6 @@ export function AboutJourneyExperience({
               panels[index - 1],
               {
                 autoAlpha: 0,
-                filter: "blur(10px)",
                 pointerEvents: "none",
                 yPercent: -7,
                 duration: 0.3
@@ -350,13 +391,11 @@ export function AboutJourneyExperience({
               panels[index],
               {
                 autoAlpha: 0,
-                filter: "blur(10px)",
                 pointerEvents: "none",
                 yPercent: 8
               },
               {
                 autoAlpha: 1,
-                filter: "blur(0px)",
                 pointerEvents: "auto",
                 yPercent: 0,
                 duration: 0.36
@@ -395,30 +434,96 @@ export function AboutJourneyExperience({
 
         timeline.call(() => undefined, [], journeySteps.length - 1);
 
+        const requestedStepIndex = journeyIndexForHref(window.location.hash);
+        const deepLinkTimer = window.setTimeout(() => {
+          const trigger = timeline.scrollTrigger;
+
+          if (!trigger || requestedStepIndex < 0) {
+            return;
+          }
+
+          const destination =
+            trigger.start + (trigger.end - trigger.start) * (requestedStepIndex / (journeySteps.length - 1));
+          activeIndexRef.current = requestedStepIndex;
+          setActiveStepIndex(requestedStepIndex);
+          window.scrollTo({ top: destination, behavior: "auto" });
+          ScrollTrigger.update();
+        }, 80);
+
         return () => {
+          window.clearTimeout(deepLinkTimer);
           storyScrollTriggerRef.current = null;
         };
       });
 
       mediaQuery.add("(max-width: 860px)", () => {
         const panels = gsap.utils.toArray<HTMLElement>("[data-about-panel]");
+        const scrollPanelIntoView = (panel: HTMLElement) => {
+          const headerHeight = document.querySelector("header")?.getBoundingClientRect().height ?? 64;
+          const railHeight =
+            journeyRef.current?.querySelector<HTMLElement>(".about-scroll-rail")?.getBoundingClientRect().height ??
+            64;
+          const destination = window.scrollY + panel.getBoundingClientRect().top - headerHeight - railHeight;
+
+          window.scrollTo({ top: Math.max(0, destination), behavior: "auto" });
+        };
+        const activateStep = (index: number) => {
+          activeIndexRef.current = index;
+          setActiveStepIndex(index);
+
+          const nextHash = `#about-${journeySteps[index].key}`;
+          if (window.location.hash !== nextHash) {
+            window.history.replaceState(null, "", nextHash);
+          }
+        };
         const observers = panels.map((panel, index) =>
           ScrollTrigger.create({
             trigger: panel,
             start: "top 55%",
             end: "bottom 45%",
-            onEnter: () => {
-              activeIndexRef.current = index;
-              setActiveStepIndex(index);
-            },
-            onEnterBack: () => {
-              activeIndexRef.current = index;
-              setActiveStepIndex(index);
-            }
+            onEnter: () => activateStep(index),
+            onEnterBack: () => activateStep(index)
           })
         );
 
-        return () => observers.forEach((observer) => observer.kill());
+        const requestedStepIndex = journeyIndexForHref(window.location.hash);
+        const deepLinkTimer = window.setTimeout(() => {
+          const requestedPanel = panels[requestedStepIndex];
+
+          if (!requestedPanel) {
+            return;
+          }
+
+          scrollPanelIntoView(requestedPanel);
+          activateStep(requestedStepIndex);
+          ScrollTrigger.update();
+        }, 120);
+
+        return () => {
+          window.clearTimeout(deepLinkTimer);
+          observers.forEach((observer) => observer.kill());
+        };
+      });
+
+      mediaQuery.add("(min-width: 861px) and (prefers-reduced-motion: reduce)", () => {
+        const requestedStepIndex = journeyIndexForHref(window.location.hash);
+        const requestedPanel = document.getElementById(
+          `about-${journeySteps[requestedStepIndex]?.key ?? ""}`
+        );
+        const deepLinkTimer = window.setTimeout(() => {
+          if (!requestedPanel) {
+            return;
+          }
+
+          const headerHeight = document.querySelector("header")?.getBoundingClientRect().height ?? 84;
+          const destination = window.scrollY + requestedPanel.getBoundingClientRect().top - headerHeight;
+
+          activeIndexRef.current = requestedStepIndex;
+          setActiveStepIndex(requestedStepIndex);
+          window.scrollTo({ top: Math.max(0, destination), behavior: "auto" });
+        }, 120);
+
+        return () => window.clearTimeout(deepLinkTimer);
       });
 
       return () => mediaQuery.revert();
@@ -429,17 +534,27 @@ export function AboutJourneyExperience({
   function moveToStep(nextIndex: number) {
     const boundedIndex = Math.max(0, Math.min(journeySteps.length - 1, nextIndex));
     const trigger = storyScrollTriggerRef.current;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const behavior: ScrollBehavior = reducedMotion ? "auto" : "smooth";
 
     if (trigger) {
       const destination = trigger.start + (trigger.end - trigger.start) * (boundedIndex / (journeySteps.length - 1));
-      window.scrollTo({ top: destination, behavior: "smooth" });
+      window.scrollTo({ top: destination, behavior });
       return;
     }
 
-    document.getElementById(`about-${journeySteps[boundedIndex].key}`)?.scrollIntoView({
-      behavior: "smooth",
-      block: "start"
-    });
+    const panel = document.getElementById(`about-${journeySteps[boundedIndex].key}`);
+
+    if (!panel) {
+      return;
+    }
+
+    const headerHeight = document.querySelector("header")?.getBoundingClientRect().height ?? 64;
+    const railHeight =
+      journeyRef.current?.querySelector<HTMLElement>(".about-scroll-rail")?.getBoundingClientRect().height ?? 64;
+    const destination = window.scrollY + panel.getBoundingClientRect().top - headerHeight - railHeight;
+
+    window.scrollTo({ top: Math.max(0, destination), behavior });
   }
 
   return (
@@ -455,7 +570,7 @@ export function AboutJourneyExperience({
             <span aria-hidden="true"> / {String(journeySteps.length).padStart(2, "0")}</span>
           </span>
           <div className="about-scroll-rail-line" aria-hidden="true">
-            <span style={{ transform: `scaleY(${activeStepIndex / (journeySteps.length - 1)})` }} />
+            <span style={progressStyle} />
           </div>
           {journeySteps.map((step, index) => (
             <button
@@ -491,10 +606,21 @@ export function AboutJourneyExperience({
             <h1>{hero.title}</h1>
             <p className="about-scroll-lead">{hero.description}</p>
             <div className="about-scroll-actions">
-              <button type="button" className="about-scroll-action about-scroll-action-primary" onClick={() => moveToStep(1)}>
-                {hero.primaryCtaLabel}
-                <ArrowRight aria-hidden className="h-5 w-5" />
-              </button>
+              {heroPrimaryStepIndex >= 0 ? (
+                <button
+                  type="button"
+                  className="about-scroll-action about-scroll-action-primary"
+                  onClick={() => moveToStep(heroPrimaryStepIndex)}
+                >
+                  {hero.primaryCtaLabel}
+                  <ArrowRight aria-hidden className="h-5 w-5" />
+                </button>
+              ) : (
+                <Link className="about-scroll-action about-scroll-action-primary" href={hero.primaryCtaHref}>
+                  {hero.primaryCtaLabel}
+                  <ArrowRight aria-hidden className="h-5 w-5" />
+                </Link>
+              )}
               <Link className="about-scroll-action about-scroll-action-quiet" href={hero.secondaryCtaHref}>
                 {hero.secondaryCtaLabel}
               </Link>
@@ -533,9 +659,12 @@ export function AboutJourneyExperience({
                 type="button"
                 role="tab"
                 aria-selected={index === activeStoryIndex}
+                aria-controls="about-principle-detail"
+                id={`about-principle-tab-${index}`}
                 className="about-scroll-principle-line"
                 data-active={index === activeStoryIndex}
                 onClick={() => setActiveStoryIndex(index)}
+                onKeyDown={(event) => handleTabKey(event, index, storyPoints.length, setActiveStoryIndex)}
               >
                 <span>{String(index + 1).padStart(2, "0")}</span>
                 <Icon aria-hidden className="h-6 w-6" />
@@ -543,7 +672,13 @@ export function AboutJourneyExperience({
                 <ArrowRight aria-hidden className="h-5 w-5" />
               </button>
             ))}
-            <div key={activeStory.title} className="about-scroll-principle-detail" role="tabpanel">
+            <div
+              key={activeStory.title}
+              id="about-principle-detail"
+              className="about-scroll-principle-detail"
+              role="tabpanel"
+              aria-labelledby={`about-principle-tab-${activeStoryIndex}`}
+            >
               <ActiveStoryIcon aria-hidden className="h-7 w-7" />
               <p>{activeStory.text}</p>
               <strong>{activeStory.proof}</strong>
@@ -573,9 +708,16 @@ export function AboutJourneyExperience({
                       type="button"
                       role="tab"
                       aria-selected={selected}
+                      aria-controls="about-routine-detail"
+                      id={`about-routine-tab-${normalizeKey(route.routeKey)}`}
                       className="about-scroll-route-button"
                       data-active={selected}
                       onClick={() => setActiveRoutineKey(route.routeKey)}
+                      onKeyDown={(event) =>
+                        handleTabKey(event, routines.indexOf(route), routines.length, (nextIndex) =>
+                          setActiveRoutineKey(routines[nextIndex].routeKey)
+                        )
+                      }
                     >
                       <Icon aria-hidden className="h-5 w-5" />
                       <span>{route.label}</span>
@@ -584,7 +726,13 @@ export function AboutJourneyExperience({
                 })}
               </div>
 
-              <div key={activeRoutine.routeKey} className="about-scroll-route-result">
+              <div
+                key={activeRoutine.routeKey}
+                id="about-routine-detail"
+                className="about-scroll-route-result"
+                role="tabpanel"
+                aria-labelledby={`about-routine-tab-${normalizeKey(activeRoutine.routeKey)}`}
+              >
                 <span className="about-scroll-route-result-icon">
                   <ActiveRouteIcon aria-hidden className="h-6 w-6" />
                 </span>
@@ -654,6 +802,7 @@ export function AboutJourneyExperience({
                 className="about-scroll-standard-row"
                 data-active={index === activePromiseIndex}
                 aria-expanded={index === activePromiseIndex}
+                aria-controls="about-standard-detail"
                 onClick={() => setActivePromiseIndex(index)}
               >
                 <span>{String(index + 1).padStart(2, "0")}</span>
@@ -662,7 +811,12 @@ export function AboutJourneyExperience({
                 <ArrowRight aria-hidden className="h-5 w-5" />
               </button>
             ))}
-            <div key={activePromise.title} className="about-scroll-standard-detail" aria-live="polite">
+            <div
+              key={activePromise.title}
+              id="about-standard-detail"
+              className="about-scroll-standard-detail"
+              aria-live="polite"
+            >
               <span>
                 <ActivePromiseIcon aria-hidden className="h-6 w-6" />
               </span>
@@ -703,7 +857,12 @@ export function AboutJourneyExperience({
             </div>
 
             <div className="about-scroll-collection-frame">
-              <div className="about-scroll-collection-media">
+              <div
+                id="about-collection-detail"
+                className="about-scroll-collection-media"
+                role="tabpanel"
+                aria-labelledby={`about-collection-tab-${normalizeKey(activeCollection.cardKey)}`}
+              >
                 <Image
                   key={activeCollection.imageUrl}
                   src={activeCollection.imageUrl}
@@ -715,13 +874,22 @@ export function AboutJourneyExperience({
                 <div className="about-scroll-collection-wash" />
                 <strong>{activeCollection.title}</strong>
               </div>
-              <div className="about-scroll-collection-selector" aria-label="Choose a collection">
-                {availableCollections.map((collection) => (
+              <div className="about-scroll-collection-selector" role="tablist" aria-label="Choose a collection">
+                {availableCollections.map((collection, index) => (
                   <button
                     key={collection.cardKey}
                     type="button"
+                    role="tab"
+                    aria-selected={collection.cardKey === activeCollection.cardKey}
+                    aria-controls="about-collection-detail"
+                    id={`about-collection-tab-${normalizeKey(collection.cardKey)}`}
                     data-active={collection.cardKey === activeCollection.cardKey}
                     onClick={() => setActiveCollectionKey(collection.cardKey)}
+                    onKeyDown={(event) =>
+                      handleTabKey(event, index, availableCollections.length, (nextIndex) =>
+                        setActiveCollectionKey(availableCollections[nextIndex].cardKey)
+                      )
+                    }
                   >
                     <span>{collection.title}</span>
                     <ArrowRight aria-hidden className="h-4 w-4" />
