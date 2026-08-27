@@ -91,7 +91,7 @@ export function HomePosterHero({
           </div>
         </div>
 
-        <div className="home-editorial-hero-copy homepage-enter">
+        <div className="home-editorial-hero-copy">
           <p className="home-editorial-hero-feature">
             <span>{featuredLabel}</span>
             <span aria-hidden="true">/</span>
@@ -141,10 +141,17 @@ export function HomePosterHero({
           </aside>
         )}
 
+        <div className="home-editorial-hero-reveal" aria-hidden="true">
+          <span>{featuredText}</span>
+          <strong>Useful things for the days you share.</strong>
+        </div>
+
         <a href="#shop-by-routine" className="home-editorial-hero-scroll">
           <span>Scroll to explore</span>
           <ArrowDown aria-hidden className="h-4 w-4" />
         </a>
+
+        <div className="home-editorial-hero-wash" aria-hidden="true" />
       </div>
     </section>
   );

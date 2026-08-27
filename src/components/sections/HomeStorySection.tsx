@@ -57,7 +57,7 @@ export function HomeStorySection({ story }: { story: HomepageStorySectionContent
           </div>
         </div>
 
-        <div className="home-editorial-story-principles">
+        <div className="home-editorial-story-principles home-editorial-motion-reveal">
           {story.items.map((item, index) => {
             const Icon = iconMap[item.icon] ?? Heart;
 

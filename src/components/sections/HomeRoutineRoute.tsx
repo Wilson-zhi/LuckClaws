@@ -64,7 +64,7 @@ export function HomeRoutineRoute({ categories }: { categories: PublicCategoryCar
   return (
     <section id="routine-lookbook" className="home-editorial-collections scroll-mt-24">
       <div className="section-shell">
-        <header className="home-editorial-collections-heading">
+        <header className="home-editorial-collections-heading home-editorial-motion-reveal">
           <div>
             <p className="home-editorial-kicker">Routine lookbook</p>
             <h2>Four ways into a better pet day.</h2>
@@ -83,7 +83,7 @@ export function HomeRoutineRoute({ categories }: { categories: PublicCategoryCar
             <Link
               key={category.href}
               href={category.href}
-              className="home-editorial-collection group"
+              className="home-editorial-collection home-editorial-motion-reveal group"
               data-layout={index}
               aria-label={`Shop ${category.name}`}
             >

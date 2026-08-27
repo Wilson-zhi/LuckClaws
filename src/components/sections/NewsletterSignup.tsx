@@ -97,7 +97,7 @@ export function NewsletterSignup({ content }: { content: HomepageNewsletterConte
   return (
     <section className="home-editorial-newsletter">
       <div className="section-shell">
-        <div className="home-editorial-newsletter-grid">
+        <div className="home-editorial-newsletter-grid home-editorial-motion-reveal">
           <div>
             <span className="home-editorial-kicker inline-flex items-center gap-2">
                 <Mail aria-hidden className="h-4 w-4" />

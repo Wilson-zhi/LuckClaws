@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { ViewItemListTracker } from "@/components/analytics/EcommerceEventTrackers";
 import { HomeDecisionGuide } from "@/components/sections/HomeDecisionGuide";
+import { HomeEditorialMotion } from "@/components/sections/HomeEditorialMotion";
 import { HomePosterHero } from "@/components/sections/HomePosterHero";
 import { HomeProductDiscovery } from "@/components/sections/HomeProductDiscovery";
 import { HomeRoutineRoute } from "@/components/sections/HomeRoutineRoute";
@@ -208,39 +209,41 @@ export default async function HomePage() {
       />
       <ViewItemListTracker products={[featuredProduct]} itemListName="Homepage Featured Product" />
       <ViewItemListTracker products={bestSellers} itemListName="Homepage Best Sellers" />
-      <HomePosterHero
-        eyebrow={heroEyebrow}
-        title={heroTitle}
-        subtitle={heroSubtitle}
-        imageUrl={heroImageUrl}
-        imageAlt={heroImageAlt}
-        videoUrl={heroVideoUrl}
-        primaryButtonText={primaryButtonText}
-        primaryButtonLink={primaryButtonLink}
-        secondaryButtonText={secondaryButtonText}
-        secondaryButtonLink={secondaryButtonLink}
-        featuredLabel={hero.featuredLabel}
-        featuredText={hero.featuredText}
-        hasVideo={hasHeroVideo}
-        products={heroProductTiles}
-        trustLabels={heroTrustLabels}
-      />
+      <HomeEditorialMotion>
+        <HomePosterHero
+          eyebrow={heroEyebrow}
+          title={heroTitle}
+          subtitle={heroSubtitle}
+          imageUrl={heroImageUrl}
+          imageAlt={heroImageAlt}
+          videoUrl={heroVideoUrl}
+          primaryButtonText={primaryButtonText}
+          primaryButtonLink={primaryButtonLink}
+          secondaryButtonText={secondaryButtonText}
+          secondaryButtonLink={secondaryButtonLink}
+          featuredLabel={hero.featuredLabel}
+          featuredText={hero.featuredText}
+          hasVideo={hasHeroVideo}
+          products={heroProductTiles}
+          trustLabels={heroTrustLabels}
+        />
 
-      <section className="home-editorial-trust-section" aria-label="Store promises">
-        <CompactTrustBar items={topTrustItems} columns="wide" className="section-shell" />
-      </section>
+        <section className="home-editorial-trust-section" aria-label="Store promises">
+          <CompactTrustBar items={topTrustItems} columns="wide" className="section-shell" />
+        </section>
 
-      <HomeDecisionGuide guide={decisionGuide} />
+        <HomeDecisionGuide guide={decisionGuide} />
 
-      <HomeProductDiscovery featuredProduct={featuredProduct} products={bestSellers} />
+        <HomeProductDiscovery featuredProduct={featuredProduct} products={bestSellers} />
 
-      <HomeRoutineRoute categories={homepageCategories} />
+        <HomeRoutineRoute categories={homepageCategories} />
 
-      <HomeStorySection story={storySection} />
+        <HomeStorySection story={storySection} />
 
-      <TrustBadges section={servicePromises} />
+        <TrustBadges section={servicePromises} />
 
-      <NewsletterSignup content={newsletter} />
+        <NewsletterSignup content={newsletter} />
+      </HomeEditorialMotion>
     </SiteShell>
   );
 }

@@ -100,7 +100,7 @@ export function HomeProductDiscovery({ featuredProduct, products }: HomeProductD
   return (
     <section id="best-sellers" className="home-editorial-products scroll-mt-24">
       <div className="section-shell">
-        <header className="home-editorial-products-heading">
+        <header className="home-editorial-products-heading home-editorial-motion-reveal">
           <div>
             <p className="home-editorial-kicker">{activeTabContent.eyebrow}</p>
             <h2>{activeTabContent.title}</h2>
@@ -124,58 +124,60 @@ export function HomeProductDiscovery({ featuredProduct, products }: HomeProductD
           </div>
         </header>
 
-        <div className="home-editorial-product-shelf" role="tabpanel" aria-live="polite">
-          {visibleProducts.map((product, index) => {
-            const href = getProductPath(product);
+        <div className="home-editorial-product-window">
+          <div className="home-editorial-product-shelf" role="tabpanel" aria-live="polite">
+            {visibleProducts.map((product, index) => {
+              const href = getProductPath(product);
 
-            return (
-              <article key={`${activeTab}-${product.id}`} className="advisor-recommendation-enter">
-                <Link
-                  href={href}
-                  className="home-editorial-product-image group"
-                  onClick={() => trackSelectItem(product, "Homepage Everyday Edit")}
-                >
-                  {(product.badge || product.isNew) && (
-                    <span>{product.badge ?? "New"}</span>
-                  )}
-                  <Image
-                    src={productImage(product)}
-                    alt={product.alt}
-                    fill
-                    sizes="(min-width: 1280px) 25vw, (min-width: 768px) 42vw, 78vw"
-                    loading={index < 2 ? "eager" : "lazy"}
-                    className="object-cover transition-transform duration-500 group-hover:scale-[1.035] motion-reduce:transition-none"
-                  />
-                </Link>
-                <div className="home-editorial-product-copy">
-                  <p>{product.category}</p>
+              return (
+                <article key={`${activeTab}-${product.id}`} className="advisor-recommendation-enter">
                   <Link
                     href={href}
+                    className="home-editorial-product-image group"
                     onClick={() => trackSelectItem(product, "Homepage Everyday Edit")}
                   >
-                    <h3>{product.name}</h3>
+                    {(product.badge || product.isNew) && (
+                      <span>{product.badge ?? "New"}</span>
+                    )}
+                    <Image
+                      src={productImage(product)}
+                      alt={product.alt}
+                      fill
+                      sizes="(min-width: 1280px) 25vw, (min-width: 768px) 42vw, 78vw"
+                      loading={index < 2 ? "eager" : "lazy"}
+                      className="object-cover transition-transform duration-500 group-hover:scale-[1.035] motion-reduce:transition-none"
+                    />
                   </Link>
-                  <div>
-                    <span>
-                      <strong>{formatPrice(product.price)}</strong>
-                      {product.regularPrice && <small>{formatPrice(product.regularPrice)}</small>}
-                    </span>
-                    <AddToCartButton product={product} variant="icon">
-                      <Plus aria-hidden className="h-5 w-5" />
-                    </AddToCartButton>
+                  <div className="home-editorial-product-copy">
+                    <p>{product.category}</p>
+                    <Link
+                      href={href}
+                      onClick={() => trackSelectItem(product, "Homepage Everyday Edit")}
+                    >
+                      <h3>{product.name}</h3>
+                    </Link>
+                    <div>
+                      <span>
+                        <strong>{formatPrice(product.price)}</strong>
+                        {product.regularPrice && <small>{formatPrice(product.regularPrice)}</small>}
+                      </span>
+                      <AddToCartButton product={product} variant="icon">
+                        <Plus aria-hidden className="h-5 w-5" />
+                      </AddToCartButton>
+                    </div>
+                    <Link
+                      href={href}
+                      className="group"
+                      onClick={() => trackSelectItem(product, "Homepage Everyday Edit")}
+                    >
+                      <span>View product</span>
+                      <ArrowRight aria-hidden className="h-4 w-4 transition-transform group-hover:translate-x-1 motion-reduce:transition-none" />
+                    </Link>
                   </div>
-                  <Link
-                    href={href}
-                    className="group"
-                    onClick={() => trackSelectItem(product, "Homepage Everyday Edit")}
-                  >
-                    <span>View product</span>
-                    <ArrowRight aria-hidden className="h-4 w-4 transition-transform group-hover:translate-x-1 motion-reduce:transition-none" />
-                  </Link>
-                </div>
-              </article>
-            );
-          })}
+                </article>
+              );
+            })}
+          </div>
         </div>
 
         <Link href="/collections" className="home-editorial-products-all group">

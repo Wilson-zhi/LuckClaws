@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState, type ComponentType } from "react";
+import { useEffect, useMemo, useState, type ComponentType } from "react";
 import { ArrowRight, Bed, HelpCircle, PawPrint, Route, SearchCheck } from "lucide-react";
 import type {
   HomepageDecisionGuideContent,
@@ -33,6 +33,17 @@ export function HomeDecisionGuide({ guide }: { guide: HomepageDecisionGuideConte
     [activeKey, guideOptions]
   );
 
+  useEffect(() => {
+    const handleMotionStep = (event: Event) => {
+      const nextIndex = (event as CustomEvent<number>).detail;
+      const nextOption = guideOptions[nextIndex];
+      if (nextOption) setActiveKey(nextOption.key);
+    };
+
+    window.addEventListener("home-guide-motion-step", handleMotionStep);
+    return () => window.removeEventListener("home-guide-motion-step", handleMotionStep);
+  }, [guideOptions]);
+
   if (!guide.enabled || !activeOption) {
     return null;
   }
@@ -45,7 +56,7 @@ export function HomeDecisionGuide({ guide }: { guide: HomepageDecisionGuideConte
   return (
     <section id="shop-by-routine" className="home-editorial-guide scroll-mt-24">
       <div className="section-shell">
-        <header className="home-editorial-guide-heading">
+        <header className="home-editorial-guide-heading home-editorial-motion-reveal">
           <div>
             <p className="home-editorial-kicker">{guide.eyebrow}</p>
             <h2>{guide.title}</h2>
@@ -56,7 +67,7 @@ export function HomeDecisionGuide({ guide }: { guide: HomepageDecisionGuideConte
           </div>
         </header>
 
-        <div className="home-editorial-guide-layout">
+        <div className="home-editorial-guide-layout" data-guide-count={guideOptions.length}>
           <div className="home-editorial-guide-media" aria-live="polite">
             <Image
               key={activeOption.image}
@@ -128,9 +139,16 @@ export function HomeDecisionGuide({ guide }: { guide: HomepageDecisionGuideConte
               </div>
             </article>
           </div>
+
+          <div className="home-editorial-guide-progress" aria-hidden="true">
+            <span />
+          </div>
         </div>
 
-        <div className="home-editorial-guide-steps" aria-label={guide.stepsTitle}>
+        <div
+          className="home-editorial-guide-steps home-editorial-motion-reveal"
+          aria-label={guide.stepsTitle}
+        >
           <p>
             <span>{guide.stepsBadge}</span>
             <strong>{guide.stepsTitle}</strong>

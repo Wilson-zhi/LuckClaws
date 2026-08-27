@@ -37,13 +37,13 @@ export function TrustBadges({ section }: { section: HomepageServicePromisesConte
   return (
     <section className="home-editorial-promises">
       <div className="section-shell">
-        <header>
+        <header className="home-editorial-motion-reveal">
           <p className="home-editorial-kicker">{section.eyebrow}</p>
           <h2>{section.title}</h2>
           <p>{section.description}</p>
         </header>
 
-        <div className="home-editorial-promise-list">
+        <div className="home-editorial-promise-list home-editorial-motion-reveal">
           {section.items.map((badge, index) => {
             const Icon = promiseIcon(badge.icon);
 
