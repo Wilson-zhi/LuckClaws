@@ -19,7 +19,6 @@ import { HomeDecisionGuide } from "@/components/sections/HomeDecisionGuide";
 import { HomePosterHero } from "@/components/sections/HomePosterHero";
 import { HomeProductDiscovery } from "@/components/sections/HomeProductDiscovery";
 import { HomeRoutineRoute } from "@/components/sections/HomeRoutineRoute";
-import { HomeRoutineStrip } from "@/components/sections/HomeRoutineStrip";
 import { HomeStorySection } from "@/components/sections/HomeStorySection";
 import { NewsletterSignup } from "@/components/sections/NewsletterSignup";
 import { CompactTrustBar, type CompactTrustItem } from "@/components/sections/CompactTrustBar";
@@ -179,6 +178,9 @@ export default async function HomePage() {
     label: homepageTrustLabel(badge.key, badge.title),
     Icon: homepageTrustIcon(badge.icon)
   }));
+  const heroTrustLabels = topTrustItems
+    .map((item) => (typeof item.label === "string" ? item.label : ""))
+    .filter(Boolean);
   const primaryButtonLink = "/collections";
   const secondaryButtonLink = "#shop-by-routine";
   const primaryButtonText =
@@ -221,21 +223,20 @@ export default async function HomePage() {
         featuredText={hero.featuredText}
         hasVideo={hasHeroVideo}
         products={heroProductTiles}
+        trustLabels={heroTrustLabels}
       />
 
-      <HomeRoutineStrip />
-
-      <section className="bg-[linear-gradient(180deg,#3B2616_0%,#8A6743_38%,#F3E5D2_100%)] pb-7 pt-8">
+      <section className="home-editorial-trust-section" aria-label="Store promises">
         <CompactTrustBar items={topTrustItems} columns="wide" className="section-shell" />
       </section>
 
       <HomeDecisionGuide guide={decisionGuide} />
 
+      <HomeProductDiscovery featuredProduct={featuredProduct} products={bestSellers} />
+
       <HomeRoutineRoute categories={homepageCategories} />
 
       <HomeStorySection story={storySection} />
-
-      <HomeProductDiscovery featuredProduct={featuredProduct} products={bestSellers} />
 
       <TrustBadges section={servicePromises} />
 

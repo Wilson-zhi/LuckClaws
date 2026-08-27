@@ -3,83 +3,36 @@ import Link from "next/link";
 import { ArrowRight, PawPrint } from "lucide-react";
 import { type PublicCategoryCard } from "@/lib/public-product-data";
 
-const routineSignals = ["Play", "Walk", "Rest", "Comfort", "Support"];
-
 function categoryPathLabel(category: PublicCategoryCard) {
   const normalized = `${category.name} ${category.href}`.toLowerCase();
 
-  if (normalized.includes("dog")) {
-    return "Dog play path";
-  }
-
-  if (normalized.includes("cat")) {
-    return "Cat play path";
-  }
-
-  if (normalized.includes("walking")) {
-    return "Walk path";
-  }
-
-  if (normalized.includes("apparel")) {
-    return "Comfort path";
-  }
-
-  if (normalized.includes("bed") || normalized.includes("blanket")) {
-    return "Rest path";
-  }
-
-  return "Routine path";
+  if (normalized.includes("dog")) return "Play together";
+  if (normalized.includes("cat")) return "Keep curiosity moving";
+  if (normalized.includes("walking")) return "Step outside";
+  if (normalized.includes("apparel")) return "Dress for the day";
+  if (normalized.includes("bed") || normalized.includes("blanket")) return "Make room for rest";
+  return "Find the right routine";
 }
 
 function categoryBenefit(category: PublicCategoryCard) {
   const normalized = `${category.name} ${category.href}`.toLowerCase();
 
-  if (normalized.includes("dog")) {
-    return "For chewing, chasing, sniffing, and daily enrichment.";
-  }
-
-  if (normalized.includes("cat")) {
-    return "For pouncing, batting, catnip play, and curious indoor energy.";
-  }
-
-  if (normalized.includes("walking")) {
-    return "For daily walks, quick errands, and out-the-door routines.";
-  }
-
-  if (normalized.includes("apparel")) {
-    return "For fit, warmth, comfort, and easy everyday wear.";
-  }
-
-  if (normalized.includes("bed") || normalized.includes("blanket")) {
-    return "For softer corners, calmer downtime, and comfortable rest.";
-  }
-
-  return "For practical daily routines and easier product decisions.";
+  if (normalized.includes("dog")) return "Chew, chase, sniff, repeat.";
+  if (normalized.includes("cat")) return "Pounce, bat, and follow their curiosity.";
+  if (normalized.includes("walking")) return "The useful things that get you out the door.";
+  if (normalized.includes("apparel")) return "Soft layers made for movement and comfort.";
+  if (normalized.includes("bed") || normalized.includes("blanket")) return "Warmer corners for slower parts of the day.";
+  return "A clearer path through everyday pet essentials.";
 }
 
 function fallbackImageForCategory(category: PublicCategoryCard) {
   const normalized = `${category.name} ${category.href}`.toLowerCase();
 
-  if (normalized.includes("dog")) {
-    return "/images/category-dog-toys.jpg";
-  }
-
-  if (normalized.includes("cat")) {
-    return "/images/organic-catnip-mouse.jpg";
-  }
-
-  if (normalized.includes("walking")) {
-    return "/images/category-walking-essentials.jpg";
-  }
-
-  if (normalized.includes("apparel")) {
-    return "/images/category-pet-apparel.jpg";
-  }
-
-  if (normalized.includes("bed") || normalized.includes("blanket")) {
-    return "/images/category-beds-blankets.jpg";
-  }
-
+  if (normalized.includes("dog")) return "/images/category-dog-toys.jpg";
+  if (normalized.includes("cat")) return "/images/organic-catnip-mouse.jpg";
+  if (normalized.includes("walking")) return "/images/category-walking-essentials.jpg";
+  if (normalized.includes("apparel")) return "/images/category-pet-apparel.jpg";
+  if (normalized.includes("bed") || normalized.includes("blanket")) return "/images/category-beds-blankets.jpg";
   return "/images/hero-dog-running.jpg";
 }
 
@@ -104,101 +57,56 @@ function categoryImage(category: PublicCategoryCard) {
 }
 
 export function HomeRoutineRoute({ categories }: { categories: PublicCategoryCard[] }) {
-  if (categories.length === 0) {
-    return null;
-  }
+  if (categories.length === 0) return null;
 
   const visibleCategories = categories.slice(0, 4);
 
   return (
-    <section
-      id="routine-lookbook"
-      className="scroll-mt-24 bg-[linear-gradient(180deg,#F3E5D2_0%,#FFF9EF_18%,#FFF6EA_76%,#F7EAD8_100%)] py-12 md:py-16"
-    >
+    <section id="routine-lookbook" className="home-editorial-collections scroll-mt-24">
       <div className="section-shell">
-        <div className="mb-7 grid gap-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+        <header className="home-editorial-collections-heading">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Routine lookbook</p>
-            <h2 className="mt-2 max-w-4xl font-heading text-3xl font-extrabold leading-[0.98] tracking-tight md:text-4xl xl:text-5xl">
-              Browse the edited routine paths.
-            </h2>
-            <p className="mt-3 max-w-2xl text-base leading-7 text-[#6B5540]">
-              Move from the guide into clear collection paths for play, walks, rest, comfort, and support.
-            </p>
-            <p className="lc-hand-note mt-3 text-lg text-[#9A650B]">picked for real pet days</p>
+            <p className="home-editorial-kicker">Routine lookbook</p>
+            <h2>Four ways into a better pet day.</h2>
           </div>
-          <div className="flex flex-col gap-4 lg:items-end">
-            <div className="flex flex-wrap items-center gap-y-1.5 text-[#6B4A2F] lg:justify-end" aria-label="Routine paths">
-              <PawPrint aria-hidden className="mr-2 h-4 w-4 rotate-[-8deg] text-primary" />
-              {routineSignals.map((signal) => (
-                <span key={signal} className="routine-signal lc-hand-note text-sm md:text-base">
-                  {signal}
-                </span>
-              ))}
-            </div>
-            <Link
-              href="/collections"
-              className="group inline-flex w-fit items-center gap-2 rounded-full bg-[#2C1A0D] px-5 py-3 text-sm font-extrabold text-white shadow-soft transition hover:-translate-y-0.5 hover:bg-primary hover:shadow-lift focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:hover:translate-y-0"
-            >
-              Explore all collections
-              <ArrowRight
-                aria-hidden
-                className="h-4 w-4 transition group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0"
-              />
+          <div>
+            <p>Start with the moment, then move into a smaller and more useful product edit.</p>
+            <Link href="/collections" className="group">
+              <span>Explore every collection</span>
+              <ArrowRight aria-hidden className="h-4 w-4 transition-transform group-hover:translate-x-1 motion-reduce:transition-none" />
             </Link>
           </div>
-        </div>
+        </header>
 
-        <div className="-mx-4 grid auto-cols-[minmax(280px,82vw)] grid-flow-col items-stretch gap-4 overflow-x-auto overscroll-x-contain px-4 pb-4 snap-x snap-mandatory hide-scrollbar md:mx-0 md:auto-cols-auto md:grid-flow-row md:grid-cols-2 md:overflow-visible md:px-0 md:pb-0 xl:grid-cols-4">
+        <div className="home-editorial-collection-grid">
           {visibleCategories.map((category, index) => (
             <Link
               key={category.href}
               href={category.href}
-              className="lookbook-card group flex min-h-[420px] snap-start overflow-hidden rounded-[1.75rem] border border-[#E5C9A4] bg-[#FFF8ED] shadow-[0_22px_60px_rgba(92,60,30,0.10)] transition duration-300 hover:-translate-y-1 hover:border-primary/45 hover:shadow-lift focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:hover:translate-y-0 md:min-h-[440px]"
+              className="home-editorial-collection group"
+              data-layout={index}
               aria-label={`Shop ${category.name}`}
             >
-              <article className="flex w-full flex-col">
-                <div className="relative m-3 mb-0 aspect-[1.08] overflow-hidden rounded-[1.25rem] bg-[#EAD8BF]">
-                  <Image
-                    src={categoryImage(category)}
-                    alt={category.alt}
-                    fill
-                    loading={index < 4 ? "eager" : "lazy"}
-                    sizes="(min-width: 1280px) 330px, (min-width: 768px) 50vw, 82vw"
-                    className="object-cover object-center transition duration-500 group-hover:scale-[1.04] motion-reduce:group-hover:scale-100"
-                  />
-                  <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,248,237,0.02)_0%,rgba(44,26,13,0.12)_100%)]" />
-                  <div className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full border border-white/55 bg-white/82 px-3 py-1.5 text-primary shadow-soft backdrop-blur">
-                    <PawPrint aria-hidden className="h-3.5 w-3.5 rotate-[-10deg]" />
-                    <span className="lc-hand-note text-xs">Path {String(index + 1).padStart(2, "0")}</span>
-                  </div>
-                </div>
-                <div className="flex flex-1 flex-col p-5">
-                  <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-primary">
-                    {categoryPathLabel(category)}
-                  </p>
-                  <h3 className="mt-2 font-heading text-2xl font-extrabold leading-tight text-[#2C1A0D]">
-                    {category.name}
-                  </h3>
-                  <p className="mt-3 text-sm font-medium leading-6 text-[#6B5540]">
-                    {categoryBenefit(category)}
-                  </p>
-                  <div className="mt-auto pt-5">
-                    <div className="flex items-center gap-2 text-primary" aria-hidden="true">
-                      <span className="lookbook-path h-px flex-1 bg-primary/55 opacity-60" />
-                      <PawPrint className="lookbook-paw h-4 w-4 shrink-0" />
-                    </div>
-                    <div className="mt-3 flex items-center justify-between gap-3">
-                      <span className="text-xs font-extrabold uppercase tracking-[0.12em] text-[#6B4A2F]">
-                        Shop routine
-                      </span>
-                      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#2C1A0D] text-white transition group-hover:translate-x-0.5 group-hover:bg-primary motion-reduce:group-hover:translate-x-0">
-                        <ArrowRight aria-hidden className="h-5 w-5" />
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </article>
+              <span className="home-editorial-collection-media">
+                <Image
+                  src={categoryImage(category)}
+                  alt={category.alt}
+                  fill
+                  loading={index < 2 ? "eager" : "lazy"}
+                  sizes="(min-width: 1280px) 50vw, (min-width: 768px) 50vw, 100vw"
+                  className="object-cover transition-transform duration-700 group-hover:scale-[1.035] motion-reduce:transition-none"
+                />
+                <span className="home-editorial-collection-index">
+                  <PawPrint aria-hidden className="h-4 w-4" />
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+              </span>
+              <span className="home-editorial-collection-copy">
+                <small>{categoryPathLabel(category)}</small>
+                <strong>{category.name}</strong>
+                <span>{categoryBenefit(category)}</span>
+                <ArrowRight aria-hidden className="h-5 w-5 transition-transform group-hover:translate-x-1 motion-reduce:transition-none" />
+              </span>
             </Link>
           ))}
         </div>

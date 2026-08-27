@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { ArrowRight, CheckCircle2, PawPrint, Plus } from "lucide-react";
+import { ArrowRight, Plus } from "lucide-react";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
 import { type Product } from "@/data/products";
 import { trackSelectItem } from "@/lib/ga4-ecommerce";
@@ -26,50 +26,39 @@ const discoveryTabs: Array<{
 }> = [
   {
     key: "featured",
-    label: "Featured",
-    eyebrow: "The daily edit",
-    title: "Focused picks for the routines that happen every day.",
-    description: "A tighter edit of practical products for play, walks, rest, and comfort."
+    label: "The edit",
+    eyebrow: "Everyday edit",
+    title: "A few useful things, clearly shown.",
+    description: "Practical picks for play, walks, rest, and the routines in between."
   },
   {
     key: "best",
-    label: "Best Sellers",
+    label: "Most chosen",
     eyebrow: "Most chosen",
-    title: "Easy choices for repeat daily use.",
-    description: "Popular essentials selected for clear comparison and everyday usefulness."
+    title: "The products pet homes return to.",
+    description: "Popular essentials selected for everyday usefulness and easy comparison."
   },
   {
     key: "new",
-    label: "New Arrivals",
-    eyebrow: "Fresh finds",
-    title: "Newer picks for better pet routines.",
-    description: "Recently added products and seasonal updates for dogs, cats, and modern homes."
+    label: "Just in",
+    eyebrow: "New arrivals",
+    title: "Fresh finds for familiar routines.",
+    description: "Recently added products for dogs, cats, walks, play, comfort, and rest."
   }
 ];
 
 function fallbackProductImage(product: Product) {
   const normalized = `${product.name} ${product.slug} ${product.category}`.toLowerCase();
 
-  if (normalized.includes("puzzle")) {
-    return "/images/premium-puzzle-feeder.jpg";
-  }
-
-  if (normalized.includes("snuffle")) {
-    return "/images/interactive-snuffle-mat-lifestyle.jpg";
-  }
-
-  if (normalized.includes("cat")) {
-    return "/images/organic-catnip-mouse.jpg";
-  }
-
+  if (normalized.includes("puzzle")) return "/images/premium-puzzle-feeder.jpg";
+  if (normalized.includes("snuffle")) return "/images/interactive-snuffle-mat-lifestyle.jpg";
+  if (normalized.includes("cat")) return "/images/organic-catnip-mouse.jpg";
   if (normalized.includes("walk") || normalized.includes("leash") || normalized.includes("harness")) {
     return "/images/category-walking-essentials.jpg";
   }
-
   if (normalized.includes("apparel") || normalized.includes("sweater") || normalized.includes("tee")) {
     return "/images/category-pet-apparel.jpg";
   }
-
   if (normalized.includes("bed") || normalized.includes("blanket")) {
     return "/images/category-beds-blankets.jpg";
   }
@@ -80,77 +69,13 @@ function fallbackProductImage(product: Product) {
 function productImage(product: Product) {
   const image = product.image.trim();
   const normalized = image.toLowerCase();
-
-  if (!image || normalized.includes("icon") || normalized.includes("logo")) {
-    return fallbackProductImage(product);
-  }
-
-  return image;
-}
-
-function productStory(product: Product) {
-  const text = (product.shortDescription || product.description || "").trim();
-
-  if (!text || text.length < 40 || /^\d+$/.test(text.replace(/\s+/g, ""))) {
-    return "A practical, polished pick for everyday pet routines, selected to make play, comfort, and product comparison feel simpler.";
-  }
-
-  return text;
+  return !image || normalized.includes("icon") || normalized.includes("logo")
+    ? fallbackProductImage(product)
+    : image;
 }
 
 function uniqueBySlug(products: Product[]) {
   return Array.from(new Map(products.map((product) => [product.slug, product])).values());
-}
-
-function SupportingProductCard({ product }: { product: Product }) {
-  const href = getProductPath(product);
-
-  return (
-    <article className="group grid min-h-[168px] snap-start grid-cols-[112px_minmax(0,1fr)] overflow-hidden rounded-[1.35rem] border border-[#E3C9A8] bg-[#FFF9EF] shadow-soft transition duration-300 hover:-translate-y-0.5 hover:border-primary/45 hover:shadow-lift focus-within:shadow-lift motion-reduce:hover:translate-y-0 lg:min-h-0 lg:grid-cols-[42%_minmax(0,1fr)]">
-      <Link
-        href={href}
-        className="relative block min-h-full overflow-hidden bg-[#F7EAD8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-        onClick={() => trackSelectItem(product, "Homepage Everyday Edit")}
-      >
-        {(product.badge || product.isNew) && (
-          <span className="absolute left-3 top-3 z-10 rounded-full border border-white/70 bg-white/[0.92] px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-[0.12em] text-primary shadow-soft">
-            {product.badge ?? "New"}
-          </span>
-        )}
-        <Image
-          src={productImage(product)}
-          alt={product.alt}
-          fill
-          sizes="(min-width: 1024px) 260px, 112px"
-          className="object-cover transition duration-500 group-hover:scale-[1.045] motion-reduce:group-hover:scale-100"
-        />
-      </Link>
-
-      <div className="flex min-w-0 flex-col p-4">
-        <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-primary/90">
-          {product.category}
-        </p>
-        <Link
-          href={href}
-          className="mt-1 line-clamp-2 font-heading text-base font-extrabold leading-tight text-[#24170E] transition hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary lg:text-lg"
-          onClick={() => trackSelectItem(product, "Homepage Everyday Edit")}
-        >
-          {product.name}
-        </Link>
-        <div className="mt-auto flex items-end justify-between gap-3 pt-3">
-          <div className="min-w-0">
-            <p className="font-heading text-lg font-extrabold text-[#24170E]">{formatPrice(product.price)}</p>
-            {product.regularPrice && (
-              <p className="text-xs text-[#6B5540] line-through">{formatPrice(product.regularPrice)}</p>
-            )}
-          </div>
-          <AddToCartButton product={product} variant="icon">
-            <Plus aria-hidden className="h-5 w-5" />
-          </AddToCartButton>
-        </div>
-      </div>
-    </article>
-  );
 }
 
 export function HomeProductDiscovery({ featuredProduct, products }: HomeProductDiscoveryProps) {
@@ -165,133 +90,98 @@ export function HomeProductDiscovery({ featuredProduct, products }: HomeProductD
       const newProducts = products.filter(
         (product) => product.isNew || product.badge?.toLowerCase().includes("new")
       );
-
       return uniqueBySlug(newProducts.length ? newProducts : [...products].reverse());
     }
 
     return uniqueBySlug([featuredProduct, ...products]);
   }, [activeTab, featuredProduct, products]);
-  const activeProduct = tabProducts[0] ?? featuredProduct;
-  const href = getProductPath(activeProduct);
-  const supportingProducts = tabProducts
-    .filter((product) => product.slug !== activeProduct.slug)
-    .slice(0, 4);
-  const benefits = activeProduct.benefits?.length
-    ? activeProduct.benefits.slice(0, 3)
-    : ["Useful for daily routines", "Clear product details before checkout", "Chosen for play, rest, or comfort"];
+  const visibleProducts = tabProducts.slice(0, 4);
 
   return (
-    <section
-      id="best-sellers"
-      className="scroll-mt-24 bg-[linear-gradient(180deg,#F3E5D2_0%,#F3E5D2_82%,#2C1A0D_100%)] pb-16 pt-12 md:pb-20 md:pt-16"
-    >
+    <section id="best-sellers" className="home-editorial-products scroll-mt-24">
       <div className="section-shell">
-        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-          <div className="max-w-3xl">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">
-              {activeTabContent.eyebrow}
-            </p>
-            <h2 className="mt-2 font-heading text-3xl font-extrabold leading-tight tracking-tight md:text-4xl xl:text-5xl">
-              {activeTabContent.title}
-            </h2>
-            <p className="mt-3 max-w-2xl text-sm font-medium leading-6 text-[#6B5540] md:text-base">
-              {activeTabContent.description}
-            </p>
-            <p className="lc-hand-note mt-3 flex items-center gap-2 text-base text-[#9A650B] md:text-lg">
-              <PawPrint aria-hidden className="h-4 w-4 rotate-[-10deg]" />
-              a few good picks, no endless scroll
-            </p>
+        <header className="home-editorial-products-heading">
+          <div>
+            <p className="home-editorial-kicker">{activeTabContent.eyebrow}</p>
+            <h2>{activeTabContent.title}</h2>
           </div>
-          <div className="flex w-full gap-2 overflow-x-auto rounded-full border border-[#E0C39C] bg-[#FFF8ED]/75 p-1 shadow-soft hide-scrollbar md:w-auto">
-            {discoveryTabs.map((tab) => (
-              <button
-                key={tab.key}
-                type="button"
-                data-active={activeTab === tab.key}
-                className={`discovery-tab min-w-max rounded-full px-5 py-2.5 text-sm font-extrabold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
-                  activeTab === tab.key
-                    ? "bg-[#2C1A0D] text-white shadow-soft"
-                    : "text-[#6B4A2F] hover:bg-white hover:text-primary"
-                }`}
-                onClick={() => setActiveTab(tab.key)}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="grid gap-5 lg:grid-cols-[0.98fr_1.02fr]">
-          <article
-            key={`${activeTab}-${activeProduct.slug}`}
-            className="advisor-recommendation-enter grid overflow-hidden rounded-[2rem] border border-[#E3C9A8] bg-[#FFF9EF] shadow-lift md:grid-cols-[0.95fr_1.05fr]"
-          >
-            <Link
-              href={href}
-              className="group relative min-h-[300px] overflow-hidden bg-[#F7EAD8] md:min-h-[360px]"
-            >
-              {activeProduct.badge && (
-                <span className="absolute left-5 top-5 z-10 rounded-full border border-white/70 bg-white/95 px-4 py-2 text-xs font-bold uppercase tracking-wide text-primary shadow-soft">
-                  {activeProduct.badge}
-                </span>
-              )}
-              <Image
-                src={productImage(activeProduct)}
-                alt={activeProduct.alt}
-                fill
-                loading="lazy"
-                sizes="(min-width: 1024px) 620px, 100vw"
-                className="object-cover transition duration-500 group-hover:scale-[1.045] motion-reduce:group-hover:scale-100"
-              />
-            </Link>
-
-            <div className="p-6 md:p-7">
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">
-                {activeProduct.category}
-              </p>
-              <Link
-                href={href}
-                className="mt-3 block focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-              >
-                <h3 className="font-heading text-3xl font-extrabold leading-tight tracking-tight text-[#24170E] md:text-[2.35rem]">
-                  {activeProduct.name}
-                </h3>
-              </Link>
-              <p className="mt-3 text-sm leading-6 text-[#6B5540]">
-                {productStory(activeProduct)}
-              </p>
-              <p className="mt-4 font-heading text-3xl font-extrabold text-primary">
-                {formatPrice(activeProduct.price)}
-              </p>
-              <ul className="mt-4 grid gap-2">
-                {benefits.map((benefit) => (
-                  <li key={benefit} className="flex gap-3 text-sm font-semibold leading-6 text-[#4E3928]">
-                    <CheckCircle2 aria-hidden className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                    {benefit}
-                  </li>
-                ))}
-              </ul>
-              <Link
-                href={href}
-                className="group mt-5 inline-flex items-center gap-2 rounded-full bg-primary-container px-6 py-3 text-sm font-extrabold text-on-primary-container transition hover:-translate-y-0.5 hover:bg-[#C87500] hover:shadow-soft focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:hover:translate-y-0"
-              >
-                <span className="lc-ink-underline">View Product</span>
-                <ArrowRight
-                  aria-hidden
-                  className="h-4 w-4 transition group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0"
-                />
-              </Link>
-            </div>
-          </article>
-
-          {supportingProducts.length > 0 && (
-            <div className="-mx-4 grid auto-cols-[minmax(285px,82vw)] grid-flow-col gap-4 overflow-x-auto overscroll-x-contain px-4 pb-4 snap-x snap-mandatory hide-scrollbar lg:mx-0 lg:auto-cols-auto lg:grid-flow-row lg:grid-rows-3 lg:overflow-visible lg:px-0 lg:pb-0">
-              {supportingProducts.map((product) => (
-                <SupportingProductCard key={product.id} product={product} />
+          <div>
+            <p>{activeTabContent.description}</p>
+            <div className="home-editorial-product-tabs" role="tablist" aria-label="Product edit">
+              {discoveryTabs.map((tab) => (
+                <button
+                  key={tab.key}
+                  type="button"
+                  role="tab"
+                  aria-selected={activeTab === tab.key}
+                  data-active={activeTab === tab.key}
+                  onClick={() => setActiveTab(tab.key)}
+                >
+                  {tab.label}
+                </button>
               ))}
             </div>
-          )}
+          </div>
+        </header>
+
+        <div className="home-editorial-product-shelf" role="tabpanel" aria-live="polite">
+          {visibleProducts.map((product, index) => {
+            const href = getProductPath(product);
+
+            return (
+              <article key={`${activeTab}-${product.id}`} className="advisor-recommendation-enter">
+                <Link
+                  href={href}
+                  className="home-editorial-product-image group"
+                  onClick={() => trackSelectItem(product, "Homepage Everyday Edit")}
+                >
+                  {(product.badge || product.isNew) && (
+                    <span>{product.badge ?? "New"}</span>
+                  )}
+                  <Image
+                    src={productImage(product)}
+                    alt={product.alt}
+                    fill
+                    sizes="(min-width: 1280px) 25vw, (min-width: 768px) 42vw, 78vw"
+                    loading={index < 2 ? "eager" : "lazy"}
+                    className="object-cover transition-transform duration-500 group-hover:scale-[1.035] motion-reduce:transition-none"
+                  />
+                </Link>
+                <div className="home-editorial-product-copy">
+                  <p>{product.category}</p>
+                  <Link
+                    href={href}
+                    onClick={() => trackSelectItem(product, "Homepage Everyday Edit")}
+                  >
+                    <h3>{product.name}</h3>
+                  </Link>
+                  <div>
+                    <span>
+                      <strong>{formatPrice(product.price)}</strong>
+                      {product.regularPrice && <small>{formatPrice(product.regularPrice)}</small>}
+                    </span>
+                    <AddToCartButton product={product} variant="icon">
+                      <Plus aria-hidden className="h-5 w-5" />
+                    </AddToCartButton>
+                  </div>
+                  <Link
+                    href={href}
+                    className="group"
+                    onClick={() => trackSelectItem(product, "Homepage Everyday Edit")}
+                  >
+                    <span>View product</span>
+                    <ArrowRight aria-hidden className="h-4 w-4 transition-transform group-hover:translate-x-1 motion-reduce:transition-none" />
+                  </Link>
+                </div>
+              </article>
+            );
+          })}
         </div>
+
+        <Link href="/collections" className="home-editorial-products-all group">
+          <span>Browse all products</span>
+          <ArrowRight aria-hidden className="h-4 w-4 transition-transform group-hover:translate-x-1 motion-reduce:transition-none" />
+        </Link>
       </div>
     </section>
   );
