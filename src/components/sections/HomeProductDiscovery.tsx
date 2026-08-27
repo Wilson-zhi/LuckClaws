@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState } from "react";
-import { ArrowRight, Plus } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ArrowLeft, ArrowRight, Pause, Play, Plus } from "lucide-react";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
 import { type Product } from "@/data/products";
 import { trackSelectItem } from "@/lib/ga4-ecommerce";
@@ -22,6 +22,7 @@ const discoveryTabs: Array<{
   label: string;
   eyebrow: string;
   title: string;
+  handNote: string;
   description: string;
 }> = [
   {
@@ -29,6 +30,7 @@ const discoveryTabs: Array<{
     label: "The edit",
     eyebrow: "Everyday edit",
     title: "A few useful things, clearly shown.",
+    handNote: "pick, play, repeat",
     description: "Practical picks for play, walks, rest, and the routines in between."
   },
   {
@@ -36,6 +38,7 @@ const discoveryTabs: Array<{
     label: "Most chosen",
     eyebrow: "Most chosen",
     title: "The products pet homes return to.",
+    handNote: "pack favorites",
     description: "Popular essentials selected for everyday usefulness and easy comparison."
   },
   {
@@ -43,6 +46,7 @@ const discoveryTabs: Array<{
     label: "Just in",
     eyebrow: "New arrivals",
     title: "Fresh finds for familiar routines.",
+    handNote: "new tricks inside",
     description: "Recently added products for dogs, cats, walks, play, comfort, and rest."
   }
 ];
@@ -80,6 +84,11 @@ function uniqueBySlug(products: Product[]) {
 
 export function HomeProductDiscovery({ featuredProduct, products }: HomeProductDiscoveryProps) {
   const [activeTab, setActiveTab] = useState<DiscoveryTabKey>("featured");
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [autoPlay, setAutoPlay] = useState(true);
+  const [isInteracting, setIsInteracting] = useState(false);
+  const shelfRef = useRef<HTMLDivElement>(null);
+  const scrollFrameRef = useRef<number | null>(null);
   const activeTabContent = discoveryTabs.find((tab) => tab.key === activeTab) ?? discoveryTabs[0];
   const tabProducts = useMemo(() => {
     if (activeTab === "best") {
@@ -95,15 +104,86 @@ export function HomeProductDiscovery({ featuredProduct, products }: HomeProductD
 
     return uniqueBySlug([featuredProduct, ...products]);
   }, [activeTab, featuredProduct, products]);
-  const visibleProducts = tabProducts.slice(0, 4);
+  const visibleProducts = tabProducts.slice(0, 8);
+
+  const scrollToProduct = useCallback(
+    (requestedIndex: number, behavior: ScrollBehavior = "smooth") => {
+      const shelf = shelfRef.current;
+      if (!shelf || visibleProducts.length === 0) return;
+
+      const nextIndex = (requestedIndex + visibleProducts.length) % visibleProducts.length;
+      const cards = shelf.querySelectorAll<HTMLElement>("[data-product-card]");
+      const card = cards[nextIndex];
+      if (!card) return;
+
+      shelf.scrollTo({ left: card.offsetLeft - shelf.offsetLeft, behavior });
+      setActiveIndex(nextIndex);
+    },
+    [visibleProducts.length]
+  );
+
+  useEffect(() => {
+    setActiveIndex(0);
+    shelfRef.current?.scrollTo({ left: 0, behavior: "auto" });
+  }, [activeTab]);
+
+  useEffect(() => {
+    if (!autoPlay || isInteracting || visibleProducts.length < 2) return;
+
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduceMotion) return;
+
+    const timer = window.setInterval(() => {
+      scrollToProduct(activeIndex + 1);
+    }, 4200);
+
+    return () => window.clearInterval(timer);
+  }, [activeIndex, autoPlay, isInteracting, scrollToProduct, visibleProducts.length]);
+
+  useEffect(
+    () => () => {
+      if (scrollFrameRef.current !== null) {
+        window.cancelAnimationFrame(scrollFrameRef.current);
+      }
+    },
+    []
+  );
+
+  const handleShelfScroll = () => {
+    if (scrollFrameRef.current !== null) {
+      window.cancelAnimationFrame(scrollFrameRef.current);
+    }
+
+    scrollFrameRef.current = window.requestAnimationFrame(() => {
+      const shelf = shelfRef.current;
+      if (!shelf) return;
+
+      const cards = Array.from(shelf.querySelectorAll<HTMLElement>("[data-product-card]"));
+      if (!cards.length) return;
+
+      const closestIndex = cards.reduce(
+        (bestIndex, card, index) =>
+          Math.abs(card.offsetLeft - shelf.scrollLeft) <
+          Math.abs(cards[bestIndex].offsetLeft - shelf.scrollLeft)
+            ? index
+            : bestIndex,
+        0
+      );
+
+      setActiveIndex(closestIndex);
+    });
+  };
 
   return (
     <section id="best-sellers" className="home-editorial-products scroll-mt-24">
       <div className="section-shell">
         <header className="home-editorial-products-heading home-editorial-motion-reveal">
-          <div>
+          <div className="home-editorial-product-title-art">
             <p className="home-editorial-kicker">{activeTabContent.eyebrow}</p>
-            <h2>{activeTabContent.title}</h2>
+            <h2>
+              <span>{activeTabContent.title}</span>
+              <em>{activeTabContent.handNote}</em>
+            </h2>
           </div>
           <div>
             <p>{activeTabContent.description}</p>
@@ -124,59 +204,125 @@ export function HomeProductDiscovery({ featuredProduct, products }: HomeProductD
           </div>
         </header>
 
-        <div className="home-editorial-product-window">
-          <div className="home-editorial-product-shelf" role="tabpanel" aria-live="polite">
-            {visibleProducts.map((product, index) => {
-              const href = getProductPath(product);
+        <div
+          className="home-editorial-product-carousel"
+          aria-roledescription="carousel"
+          aria-label={`${activeTabContent.label} products`}
+          onMouseEnter={() => setIsInteracting(true)}
+          onMouseLeave={() => setIsInteracting(false)}
+          onFocusCapture={() => setIsInteracting(true)}
+          onBlurCapture={(event) => {
+            if (!event.currentTarget.contains(event.relatedTarget)) {
+              setIsInteracting(false);
+            }
+          }}
+        >
+          <div className="home-editorial-product-toolbar">
+            <p aria-live="polite">
+              <span>{String(activeIndex + 1).padStart(2, "0")}</span>
+              <span aria-hidden="true">/</span>
+              <span>{String(visibleProducts.length).padStart(2, "0")}</span>
+            </p>
+            <div>
+              <button
+                type="button"
+                aria-label={autoPlay ? "Pause product carousel" : "Play product carousel"}
+                aria-pressed={!autoPlay}
+                onClick={() => setAutoPlay((current) => !current)}
+              >
+                {autoPlay ? <Pause aria-hidden /> : <Play aria-hidden />}
+              </button>
+              <button type="button" aria-label="Previous product" onClick={() => scrollToProduct(activeIndex - 1)}>
+                <ArrowLeft aria-hidden />
+              </button>
+              <button type="button" aria-label="Next product" onClick={() => scrollToProduct(activeIndex + 1)}>
+                <ArrowRight aria-hidden />
+              </button>
+            </div>
+          </div>
 
-              return (
-                <article key={`${activeTab}-${product.id}`} className="advisor-recommendation-enter">
-                  <Link
-                    href={href}
-                    className="home-editorial-product-image group"
-                    onClick={() => trackSelectItem(product, "Homepage Everyday Edit")}
+          <div className="home-editorial-product-window">
+            <div
+              ref={shelfRef}
+              className="home-editorial-product-shelf"
+              role="tabpanel"
+              aria-live={autoPlay ? "off" : "polite"}
+              onScroll={handleShelfScroll}
+              onPointerDown={() => setIsInteracting(true)}
+              onPointerUp={() => setIsInteracting(false)}
+              onPointerCancel={() => setIsInteracting(false)}
+            >
+              {visibleProducts.map((product, index) => {
+                const href = getProductPath(product);
+
+                return (
+                  <article
+                    key={`${activeTab}-${product.id}`}
+                    data-product-card
+                    data-active={activeIndex === index}
+                    className="advisor-recommendation-enter"
                   >
-                    {(product.badge || product.isNew) && (
-                      <span>{product.badge ?? "New"}</span>
-                    )}
-                    <Image
-                      src={productImage(product)}
-                      alt={product.alt}
-                      fill
-                      sizes="(min-width: 1280px) 25vw, (min-width: 768px) 42vw, 78vw"
-                      loading={index < 2 ? "eager" : "lazy"}
-                      className="object-cover transition-transform duration-500 group-hover:scale-[1.035] motion-reduce:transition-none"
-                    />
-                  </Link>
-                  <div className="home-editorial-product-copy">
-                    <p>{product.category}</p>
                     <Link
                       href={href}
+                      className="home-editorial-product-image group"
                       onClick={() => trackSelectItem(product, "Homepage Everyday Edit")}
                     >
-                      <h3>{product.name}</h3>
+                      {(product.badge || product.isNew) && (
+                        <span>{product.badge ?? "New"}</span>
+                      )}
+                      <Image
+                        src={productImage(product)}
+                        alt={product.alt}
+                        fill
+                        sizes="(min-width: 1280px) 25vw, (min-width: 768px) 42vw, 78vw"
+                        loading={index < 2 ? "eager" : "lazy"}
+                        className="object-cover transition-transform duration-500 group-hover:scale-[1.035] motion-reduce:transition-none"
+                      />
                     </Link>
-                    <div>
-                      <span>
-                        <strong>{formatPrice(product.price)}</strong>
-                        {product.regularPrice && <small>{formatPrice(product.regularPrice)}</small>}
-                      </span>
-                      <AddToCartButton product={product} variant="icon">
-                        <Plus aria-hidden className="h-5 w-5" />
-                      </AddToCartButton>
+                    <div className="home-editorial-product-copy">
+                      <p>{product.category}</p>
+                      <Link
+                        href={href}
+                        onClick={() => trackSelectItem(product, "Homepage Everyday Edit")}
+                      >
+                        <h3>{product.name}</h3>
+                      </Link>
+                      <div>
+                        <span>
+                          <strong>{formatPrice(product.price)}</strong>
+                          {product.regularPrice && <small>{formatPrice(product.regularPrice)}</small>}
+                        </span>
+                        <AddToCartButton product={product} variant="icon">
+                          <Plus aria-hidden className="h-5 w-5" />
+                        </AddToCartButton>
+                      </div>
+                      <Link
+                        href={href}
+                        className="group"
+                        onClick={() => trackSelectItem(product, "Homepage Everyday Edit")}
+                      >
+                        <span>View product</span>
+                        <ArrowRight aria-hidden className="h-4 w-4 transition-transform group-hover:translate-x-1 motion-reduce:transition-none" />
+                      </Link>
                     </div>
-                    <Link
-                      href={href}
-                      className="group"
-                      onClick={() => trackSelectItem(product, "Homepage Everyday Edit")}
-                    >
-                      <span>View product</span>
-                      <ArrowRight aria-hidden className="h-4 w-4 transition-transform group-hover:translate-x-1 motion-reduce:transition-none" />
-                    </Link>
-                  </div>
-                </article>
-              );
-            })}
+                  </article>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="home-editorial-product-pagination" aria-label="Choose a product slide">
+            {visibleProducts.map((product, index) => (
+              <button
+                key={`${activeTab}-dot-${product.id}`}
+                type="button"
+                aria-label={`Show ${product.name}`}
+                aria-current={activeIndex === index ? "true" : undefined}
+                onClick={() => scrollToProduct(index)}
+              >
+                <span />
+              </button>
+            ))}
           </div>
         </div>
 

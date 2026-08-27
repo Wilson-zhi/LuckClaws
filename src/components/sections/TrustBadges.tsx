@@ -1,4 +1,8 @@
+"use client";
+
+import { useState } from "react";
 import {
+  ArrowRight,
   CheckCircle2,
   Heart,
   Leaf,
@@ -32,30 +36,68 @@ function promiseIcon(icon: HomepageTrustBadgeIconKey) {
 }
 
 export function TrustBadges({ section }: { section: HomepageServicePromisesContent }) {
+  const [activeIndex, setActiveIndex] = useState(0);
+
   if (!section.enabled) return null;
+
+  const activePromise = section.items[activeIndex] ?? section.items[0];
+  const ActiveIcon = activePromise ? promiseIcon(activePromise.icon) : SearchCheck;
 
   return (
     <section className="home-editorial-promises">
       <div className="section-shell">
         <header className="home-editorial-motion-reveal">
-          <p className="home-editorial-kicker">{section.eyebrow}</p>
-          <h2>{section.title}</h2>
-          <p>{section.description}</p>
+          <div className="home-editorial-promise-intro">
+            <p className="home-editorial-kicker">{section.eyebrow}</p>
+            <h2>{section.title}</h2>
+            <p>{section.description}</p>
+            <span className="lc-hand-note">good things, plainly promised</span>
+          </div>
+
+          {activePromise && (
+            <div
+              id="home-promise-panel"
+              className="home-editorial-promise-showcase"
+              role="tabpanel"
+              aria-live="polite"
+            >
+              <div className="home-editorial-promise-burst" aria-hidden="true">
+                <span />
+                <ActiveIcon />
+              </div>
+              <div>
+                <p>Promise {String(activeIndex + 1).padStart(2, "0")}</p>
+                <h3>{activePromise.title}</h3>
+                <p>{activePromise.text}</p>
+              </div>
+            </div>
+          )}
         </header>
 
-        <div className="home-editorial-promise-list home-editorial-motion-reveal">
+        <div
+          className="home-editorial-promise-list home-editorial-motion-reveal"
+          role="tablist"
+          aria-label="Store promises"
+        >
           {section.items.map((badge, index) => {
             const Icon = promiseIcon(badge.icon);
 
             return (
-              <article key={badge.key}>
-                <p>
-                  <span>{String(index + 1).padStart(2, "0")}</span>
-                  <Icon aria-hidden className="h-5 w-5" />
-                </p>
-                <h3>{badge.title}</h3>
-                <p>{badge.text}</p>
-              </article>
+              <button
+                key={badge.key}
+                type="button"
+                role="tab"
+                aria-selected={activeIndex === index}
+                aria-controls="home-promise-panel"
+                data-active={activeIndex === index}
+                onClick={() => setActiveIndex(index)}
+                onMouseEnter={() => setActiveIndex(index)}
+              >
+                <span>{String(index + 1).padStart(2, "0")}</span>
+                <span className="home-editorial-promise-icon"><Icon aria-hidden /></span>
+                <strong>{badge.title}</strong>
+                <ArrowRight aria-hidden />
+              </button>
             );
           })}
         </div>

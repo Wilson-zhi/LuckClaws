@@ -147,24 +147,6 @@ export function HomeEditorialMotion({ children }: HomeEditorialMotionProps) {
               }).to(guideProgress, { scaleX: 1, ease: "none" });
             }
 
-            const productShelf = root.querySelector<HTMLElement>(".home-editorial-product-shelf");
-            if (productShelf) {
-              gsap.fromTo(
-                productShelf,
-                { xPercent: 3 },
-                {
-                  xPercent: -8,
-                  ease: "none",
-                  scrollTrigger: {
-                    trigger: ".home-editorial-product-window",
-                    start: "top bottom",
-                    end: "bottom top",
-                    scrub: 1
-                  }
-                }
-              );
-            }
-
             gsap.utils
               .toArray<HTMLElement>(".home-editorial-collection-media img")
               .forEach((image) => {
@@ -185,32 +167,67 @@ export function HomeEditorialMotion({ children }: HomeEditorialMotionProps) {
                 );
               });
 
-            const storyPoster = root.querySelector<HTMLElement>(".home-editorial-story-poster");
+            const storyStage = root.querySelector<HTMLElement>(".home-editorial-story-stage");
+            const storyPoster = storyStage?.querySelector<HTMLElement>(".home-editorial-story-poster");
             const storyImage = storyPoster?.querySelector<HTMLElement>("img");
             const storyCopy = storyPoster?.querySelector<HTMLElement>(".home-editorial-story-copy");
+            const storyStatus = storyPoster?.querySelector<HTMLElement>(".home-editorial-story-status");
 
-            if (storyPoster && storyImage && storyCopy) {
-              gsap.set(storyImage, { scale: 1.12, transformOrigin: "50% 50%" });
-              gsap.timeline({
+            if (storyStage && storyPoster && storyImage && storyCopy) {
+              gsap.set(storyPoster, {
+                scale: 0.82,
+                y: 72,
+                rotationY: -7,
+                transformPerspective: 1400,
+                transformOrigin: "50% 50%"
+              });
+              gsap.set(storyImage, { scale: 1.13, transformOrigin: "50% 50%" });
+              gsap.set(storyCopy, { autoAlpha: 0, yPercent: 22 });
+              if (storyStatus) gsap.set(storyStatus, { autoAlpha: 0, y: 18 });
+
+              const storyTimeline = gsap.timeline({
                 scrollTrigger: {
-                  trigger: storyPoster,
-                  start: "top bottom",
-                  end: "bottom top",
-                  scrub: 0.9
+                  trigger: storyStage,
+                  start: "top top+=112",
+                  end: () => `+=${Math.max(window.innerHeight * 1.65, 1200)}`,
+                  pin: storyStage,
+                  pinSpacing: true,
+                  scrub: 0.8,
+                  anticipatePin: 1,
+                  invalidateOnRefresh: true
                 }
-              })
-                .fromTo(
+              });
+
+              storyTimeline
+                .to(
                   storyPoster,
-                  { clipPath: "inset(9% 5% 9% 5% round 0.35rem)" },
-                  { clipPath: "inset(0% 0% 0% 0% round 0.35rem)", ease: "none" },
+                  {
+                    scale: 1,
+                    y: 0,
+                    rotationY: 0,
+                    clipPath: "inset(0% 0% 0% 0% round 0.45rem)",
+                    duration: 0.28,
+                    ease: "power2.out"
+                  },
                   0
                 )
-                .to(storyImage, { scale: 1, yPercent: 3, ease: "none" }, 0)
-                .fromTo(
-                  storyCopy,
-                  { autoAlpha: 0.35, yPercent: 18 },
-                  { autoAlpha: 1, yPercent: -6, ease: "none" },
-                  0.12
+                .to(storyImage, { scale: 1, duration: 0.3, ease: "power2.out" }, 0)
+                .to(storyCopy, { autoAlpha: 1, yPercent: 0, duration: 0.2, ease: "power2.out" }, 0.12)
+                .to(storyStatus ? [storyStatus] : [], { autoAlpha: 1, y: 0, duration: 0.16 }, 0.22)
+                .to({}, { duration: 0.3 })
+                .to(storyCopy, { autoAlpha: 0, yPercent: -16, duration: 0.18, ease: "power2.in" })
+                .to(storyStatus ? [storyStatus] : [], { autoAlpha: 0, y: -16, duration: 0.12 }, "<")
+                .to(
+                  storyPoster,
+                  {
+                    autoAlpha: 0.38,
+                    xPercent: -18,
+                    scale: 0.82,
+                    rotationY: 5,
+                    duration: 0.22,
+                    ease: "power2.in"
+                  },
+                  "<"
                 );
             }
           }

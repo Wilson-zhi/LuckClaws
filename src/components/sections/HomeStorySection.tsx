@@ -7,6 +7,7 @@ import {
   Leaf,
   Lock,
   Package,
+  PawPrint,
   Route,
   SearchCheck,
   ShieldCheck,
@@ -35,25 +36,31 @@ export function HomeStorySection({ story }: { story: HomepageStorySectionContent
   return (
     <section className="home-editorial-story">
       <div className="section-shell">
-        <div className="home-editorial-story-poster">
-          <Image
-            src="/images/about-dogs-running.jpg"
-            alt="Two happy dogs running through a sunlit field."
-            fill
-            sizes="(min-width: 768px) 88vw, 100vw"
-            className="object-cover object-center"
-          />
-          <div aria-hidden="true" />
-          <div className="home-editorial-story-copy">
-            <p className="home-editorial-kicker">{story.eyebrow}</p>
-            <h2>{story.title}</h2>
-            <p>{story.subtitle}</p>
-            {story.ctaLabel && story.ctaHref && (
-              <Link href={story.ctaHref} className="group">
-                <span>{story.ctaLabel}</span>
-                <ArrowRight aria-hidden className="h-4 w-4 transition-transform group-hover:translate-x-1 motion-reduce:transition-none" />
-              </Link>
-            )}
+        <div className="home-editorial-story-stage">
+          <div className="home-editorial-story-poster">
+            <Image
+              src="/images/about-dogs-running.jpg"
+              alt="Two happy dogs running through a sunlit field."
+              fill
+              sizes="(min-width: 768px) 88vw, 100vw"
+              className="object-cover object-center"
+            />
+            <div className="home-editorial-story-shade" aria-hidden="true" />
+            <div className="home-editorial-story-copy">
+              <p className="home-editorial-kicker">{story.eyebrow}</p>
+              <h2>{story.title}</h2>
+              <p>{story.subtitle}</p>
+              {story.ctaLabel && story.ctaHref && (
+                <Link href={story.ctaHref} className="group">
+                  <span>{story.ctaLabel}</span>
+                  <ArrowRight aria-hidden className="h-4 w-4 transition-transform group-hover:translate-x-1 motion-reduce:transition-none" />
+                </Link>
+              )}
+            </div>
+            <div className="home-editorial-story-status" aria-hidden="true">
+              <PawPrint />
+              <span>Full-view story</span>
+            </div>
           </div>
         </div>
 
