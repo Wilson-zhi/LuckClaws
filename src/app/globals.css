@@ -3979,7 +3979,7 @@ img {
   grid-template-columns: minmax(0, 1.05fr) minmax(18rem, 0.95fr);
   align-items: center;
   gap: clamp(3rem, 8vw, 8rem);
-  margin-bottom: 3.4rem;
+  margin-bottom: 2.2rem;
 }
 
 .home-editorial-guide-title-block,
@@ -3991,7 +3991,7 @@ img {
   position: relative;
   width: fit-content;
   max-width: 100%;
-  padding: 0 4.6rem 1.55rem 0;
+  padding: 0 0.5rem 4rem 0;
 }
 
 .home-editorial-guide-heading .home-editorial-guide-title-art h2 {
@@ -4039,22 +4039,24 @@ img {
 
 .home-editorial-guide-title-art h2 > em[data-guide-title-piece="accent"] {
   position: relative;
+  z-index: 2;
   max-width: 11ch;
-  margin: 0.2em 0 0 0.08em;
+  margin: 0.38em 0 0 0.08em;
+  padding-top: 0.03em;
   color: #31533e;
   font-family: var(--font-hand), "Segoe Print", cursive;
   font-size: 0.64em;
   font-style: normal;
   font-variation-settings: "wght" 720;
-  line-height: 0.92;
+  line-height: 0.98;
   text-wrap: balance;
   transform: rotate(-1deg);
 }
 
 .home-editorial-guide-title-art::after {
   position: absolute;
-  right: 3.8rem;
-  bottom: 0.9rem;
+  right: 0.65rem;
+  bottom: 3.25rem;
   left: 0.65rem;
   height: 0.5rem;
   border-bottom: 3px solid #d85d42;
@@ -4066,8 +4068,8 @@ img {
 
 .home-editorial-guide-title-stamp {
   position: absolute;
-  right: -0.15rem;
-  bottom: 0.35rem;
+  right: 0.35rem;
+  bottom: 0;
   z-index: 3;
   display: grid;
   min-width: 6.65rem;
@@ -4084,6 +4086,17 @@ img {
   font-family: var(--font-heading), sans-serif;
   transform: rotate(4deg);
   transform-origin: center;
+}
+
+.home-editorial-guide-title-stamp::before {
+  position: absolute;
+  bottom: calc(100% + 0.05rem);
+  left: 58%;
+  height: 0.82rem;
+  border-left: 2px dashed #d85d42;
+  content: "";
+  transform: rotate(-5deg);
+  transform-origin: bottom;
 }
 
 .home-editorial-guide-title-stamp::after {
@@ -6371,7 +6384,12 @@ img {
 
   .home-editorial-guide-title-art {
     width: 100%;
-    padding-bottom: 0.85rem;
+    padding: 0 0.25rem 3rem 0;
+  }
+
+  .home-editorial-guide-title-art::after {
+    right: 0.4rem;
+    bottom: 2.42rem;
   }
 
   .home-editorial-guide-heading .home-editorial-guide-title-art h2 {
@@ -6391,7 +6409,8 @@ img {
   }
 
   .home-editorial-guide-title-stamp {
-    bottom: -0.1rem;
+    right: 0.2rem;
+    bottom: 0.1rem;
     min-width: 5.8rem;
     min-height: 2.35rem;
     grid-template-columns: 1.65rem minmax(0, 1fr);
@@ -6759,11 +6778,17 @@ img {
   }
 
   .home-editorial-guide-title-art {
-    padding-right: 5.9rem;
+    padding-right: 0.25rem;
+    padding-bottom: 3.6rem;
+  }
+
+  .home-editorial-guide-title-art::after {
+    right: 0.45rem;
+    bottom: 2.92rem;
   }
 
   .home-editorial-guide-title-stamp {
-    right: 0.1rem;
+    right: 0.2rem;
     bottom: 0.15rem;
     min-width: 5.55rem;
     min-height: 2.45rem;
