@@ -100,6 +100,15 @@ function uniqueBySlug(products: Product[]) {
   return Array.from(new Map(products.map((product) => [product.slug, product])).values());
 }
 
+function priceParts(value: number) {
+  const [whole, fraction = "00"] = value.toFixed(2).split(".");
+
+  return {
+    whole: Number(whole).toLocaleString("en-US"),
+    fraction
+  };
+}
+
 export function HomeProductDiscovery({ featuredProduct, products }: HomeProductDiscoveryProps) {
   const [activeTab, setActiveTab] = useState<DiscoveryTabKey>("featured");
   const [activeIndex, setActiveIndex] = useState(0);
@@ -303,6 +312,7 @@ export function HomeProductDiscovery({ featuredProduct, products }: HomeProductD
             >
               {visibleProducts.map((product, index) => {
                 const href = getProductPath(product);
+                const price = priceParts(product.price);
 
                 return (
                   <article
@@ -345,9 +355,16 @@ export function HomeProductDiscovery({ featuredProduct, products }: HomeProductD
                         <h3>{product.name}</h3>
                       </Link>
                       <div className="home-editorial-product-purchase">
-                        <span className="home-editorial-product-price">
-                          <small>Price</small>
-                          <strong>{formatPrice(product.price)}</strong>
+                        <span
+                          className="home-editorial-product-price"
+                          aria-label={`Price ${formatPrice(product.price)}`}
+                        >
+                          <small>Pick price</small>
+                          <span className="home-editorial-product-price-lockup" aria-hidden="true">
+                            <i>$</i>
+                            <strong>{price.whole}</strong>
+                            <sup>.{price.fraction}</sup>
+                          </span>
                           {product.regularPrice && <del>{formatPrice(product.regularPrice)}</del>}
                         </span>
                         <AddToCartButton
@@ -363,8 +380,13 @@ export function HomeProductDiscovery({ featuredProduct, products }: HomeProductD
                         className="home-editorial-product-view group"
                         onClick={() => trackSelectItem(product, "Homepage Everyday Edit")}
                       >
-                        <span>View details</span>
-                        <ArrowRight aria-hidden className="h-4 w-4 transition-transform group-hover:translate-x-1 motion-reduce:transition-none" />
+                        <span>
+                          <small>Take a closer look</small>
+                          <strong>View this pick</strong>
+                        </span>
+                        <i aria-hidden="true">
+                          <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1 motion-reduce:transition-none" />
+                        </i>
                       </Link>
                     </div>
                   </article>

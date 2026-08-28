@@ -5784,7 +5784,30 @@ img {
 }
 
 .home-editorial-product-mode {
+  position: relative;
   min-width: 0;
+  padding: 1.35rem 1.4rem 1.25rem;
+  border: 1px solid #718279;
+  border-radius: 0.35rem;
+  background: rgba(255, 250, 240, 0.9);
+  box-shadow: 0.5rem 0.5rem 0 #f1bd48;
+  transform: rotate(0.35deg);
+}
+
+.home-editorial-product-mode::before {
+  position: absolute;
+  top: -0.72rem;
+  left: 1.15rem;
+  padding: 0.2rem 0.55rem 0.24rem;
+  background: #d85d42;
+  box-shadow: 0.12rem 0.12rem 0 #203027;
+  color: #fffaf0;
+  content: "SHELF PICKER";
+  font-size: 0.48rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  transform: rotate(-2deg);
 }
 
 .home-editorial-product-mode-intro {
@@ -5792,8 +5815,7 @@ img {
   grid-template-columns: 2.8rem minmax(0, 1fr);
   align-items: center;
   gap: 0.85rem;
-  padding: 1rem 0;
-  border-top: 1px dashed #9ba9a2;
+  padding: 0.25rem 0 1.05rem;
   border-bottom: 1px dashed #9ba9a2;
 }
 
@@ -5802,9 +5824,9 @@ img {
   width: 2.8rem;
   height: 2.8rem;
   place-items: center;
-  border-radius: 50%;
+  border-radius: 42% 58% 46% 54% / 54% 42% 58% 46%;
   background: #203027;
-  box-shadow: 0.2rem 0.2rem 0 #f1bd48;
+  box-shadow: 0.2rem 0.2rem 0 #d85d42;
   color: #fff8e9;
   transform: rotate(-6deg);
 }
@@ -5832,16 +5854,16 @@ img {
   margin-top: 0.12rem;
   color: #203027;
   font-family: var(--font-hand), "Segoe Print", cursive;
-  font-size: clamp(1rem, 1.3vw, 1.2rem);
-  font-variation-settings: "wght" 680;
-  line-height: 1.05;
+  font-size: clamp(1.25rem, 1.65vw, 1.55rem);
+  font-variation-settings: "wght" 720;
+  line-height: 0.98;
 }
 
 .home-editorial-product-mode-intro p {
   max-width: 34rem;
   margin: 0.42rem 0 0;
   color: #68736e;
-  font-size: 0.72rem;
+  font-size: 0.76rem;
   line-height: 1.5;
 }
 
@@ -5856,14 +5878,14 @@ img {
 .home-editorial-product-tabs button {
   display: grid;
   min-width: 0;
-  min-height: 3.5rem;
+  min-height: 4.15rem;
   grid-template-columns: 2rem minmax(0, 1fr);
   align-items: center;
   gap: 0.5rem;
   padding: 0.48rem 0.55rem;
-  border: 1px solid #9aa69f;
+  border: 1px solid #718279;
   border-radius: 0.2rem;
-  background: #f8faf6;
+  background: #fffdf8;
   color: #35453b;
   text-align: left;
   transform: rotate(-1deg);
@@ -5872,7 +5894,11 @@ img {
 }
 
 .home-editorial-product-tabs button:nth-child(2) {
-  transform: rotate(1deg);
+  transform: translateY(0.18rem) rotate(1deg);
+}
+
+.home-editorial-product-tabs button:nth-child(3) {
+  transform: rotate(-0.5deg);
 }
 
 .home-editorial-product-tabs button::after {
@@ -5911,7 +5937,7 @@ img {
   margin-top: 0.16rem;
   overflow: hidden;
   font-family: var(--font-hand), "Segoe Print", cursive;
-  font-size: 0.7rem;
+  font-size: 0.78rem;
   font-variation-settings: "wght" 650;
   line-height: 1;
   text-overflow: ellipsis;
@@ -5923,7 +5949,7 @@ img {
 .home-editorial-product-tabs button:focus-visible {
   border-color: #203027;
   background: #203027;
-  box-shadow: 0.2rem 0.2rem 0 #f1bd48;
+  box-shadow: 0.24rem 0.24rem 0 #d85d42;
   color: #fff8e9;
   transform: translateY(-0.16rem) rotate(-1deg);
 }
@@ -5972,14 +5998,25 @@ img {
   display: flex;
   align-items: baseline;
   gap: 0.34rem;
-  font-family: var(--font-heading), sans-serif;
-  font-size: 0.72rem;
+  font-family: var(--font-hand), "Segoe Print", cursive;
+  font-size: 0.82rem;
+  font-variation-settings: "wght" 720;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.06em;
 }
 
 .home-editorial-product-toolbar > p > strong span:first-child {
-  font-size: 1.35rem;
+  position: relative;
+  z-index: 0;
+  font-size: 2.3rem;
+  line-height: 0.8;
+  text-shadow: 0.08em 0.08em 0 #f1bd48;
+  transform: rotate(-4deg);
+}
+
+.home-editorial-product-toolbar > p > strong span:last-child {
+  color: #31533e;
+  font-size: 1.1rem;
 }
 
 .home-editorial-product-toolbar > p i {
@@ -6122,7 +6159,7 @@ img {
 }
 
 .home-editorial-product-copy {
-  min-height: 12.6rem;
+  min-height: 15.4rem;
   padding: 1.15rem 1.2rem 1.05rem;
 }
 
@@ -6135,6 +6172,10 @@ img {
 
 .home-editorial-product-meta > p {
   margin: 0;
+  padding: 0.18rem 0.42rem 0.2rem;
+  background: #f1bd48;
+  color: #203027;
+  transform: rotate(-1.5deg);
 }
 
 .home-editorial-product-meta > span {
@@ -6148,32 +6189,58 @@ img {
 }
 
 .home-editorial-product-name {
+  position: relative;
   display: block;
+  width: fit-content;
+  max-width: 100%;
+}
+
+.home-editorial-product-name::after {
+  display: block;
+  width: 42%;
+  height: 0.16rem;
+  margin-top: 0.18rem;
+  background: #d85d42;
+  content: "";
+  transform: rotate(-2deg);
+  transform-origin: left center;
+  transition: width 220ms ease;
+}
+
+.home-editorial-product-name:hover::after,
+.home-editorial-product-name:focus-visible::after {
+  width: 86%;
 }
 
 .home-editorial-product-copy h3 {
-  min-height: 3.15rem;
-  margin-top: 0.5rem;
-  font-size: 1.18rem;
-  line-height: 1.2;
+  min-height: 3.7rem;
+  margin-top: 0.62rem;
+  color: #203027;
+  font-family: var(--font-hand), "Segoe Print", cursive;
+  font-size: clamp(1.42rem, 1.75vw, 1.82rem);
+  font-variation-settings: "wght" 730;
+  line-height: 0.98;
+  text-wrap: balance;
 }
 
 .home-editorial-product-purchase {
+  min-height: 5.8rem;
   margin-top: auto;
-  padding: 0.75rem 0;
+  padding: 0.72rem 0.15rem 0.78rem;
   border-top: 1px dashed #c9c9bd;
   border-bottom: 1px dashed #c9c9bd;
 }
 
 .home-editorial-product-price {
-  display: grid;
-  grid-template-columns: auto auto;
-  align-items: baseline;
-  gap: 0.18rem 0.45rem;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 0.15rem 0.45rem;
 }
 
 .home-editorial-product-price > small {
-  grid-column: 1 / -1;
+  width: 100%;
   color: #9c650f;
   font-size: 0.48rem;
   font-weight: 850;
@@ -6181,23 +6248,129 @@ img {
   text-transform: uppercase;
 }
 
+.home-editorial-product-price-lockup {
+  position: relative;
+  display: inline-flex;
+  align-items: flex-start;
+  color: #203027;
+  font-family: var(--font-hand), "Segoe Print", cursive;
+  font-variation-settings: "wght" 760;
+  line-height: 1;
+  transform: rotate(-2deg);
+}
+
+.home-editorial-product-price-lockup::after {
+  position: absolute;
+  right: -0.18rem;
+  bottom: -0.1rem;
+  left: 0.25rem;
+  z-index: -1;
+  height: 0.42rem;
+  background: #f1bd48;
+  content: "";
+  transform: rotate(-2deg);
+}
+
+.home-editorial-product-price-lockup i {
+  margin: 0.22rem 0.08rem 0 0;
+  color: #d85d42;
+  font-size: 1.15rem;
+  font-style: normal;
+  text-shadow: none;
+}
+
+.home-editorial-product-price-lockup strong {
+  position: relative;
+  font-family: var(--font-hand), "Segoe Print", cursive;
+  font-size: 2.65rem;
+  font-variation-settings: "wght" 760;
+  line-height: 0.82;
+  text-shadow: 0.045em 0.045em 0 #d9a326;
+}
+
+.home-editorial-product-price-lockup sup {
+  margin-top: 0.12rem;
+  font-size: 0.92rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
 .home-editorial-product-price del {
+  align-self: center;
+  margin: 0 0 0.2rem;
   color: #7b807b;
   font-size: 0.68rem;
 }
 
 .home-editorial-product-cart {
-  width: 2.8rem;
-  height: 2.8rem;
-  box-shadow: 0.18rem 0.18rem 0 #203027;
+  width: 3.1rem;
+  height: 3.1rem;
+  box-shadow: 0.22rem 0.22rem 0 #203027;
+  transform: rotate(4deg);
 }
 
 .home-editorial-product-view {
+  display: flex;
+  align-items: center;
   justify-content: space-between;
   width: 100%;
-  margin-top: 0.78rem;
-  font-size: 0.68rem;
-  letter-spacing: 0.04em;
+  margin-top: 0.85rem;
+  padding: 0.55rem 0.65rem 0.55rem 0.75rem;
+  border: 1px solid #7d8b84;
+  background: #f4f5ed;
+  box-shadow: 0.16rem 0.16rem 0 #f1bd48;
+  color: #203027;
+  text-transform: none;
+  transform: rotate(-0.45deg);
+  transition: background-color 180ms ease, box-shadow 180ms ease, color 180ms ease,
+    transform 180ms ease;
+}
+
+.home-editorial-product-view:hover,
+.home-editorial-product-view:focus-visible {
+  background: #203027;
+  box-shadow: 0.16rem 0.16rem 0 #d85d42;
+  color: #fffaf0;
+  transform: translateY(-0.1rem) rotate(0deg);
+}
+
+.home-editorial-product-view > span,
+.home-editorial-product-view small,
+.home-editorial-product-view strong {
+  display: block;
+}
+
+.home-editorial-product-view small {
+  color: #9c650f;
+  font-size: 0.44rem;
+  font-weight: 850;
+  letter-spacing: 0.09em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.home-editorial-product-view:hover small,
+.home-editorial-product-view:focus-visible small {
+  color: #f1bd48;
+}
+
+.home-editorial-product-view strong {
+  margin-top: 0.2rem;
+  font-family: var(--font-hand), "Segoe Print", cursive;
+  font-size: 0.9rem;
+  font-variation-settings: "wght" 700;
+  line-height: 1;
+}
+
+.home-editorial-product-view > i {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  background: #f1bd48;
+  color: #203027;
 }
 
 .home-editorial-product-pagination {
@@ -7278,12 +7451,21 @@ img {
   .home-editorial-product-mode {
     width: 100%;
     margin-left: 0;
+    padding: 1.15rem 0.9rem 0.95rem;
+    box-shadow: 0.32rem 0.32rem 0 #f1bd48;
+    transform: none;
+  }
+
+  .home-editorial-product-mode::before {
+    top: -0.62rem;
+    left: 0.8rem;
+    font-size: 0.42rem;
   }
 
   .home-editorial-product-mode-intro {
     grid-template-columns: 2.5rem minmax(0, 1fr);
     gap: 0.72rem;
-    padding-block: 0.82rem;
+    padding: 0.2rem 0 0.82rem;
   }
 
   .home-editorial-product-mode-intro > span {
@@ -7525,7 +7707,30 @@ img {
   }
 
   .home-editorial-product-copy {
-    min-height: 12.8rem;
+    min-height: 15rem;
+    padding: 1rem 1rem 0.95rem;
+  }
+
+  .home-editorial-product-copy h3 {
+    min-height: 3.45rem;
+    font-size: 1.45rem;
+  }
+
+  .home-editorial-product-purchase {
+    min-height: 5.45rem;
+  }
+
+  .home-editorial-product-price-lockup strong {
+    font-size: 2.4rem;
+  }
+
+  .home-editorial-product-cart {
+    width: 3rem;
+    height: 3rem;
+  }
+
+  .home-editorial-product-view {
+    padding: 0.5rem 0.55rem 0.5rem 0.65rem;
   }
 
   .home-editorial-product-pagination {
@@ -7704,6 +7909,9 @@ img {
   .home-editorial-product-tabs button,
   .home-editorial-product-shelf article,
   .home-editorial-product-pick,
+  .home-editorial-product-name::after,
+  .home-editorial-product-cart,
+  .home-editorial-product-view,
   .home-editorial-product-pagination button span,
   .home-editorial-product-image img,
   .home-editorial-collection-media img {
