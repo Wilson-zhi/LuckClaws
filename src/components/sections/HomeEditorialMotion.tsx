@@ -46,9 +46,9 @@ export function HomeEditorialMotion({ children }: HomeEditorialMotionProps) {
             ? gsap.utils.toArray<HTMLElement>("[data-guide-title-piece]", guide)
             : [];
           const guideKicker = guide?.querySelector<HTMLElement>(".home-editorial-guide-title-block > p");
-          const guideIntro = guide?.querySelector<HTMLElement>(".home-editorial-guide-intro > p");
+          const guideIntro = guide?.querySelector<HTMLElement>(".home-editorial-guide-intro-note");
           const guideTags = guide
-            ? gsap.utils.toArray<HTMLElement>(".home-editorial-guide-routine-tags span", guide)
+            ? gsap.utils.toArray<HTMLElement>(".home-editorial-guide-routine-tags button", guide)
             : [];
           const guideLayout = guide?.querySelector<HTMLElement>(".home-editorial-guide-layout");
 

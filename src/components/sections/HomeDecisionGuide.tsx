@@ -175,15 +175,38 @@ export function HomeDecisionGuide({ guide }: { guide: HomepageDecisionGuideConte
                 aria-hidden="true"
               >
                 <PawPrint />
-                <span>01—04</span>
+                <span>
+                  <strong>{guideOptions.length}</strong>
+                  <small>routes</small>
+                </span>
               </span>
             </div>
           </div>
           <div className="home-editorial-guide-intro">
-            <p>{guide.subtitle}</p>
+            <div className="home-editorial-guide-intro-note">
+              <span aria-hidden="true">
+                <Route />
+              </span>
+              <div>
+                <small>Start here</small>
+                <strong>What does today feel like?</strong>
+                <p>{guide.subtitle}</p>
+              </div>
+            </div>
             <div className="home-editorial-guide-routine-tags" aria-label="Available routines">
               {guide.routineTags.slice(0, 4).map((tag, index) => (
-                <span key={`${tag}-${index}`} data-tone={index}>{tag}</span>
+                <button
+                  key={`${tag}-${index}`}
+                  type="button"
+                  data-tone={index}
+                  data-active={index === activeIndex}
+                  aria-pressed={index === activeIndex}
+                  onClick={() => selectIndex(index, true)}
+                  onFocus={() => selectIndex(index)}
+                >
+                  <small>{String(index + 1).padStart(2, "0")}</small>
+                  <strong>{tag}</strong>
+                </button>
               ))}
             </div>
           </div>
@@ -213,9 +236,15 @@ export function HomeDecisionGuide({ guide }: { guide: HomepageDecisionGuideConte
               />
             </div>
             <div className="home-editorial-guide-media-shade" aria-hidden="true" />
-            <p className="home-editorial-guide-media-label">
-              <span>{String(activeIndex + 1).padStart(2, "0")}</span>
-              <span>{activeOption.eyebrow}</span>
+            <p key={`ticket-${activeOption.key}`} className="home-editorial-guide-media-label">
+              <span className="home-editorial-guide-ticket-index">
+                {String(activeIndex + 1).padStart(2, "0")}
+              </span>
+              <span className="home-editorial-guide-ticket-copy">
+                <small>Routine ticket</small>
+                <strong>{activeOption.eyebrow}</strong>
+              </span>
+              <PawPrint aria-hidden />
             </p>
             <p className="home-editorial-guide-media-note lc-hand-note">
               A shorter route to shop.
@@ -345,9 +374,15 @@ export function HomeDecisionGuide({ guide }: { guide: HomepageDecisionGuideConte
         {activeStep ? (
           <div className="home-editorial-guide-steps" aria-label={guide.stepsTitle}>
             <header>
-              <span>{guide.stepsBadge}</span>
-              <strong>{guide.stepsTitle}</strong>
-              <em className="lc-hand-note">Pick. Match. Go.</em>
+              <span className="home-editorial-guide-steps-count" aria-hidden="true">
+                <strong>{guide.steps.length}</strong>
+                <small>moves</small>
+              </span>
+              <div>
+                <span>{guide.stepsBadge}</span>
+                <strong>{guide.stepsTitle}</strong>
+                <em className="lc-hand-note">Pick. Match. Go.</em>
+              </div>
             </header>
             <div className="home-editorial-guide-step-journey">
               <ol>
@@ -355,7 +390,7 @@ export function HomeDecisionGuide({ guide }: { guide: HomepageDecisionGuideConte
                   const isActive = index === activeStepIndex;
 
                   return (
-                    <li key={step.number} data-active={isActive}>
+                    <li key={step.number} data-active={isActive} data-step={step.number}>
                       <button
                         type="button"
                         aria-current={isActive ? "step" : undefined}
@@ -377,8 +412,11 @@ export function HomeDecisionGuide({ guide }: { guide: HomepageDecisionGuideConte
                 })}
               </ol>
               <article key={activeStep.number} id="routine-step-detail">
-                <span>
-                  {activeStep.number} / {String(guide.steps.length).padStart(2, "0")}
+                <span className="home-editorial-guide-step-position">
+                  <small>Now following</small>
+                  <strong>
+                    {activeStep.number} / {String(guide.steps.length).padStart(2, "0")}
+                  </strong>
                 </span>
                 <strong>{activeStep.title}</strong>
                 <p>{activeStep.text}</p>
