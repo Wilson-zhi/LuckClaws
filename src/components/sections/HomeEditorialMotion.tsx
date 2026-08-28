@@ -34,10 +34,122 @@ export function HomeEditorialMotion({ children }: HomeEditorialMotionProps) {
 
           if (reduceMotion) {
             gsap.set(
-              ".home-editorial-hero-reveal, .home-editorial-motion-reveal, .home-editorial-guide-progress span",
+              ".home-editorial-hero-reveal, .home-editorial-motion-reveal, [data-guide-title-piece], .home-editorial-guide-intro, .home-editorial-guide-layout, .home-editorial-guide-steps",
               { clearProps: "all" }
             );
             return;
+          }
+
+          const guide = root.querySelector<HTMLElement>(".home-editorial-guide");
+          const guideHeading = guide?.querySelector<HTMLElement>(".home-editorial-guide-heading");
+          const guideTitlePieces = guide
+            ? gsap.utils.toArray<HTMLElement>("[data-guide-title-piece]", guide)
+            : [];
+          const guideKicker = guide?.querySelector<HTMLElement>(".home-editorial-guide-title-block > p");
+          const guideIntro = guide?.querySelector<HTMLElement>(".home-editorial-guide-intro > p");
+          const guideTags = guide
+            ? gsap.utils.toArray<HTMLElement>(".home-editorial-guide-routine-tags span", guide)
+            : [];
+          const guideLayout = guide?.querySelector<HTMLElement>(".home-editorial-guide-layout");
+
+          if (guideHeading && guideTitlePieces.length > 0) {
+            const guideIntroTimeline = gsap.timeline({
+              scrollTrigger: {
+                trigger: guideHeading,
+                start: "top 84%",
+                once: true
+              }
+            });
+
+            guideIntroTimeline
+              .from(guideKicker ? [guideKicker] : [], {
+                y: 16,
+                duration: 0.42,
+                ease: "power2.out"
+              })
+              .from(
+                guideTitlePieces,
+                {
+                  y: (index) => (index === guideTitlePieces.length - 1 ? 10 : 30),
+                  rotation: (index) => [-7, 5, -4, 12][index] ?? 0,
+                  scale: (index) => (index === guideTitlePieces.length - 1 ? 0.72 : 0.94),
+                  duration: mobile ? 0.55 : 0.72,
+                  stagger: 0.1,
+                  ease: "back.out(1.5)"
+                },
+                "-=0.18"
+              )
+              .from(
+                guideIntro ? [guideIntro] : [],
+                { y: 22, duration: 0.55, ease: "power3.out" },
+                "-=0.5"
+              )
+              .from(
+                guideTags,
+                {
+                  y: 12,
+                  rotation: (index) => (index % 2 === 0 ? -5 : 5),
+                  duration: 0.38,
+                  stagger: 0.07,
+                  ease: "back.out(1.7)"
+                },
+                "-=0.32"
+              )
+              .from(
+                guideLayout ? [guideLayout] : [],
+                {
+                  y: mobile ? 28 : 52,
+                  scale: desktop ? 0.985 : 1,
+                  duration: mobile ? 0.68 : 0.9,
+                  ease: "power3.out"
+                },
+                "-=0.18"
+              );
+          }
+
+          const guideSteps = guide?.querySelector<HTMLElement>(".home-editorial-guide-steps");
+          const guideStepHeader = guideSteps?.querySelector<HTMLElement>("header");
+          const guideStepButtons = guideSteps
+            ? gsap.utils.toArray<HTMLElement>(".home-editorial-guide-step-journey li", guideSteps)
+            : [];
+          const guideStepDetail = guideSteps?.querySelector<HTMLElement>(
+            ".home-editorial-guide-step-journey > article"
+          );
+
+          if (guideSteps) {
+            gsap
+              .timeline({
+                scrollTrigger: {
+                  trigger: guideSteps,
+                  start: "top 88%",
+                  once: true
+                }
+              })
+              .from(guideStepHeader ? [guideStepHeader] : [], {
+                x: -22,
+                duration: 0.5,
+                ease: "power3.out"
+              })
+              .from(
+                guideStepButtons,
+                {
+                  y: 24,
+                  duration: 0.48,
+                  stagger: 0.1,
+                  ease: "back.out(1.35)"
+                },
+                "-=0.28"
+              )
+              .from(
+                guideStepDetail ? [guideStepDetail] : [],
+                {
+                  x: mobile ? 0 : 28,
+                  y: mobile ? 18 : 0,
+                  duration: 0.52,
+                  ease: "power3.out"
+                },
+                "-=0.28"
+              );
           }
 
           const revealTargets = gsap.utils.toArray<HTMLElement>(
@@ -107,44 +219,6 @@ export function HomeEditorialMotion({ children }: HomeEditorialMotionProps) {
                 .to(heroReveal, { autoAlpha: 1, y: 0, duration: 0.24 }, 0.5)
                 .to(heroReveal, { y: -18, duration: 0.26 }, 0.72)
                 .to(heroWash, { yPercent: 0, duration: 0.16 }, 0.84);
-            }
-
-            const guideLayout = root.querySelector<HTMLElement>(".home-editorial-guide-layout");
-            const guideProgress = guideLayout?.querySelector<HTMLElement>(
-              ".home-editorial-guide-progress span"
-            );
-
-            if (guideLayout && guideProgress) {
-              const guideCount = Math.max(1, Number(guideLayout.dataset.guideCount ?? 1));
-              let activeGuideIndex = -1;
-
-              gsap.set(guideProgress, { scaleX: 0, transformOrigin: "left center" });
-
-              gsap.timeline({
-                scrollTrigger: {
-                  trigger: guideLayout,
-                  start: "top top+=112",
-                  end: () => `+=${Math.max(window.innerHeight * 1.55, guideCount * 300)}`,
-                  pin: true,
-                  pinSpacing: true,
-                  scrub: 0.45,
-                  anticipatePin: 1,
-                  invalidateOnRefresh: true,
-                  onUpdate: (self) => {
-                    const nextIndex = Math.min(
-                      guideCount - 1,
-                      Math.floor(self.progress * guideCount)
-                    );
-
-                    if (nextIndex !== activeGuideIndex) {
-                      activeGuideIndex = nextIndex;
-                      window.dispatchEvent(
-                        new CustomEvent("home-guide-motion-step", { detail: nextIndex })
-                      );
-                    }
-                  }
-                }
-              }).to(guideProgress, { scaleX: 1, ease: "none" });
             }
 
             gsap.utils
