@@ -3,7 +3,17 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, ArrowRight, Pause, Play, Plus } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Flame,
+  Pause,
+  PawPrint,
+  Play,
+  Plus,
+  Sparkles,
+  type LucideIcon
+} from "lucide-react";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
 import { type Product } from "@/data/products";
 import { trackSelectItem } from "@/lib/ga4-ecommerce";
@@ -22,32 +32,40 @@ const discoveryTabs: Array<{
   label: string;
   eyebrow: string;
   title: string;
+  titleLines: [string, string, string];
   handNote: string;
   description: string;
+  icon: LucideIcon;
 }> = [
   {
     key: "featured",
     label: "The edit",
     eyebrow: "Everyday edit",
     title: "A few useful things, clearly shown.",
+    titleLines: ["A few useful", "things,", "clearly shown."],
     handNote: "pick, play, repeat",
-    description: "Practical picks for play, walks, rest, and the routines in between."
+    description: "Practical picks for play, walks, rest, and the routines in between.",
+    icon: PawPrint
   },
   {
     key: "best",
     label: "Most chosen",
     eyebrow: "Most chosen",
     title: "The products pet homes return to.",
+    titleLines: ["The products", "pet homes", "return to."],
     handNote: "pack favorites",
-    description: "Popular essentials selected for everyday usefulness and easy comparison."
+    description: "Popular essentials selected for everyday usefulness and easy comparison.",
+    icon: Flame
   },
   {
     key: "new",
     label: "Just in",
     eyebrow: "New arrivals",
     title: "Fresh finds for familiar routines.",
+    titleLines: ["Fresh finds", "for familiar", "routines."],
     handNote: "new tricks inside",
-    description: "Recently added products for dogs, cats, walks, play, comfort, and rest."
+    description: "Recently added products for dogs, cats, walks, play, comfort, and rest.",
+    icon: Sparkles
   }
 ];
 
@@ -180,26 +198,54 @@ export function HomeProductDiscovery({ featuredProduct, products }: HomeProductD
         <header className="home-editorial-products-heading home-editorial-motion-reveal">
           <div className="home-editorial-product-title-art">
             <p className="home-editorial-kicker">{activeTabContent.eyebrow}</p>
-            <h2>
-              <span>{activeTabContent.title}</span>
+            <h2 aria-label={activeTabContent.title}>
+              <span data-title-line="lead">{activeTabContent.titleLines[0]}</span>
+              <span data-title-line="sticker">{activeTabContent.titleLines[1]}</span>
+              <strong data-title-line="finish">{activeTabContent.titleLines[2]}</strong>
               <em>{activeTabContent.handNote}</em>
             </h2>
+            <span className="home-editorial-product-title-stamp" aria-hidden="true">
+              <PawPrint />
+              <span>
+                <strong>Handpicked</strong>
+                <small>for real routines</small>
+              </span>
+            </span>
           </div>
-          <div>
-            <p>{activeTabContent.description}</p>
+          <div className="home-editorial-product-mode">
+            <div className="home-editorial-product-mode-intro">
+              <span aria-hidden="true">
+                <Sparkles />
+              </span>
+              <div>
+                <small>Pick a shelf</small>
+                <strong>How do you want to browse?</strong>
+                <p>{activeTabContent.description}</p>
+              </div>
+            </div>
             <div className="home-editorial-product-tabs" role="tablist" aria-label="Product edit">
-              {discoveryTabs.map((tab) => (
-                <button
-                  key={tab.key}
-                  type="button"
-                  role="tab"
-                  aria-selected={activeTab === tab.key}
-                  data-active={activeTab === tab.key}
-                  onClick={() => setActiveTab(tab.key)}
-                >
-                  {tab.label}
-                </button>
-              ))}
+              {discoveryTabs.map((tab, index) => {
+                const TabIcon = tab.icon;
+
+                return (
+                  <button
+                    key={tab.key}
+                    type="button"
+                    role="tab"
+                    aria-selected={activeTab === tab.key}
+                    data-active={activeTab === tab.key}
+                    onClick={() => setActiveTab(tab.key)}
+                  >
+                    <span aria-hidden="true">
+                      <TabIcon />
+                    </span>
+                    <span>
+                      <small>{String(index + 1).padStart(2, "0")}</small>
+                      <strong>{tab.label}</strong>
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </header>
@@ -219,11 +265,14 @@ export function HomeProductDiscovery({ featuredProduct, products }: HomeProductD
         >
           <div className="home-editorial-product-toolbar">
             <p aria-live="polite">
-              <span>{String(activeIndex + 1).padStart(2, "0")}</span>
-              <span aria-hidden="true">/</span>
-              <span>{String(visibleProducts.length).padStart(2, "0")}</span>
+              <small>On the shelf</small>
+              <strong>
+                <span>{String(activeIndex + 1).padStart(2, "0")}</span>
+                <i aria-hidden="true">of</i>
+                <span>{String(visibleProducts.length).padStart(2, "0")}</span>
+              </strong>
             </p>
-            <div>
+            <div aria-label="Product carousel controls">
               <button
                 type="button"
                 aria-label={autoPlay ? "Pause product carousel" : "Play product carousel"}
@@ -268,8 +317,12 @@ export function HomeProductDiscovery({ featuredProduct, products }: HomeProductD
                       onClick={() => trackSelectItem(product, "Homepage Everyday Edit")}
                     >
                       {(product.badge || product.isNew) && (
-                        <span>{product.badge ?? "New"}</span>
+                        <span className="home-editorial-product-badge">{product.badge ?? "New"}</span>
                       )}
+                      <span className="home-editorial-product-pick" aria-hidden="true">
+                        <small>Pick</small>
+                        {String(index + 1).padStart(2, "0")}
+                      </span>
                       <Image
                         src={productImage(product)}
                         alt={product.alt}
@@ -280,28 +333,37 @@ export function HomeProductDiscovery({ featuredProduct, products }: HomeProductD
                       />
                     </Link>
                     <div className="home-editorial-product-copy">
-                      <p>{product.category}</p>
+                      <div className="home-editorial-product-meta">
+                        <p>{product.category}</p>
+                        <span>{activeTabContent.label}</span>
+                      </div>
                       <Link
                         href={href}
+                        className="home-editorial-product-name"
                         onClick={() => trackSelectItem(product, "Homepage Everyday Edit")}
                       >
                         <h3>{product.name}</h3>
                       </Link>
-                      <div>
-                        <span>
+                      <div className="home-editorial-product-purchase">
+                        <span className="home-editorial-product-price">
+                          <small>Price</small>
                           <strong>{formatPrice(product.price)}</strong>
-                          {product.regularPrice && <small>{formatPrice(product.regularPrice)}</small>}
+                          {product.regularPrice && <del>{formatPrice(product.regularPrice)}</del>}
                         </span>
-                        <AddToCartButton product={product} variant="icon">
+                        <AddToCartButton
+                          product={product}
+                          variant="icon"
+                          className="home-editorial-product-cart"
+                        >
                           <Plus aria-hidden className="h-5 w-5" />
                         </AddToCartButton>
                       </div>
                       <Link
                         href={href}
-                        className="group"
+                        className="home-editorial-product-view group"
                         onClick={() => trackSelectItem(product, "Homepage Everyday Edit")}
                       >
-                        <span>View product</span>
+                        <span>View details</span>
                         <ArrowRight aria-hidden className="h-4 w-4 transition-transform group-hover:translate-x-1 motion-reduce:transition-none" />
                       </Link>
                     </div>
@@ -320,7 +382,7 @@ export function HomeProductDiscovery({ featuredProduct, products }: HomeProductD
                 aria-current={activeIndex === index ? "true" : undefined}
                 onClick={() => scrollToProduct(index)}
               >
-                <span />
+                <span>{String(index + 1).padStart(2, "0")}</span>
               </button>
             ))}
           </div>
