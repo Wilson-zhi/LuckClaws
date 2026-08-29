@@ -296,6 +296,9 @@ export function HomeEditorialMotion({ children }: HomeEditorialMotionProps) {
           const routeStoryBridge = root.querySelector<HTMLElement>(".home-route-story-bridge");
           const routeStoryLine = routeStoryBridge?.querySelector<HTMLElement>(".home-route-story-line i");
           const routeStoryTicket = routeStoryBridge?.querySelector<HTMLElement>(".home-route-story-ticket");
+          const routeStoryPaws = routeStoryBridge
+            ? gsap.utils.toArray<SVGElement>(".home-route-story-paws svg", routeStoryBridge)
+            : [];
           const routeStoryDestination = routeStoryBridge?.querySelector<HTMLElement>(
             ".home-route-story-destination"
           );
@@ -313,15 +316,28 @@ export function HomeEditorialMotion({ children }: HomeEditorialMotionProps) {
               .fromTo(routeStoryLine, { scaleX: 0 }, { scaleX: 1, ease: "none" }, 0)
               .fromTo(
                 routeStoryTicket,
-                { x: mobile ? -12 : -36, rotation: -5 },
-                { x: 0, rotation: -1, ease: "power2.out" },
+                { x: mobile ? -4 : -18, y: 16, rotation: -7 },
+                { x: 0, y: 0, rotation: -2, ease: "power2.out" },
                 0
               )
               .fromTo(
+                routeStoryPaws,
+                { autoAlpha: 0, y: 14, scale: 0.55, rotation: -24 },
+                {
+                  autoAlpha: 1,
+                  y: 0,
+                  scale: 1,
+                  rotation: (index) => [-14, 12, -8][index] ?? 0,
+                  stagger: 0.12,
+                  ease: "back.out(1.6)"
+                },
+                0.16
+              )
+              .fromTo(
                 routeStoryDestination,
-                { x: mobile ? 12 : 36, scale: 0.92 },
-                { x: 0, scale: 1, ease: "back.out(1.35)" },
-                0.42
+                { x: mobile ? 4 : 18, y: 12, scale: 0.88, rotation: 7 },
+                { x: 0, y: 0, scale: 1, rotation: 2, ease: "back.out(1.45)" },
+                0.48
               );
           }
 
@@ -335,53 +351,100 @@ export function HomeEditorialMotion({ children }: HomeEditorialMotionProps) {
           const storyStatus = storyMedia?.querySelector<HTMLElement>(".home-editorial-story-status");
 
           if (storyStage && storyPoster && storyMedia && storyImage && storyCopy) {
-            gsap
-              .timeline({
+            if (desktop) {
+              gsap.set(storyPoster, {
+                scale: 0.82,
+                y: 72,
+                rotationY: -7,
+                transformPerspective: 1400,
+                transformOrigin: "50% 50%"
+              });
+              gsap.set(storyImage, { scale: 1.13, transformOrigin: "50% 50%" });
+              gsap.set(storyCopy, { autoAlpha: 0, yPercent: 22 });
+              gsap.set(storySeal ? [storySeal] : [], { rotation: 18, scale: 0.72 });
+              if (storyStatus) gsap.set(storyStatus, { autoAlpha: 0, y: 18 });
+
+              const storyTimeline = gsap.timeline({
                 scrollTrigger: {
                   trigger: storyStage,
-                  start: "top 84%",
-                  once: true
+                  start: "top top+=112",
+                  end: () => `+=${Math.max(window.innerHeight * 1.05, 860)}`,
+                  pin: storyStage,
+                  pinSpacing: true,
+                  scrub: 0.75,
+                  anticipatePin: 1,
+                  invalidateOnRefresh: true
                 }
-              })
-              .from(storyPoster, {
-                clipPath: desktop
-                  ? "inset(3% 8% 3% 8% round 1.2rem)"
-                  : "inset(3% 2% 3% 2% round 1rem)",
-                y: mobile ? 30 : 54,
-                duration: mobile ? 0.62 : 0.82,
-                ease: "power3.out"
-              })
-              .from(
-                storyMedia,
-                { xPercent: desktop ? -5 : 0, duration: 0.7, ease: "power3.out" },
-                0.05
-              )
-              .from(
-                storyImage,
-                { scale: 1.08, duration: 1.05, ease: "power2.out" },
-                0.05
-              )
-              .from(
-                storyCopy,
-                {
-                  autoAlpha: 0,
-                  x: desktop ? 54 : 0,
-                  y: mobile ? 24 : 0,
-                  duration: 0.66,
+              });
+
+              storyTimeline
+                .to(
+                  storyPoster,
+                  {
+                    scale: 1,
+                    y: 0,
+                    rotationY: 0,
+                    clipPath: "inset(0% 0% 0% 0% round 0.5rem)",
+                    duration: 0.28,
+                    ease: "power2.out"
+                  },
+                  0
+                )
+                .to(storyImage, { scale: 1, duration: 0.3, ease: "power2.out" }, 0)
+                .to(storyCopy, { autoAlpha: 1, yPercent: 0, duration: 0.2, ease: "power2.out" }, 0.12)
+                .to(
+                  storySeal ? [storySeal] : [],
+                  { rotation: -6, scale: 1, duration: 0.18, ease: "back.out(1.4)" },
+                  0.18
+                )
+                .to(storyStatus ? [storyStatus] : [], { autoAlpha: 1, y: 0, duration: 0.16 }, 0.22)
+                .to({}, { duration: 0.28 })
+                .to(storyCopy, { autoAlpha: 0.18, yPercent: -12, duration: 0.18, ease: "power2.in" })
+                .to(storyStatus ? [storyStatus] : [], { autoAlpha: 0, y: -12, duration: 0.12 }, "<")
+                .to(
+                  storyPoster,
+                  {
+                    autoAlpha: 0.52,
+                    xPercent: -6,
+                    scale: 0.9,
+                    rotationY: 3,
+                    duration: 0.22,
+                    ease: "power2.in"
+                  },
+                  "<"
+                );
+            } else {
+              gsap
+                .timeline({
+                  scrollTrigger: {
+                    trigger: storyStage,
+                    start: "top 84%",
+                    once: true
+                  }
+                })
+                .from(storyPoster, {
+                  clipPath: "inset(3% 2% 3% 2% round 1rem)",
+                  y: 30,
+                  duration: 0.62,
                   ease: "power3.out"
-                },
-                0.18
-              )
-              .from(
-                storySeal ? [storySeal] : [],
-                { rotation: 18, scale: 0.72, duration: 0.5, ease: "back.out(1.45)" },
-                0.42
-              )
-              .from(
-                storyStatus ? [storyStatus] : [],
-                { autoAlpha: 0, y: -16, duration: 0.42, ease: "power2.out" },
-                0.48
-              );
+                })
+                .from(storyImage, { scale: 1.08, duration: 1.05, ease: "power2.out" }, 0.05)
+                .from(
+                  storyCopy,
+                  { autoAlpha: 0, y: 24, duration: 0.66, ease: "power3.out" },
+                  0.18
+                )
+                .from(
+                  storySeal ? [storySeal] : [],
+                  { rotation: 18, scale: 0.72, duration: 0.5, ease: "back.out(1.45)" },
+                  0.42
+                )
+                .from(
+                  storyStatus ? [storyStatus] : [],
+                  { autoAlpha: 0, y: -16, duration: 0.42, ease: "power2.out" },
+                  0.48
+                );
+            }
           }
 
           const storyPrinciples = story?.querySelector<HTMLElement>(".home-editorial-story-principles");

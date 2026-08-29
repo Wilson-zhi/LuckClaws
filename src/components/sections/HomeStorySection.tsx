@@ -69,11 +69,19 @@ export function HomeStorySection({ story }: { story: HomepageStorySectionContent
               <strong>One useful path</strong>
             </span>
           </span>
-          <span className="home-route-story-line"><i /></span>
+          <span className="home-route-story-path">
+            <span className="home-route-story-line"><i /></span>
+            <span className="home-route-story-paws">
+              <PawPrint />
+              <PawPrint />
+              <PawPrint />
+            </span>
+            <small>Follow the pawprints</small>
+          </span>
           <span className="home-route-story-destination">
             <PawPrint />
             <span>
-              <small>Next stop</small>
+              <small>Chapter 05</small>
               <strong>Why LUCK CLAWS</strong>
             </span>
           </span>
