@@ -34,7 +34,7 @@ export function HomeEditorialMotion({ children }: HomeEditorialMotionProps) {
 
           if (reduceMotion) {
             gsap.set(
-              ".home-editorial-hero-reveal, .home-editorial-motion-reveal, [data-guide-title-piece], [data-route-title-piece], .home-editorial-guide-intro, .home-editorial-guide-layout, .home-guide-wayfinder, .home-guide-handoff, .home-route-deck-intro, .home-route-deck-stage, .home-route-deck-tab",
+              ".home-editorial-hero-reveal, .home-editorial-motion-reveal, [data-guide-title-piece], [data-route-title-piece], [data-promise-title-piece], .home-editorial-guide-intro, .home-editorial-guide-layout, .home-guide-wayfinder, .home-guide-handoff, .home-route-deck-intro, .home-route-deck-stage, .home-route-deck-tab, .home-route-story-bridge, .home-editorial-story-poster, .home-editorial-story-principles, .home-story-promise-handoff, .home-editorial-promises header, .home-promise-board",
               { clearProps: "all" }
             );
             return;
@@ -293,6 +293,212 @@ export function HomeEditorialMotion({ children }: HomeEditorialMotionProps) {
             });
           });
 
+          const routeStoryBridge = root.querySelector<HTMLElement>(".home-route-story-bridge");
+          const routeStoryLine = routeStoryBridge?.querySelector<HTMLElement>(".home-route-story-line i");
+          const routeStoryTicket = routeStoryBridge?.querySelector<HTMLElement>(".home-route-story-ticket");
+          const routeStoryDestination = routeStoryBridge?.querySelector<HTMLElement>(
+            ".home-route-story-destination"
+          );
+
+          if (routeStoryBridge && routeStoryLine && routeStoryTicket && routeStoryDestination) {
+            gsap
+              .timeline({
+                scrollTrigger: {
+                  trigger: routeStoryBridge,
+                  start: "top 92%",
+                  end: "bottom 58%",
+                  scrub: mobile ? 0.35 : 0.65
+                }
+              })
+              .fromTo(routeStoryLine, { scaleX: 0 }, { scaleX: 1, ease: "none" }, 0)
+              .fromTo(
+                routeStoryTicket,
+                { x: mobile ? -12 : -36, rotation: -5 },
+                { x: 0, rotation: -1, ease: "power2.out" },
+                0
+              )
+              .fromTo(
+                routeStoryDestination,
+                { x: mobile ? 12 : 36, scale: 0.92 },
+                { x: 0, scale: 1, ease: "back.out(1.35)" },
+                0.42
+              );
+          }
+
+          const story = root.querySelector<HTMLElement>(".home-editorial-story");
+          const storyStage = story?.querySelector<HTMLElement>(".home-editorial-story-stage");
+          const storyPoster = storyStage?.querySelector<HTMLElement>(".home-editorial-story-poster");
+          const storyMedia = storyPoster?.querySelector<HTMLElement>(".home-editorial-story-media");
+          const storyImage = storyMedia?.querySelector<HTMLElement>("img");
+          const storyCopy = storyPoster?.querySelector<HTMLElement>(".home-editorial-story-copy");
+          const storySeal = storyCopy?.querySelector<HTMLElement>(".home-editorial-story-seal");
+          const storyStatus = storyMedia?.querySelector<HTMLElement>(".home-editorial-story-status");
+
+          if (storyStage && storyPoster && storyMedia && storyImage && storyCopy) {
+            gsap
+              .timeline({
+                scrollTrigger: {
+                  trigger: storyStage,
+                  start: "top 84%",
+                  once: true
+                }
+              })
+              .from(storyPoster, {
+                clipPath: desktop
+                  ? "inset(3% 8% 3% 8% round 1.2rem)"
+                  : "inset(3% 2% 3% 2% round 1rem)",
+                y: mobile ? 30 : 54,
+                duration: mobile ? 0.62 : 0.82,
+                ease: "power3.out"
+              })
+              .from(
+                storyMedia,
+                { xPercent: desktop ? -5 : 0, duration: 0.7, ease: "power3.out" },
+                0.05
+              )
+              .from(
+                storyImage,
+                { scale: 1.08, duration: 1.05, ease: "power2.out" },
+                0.05
+              )
+              .from(
+                storyCopy,
+                {
+                  autoAlpha: 0,
+                  x: desktop ? 54 : 0,
+                  y: mobile ? 24 : 0,
+                  duration: 0.66,
+                  ease: "power3.out"
+                },
+                0.18
+              )
+              .from(
+                storySeal ? [storySeal] : [],
+                { rotation: 18, scale: 0.72, duration: 0.5, ease: "back.out(1.45)" },
+                0.42
+              )
+              .from(
+                storyStatus ? [storyStatus] : [],
+                { autoAlpha: 0, y: -16, duration: 0.42, ease: "power2.out" },
+                0.48
+              );
+          }
+
+          const storyPrinciples = story?.querySelector<HTMLElement>(".home-editorial-story-principles");
+          const storyPrinciplesHeading = storyPrinciples?.querySelector<HTMLElement>(
+            ".home-story-principles-heading"
+          );
+          const storyPrincipleButtons = storyPrinciples
+            ? gsap.utils.toArray<HTMLElement>(".home-story-principle-tabs button", storyPrinciples)
+            : [];
+          const storyPrinciplePanel = storyPrinciples?.querySelector<HTMLElement>(
+            ".home-story-principle-panel"
+          );
+
+          if (storyPrinciples) {
+            gsap
+              .timeline({
+                scrollTrigger: {
+                  trigger: storyPrinciples,
+                  start: "top 86%",
+                  once: true
+                }
+              })
+              .from(storyPrinciplesHeading ? [storyPrinciplesHeading] : [], {
+                autoAlpha: 0,
+                y: 24,
+                duration: 0.5,
+                ease: "power3.out"
+              })
+              .from(
+                storyPrincipleButtons,
+                { autoAlpha: 0, x: mobile ? 0 : -24, y: mobile ? 16 : 0, stagger: 0.09, duration: 0.48, ease: "power3.out" },
+                "-=0.2"
+              )
+              .from(
+                storyPrinciplePanel ? [storyPrinciplePanel] : [],
+                { autoAlpha: 0, x: desktop ? 34 : 0, y: mobile ? 18 : 0, duration: 0.56, ease: "power3.out" },
+                "-=0.28"
+              );
+          }
+
+          const storyPromiseHandoff = story?.querySelector<HTMLElement>(".home-story-promise-handoff");
+          const storyPromiseLine = storyPromiseHandoff?.querySelector<HTMLElement>("i");
+          const storyPromiseArrow = storyPromiseHandoff?.querySelector<HTMLElement>(
+            ".home-story-promise-arrow"
+          );
+
+          if (storyPromiseHandoff && storyPromiseLine) {
+            gsap
+              .timeline({
+                scrollTrigger: {
+                  trigger: storyPromiseHandoff,
+                  start: "top 90%",
+                  end: "bottom 64%",
+                  scrub: mobile ? 0.3 : 0.55
+                }
+              })
+              .from(storyPromiseHandoff, { autoAlpha: 0, y: 24, ease: "power2.out" }, 0)
+              .fromTo(storyPromiseLine, { scaleX: 0 }, { scaleX: 1, ease: "none" }, 0.08)
+              .from(
+                storyPromiseArrow ? [storyPromiseArrow] : [],
+                { y: -18, rotation: -16, scale: 0.82, ease: "back.out(1.4)" },
+                0.55
+              );
+          }
+
+          const promises = root.querySelector<HTMLElement>(".home-editorial-promises");
+          const promiseHeader = promises?.querySelector<HTMLElement>("header");
+          const promiseTitlePieces = promises
+            ? gsap.utils.toArray<HTMLElement>("[data-promise-title-piece]", promises)
+            : [];
+          const promiseHeaderNote = promises?.querySelector<HTMLElement>(".home-promise-header-note");
+          const promiseBoard = promises?.querySelector<HTMLElement>(".home-promise-board");
+          const promiseButtons = promiseBoard
+            ? gsap.utils.toArray<HTMLElement>(".home-editorial-promise-list button", promiseBoard)
+            : [];
+          const promiseShowcase = promiseBoard?.querySelector<HTMLElement>(
+            ".home-editorial-promise-showcase"
+          );
+
+          if (promises && promiseHeader && promiseBoard) {
+            gsap
+              .timeline({
+                scrollTrigger: {
+                  trigger: promises,
+                  start: "top 82%",
+                  once: true
+                }
+              })
+              .from(promiseTitlePieces, {
+                y: 30,
+                rotation: (index) => (index === 0 ? -3 : 2),
+                duration: 0.68,
+                stagger: 0.1,
+                ease: "back.out(1.35)"
+              })
+              .from(
+                promiseHeaderNote ? [promiseHeaderNote] : [],
+                { autoAlpha: 0, x: desktop ? 28 : 0, y: mobile ? 18 : 0, duration: 0.5, ease: "power3.out" },
+                "-=0.36"
+              )
+              .from(
+                promiseBoard,
+                { autoAlpha: 0, y: 40, clipPath: "inset(4% 3% 4% 3% round 1rem)", duration: 0.72, ease: "power3.out" },
+                "-=0.15"
+              )
+              .from(
+                promiseButtons,
+                { autoAlpha: 0, x: -20, duration: 0.38, stagger: 0.06, ease: "power2.out" },
+                "-=0.4"
+              )
+              .from(
+                promiseShowcase ? [promiseShowcase] : [],
+                { autoAlpha: 0, x: desktop ? 28 : 0, duration: 0.5, ease: "power3.out" },
+                "-=0.34"
+              );
+          }
+
           if (desktop) {
             const hero = root.querySelector<HTMLElement>(".home-editorial-hero");
             const heroStage = hero?.querySelector<HTMLElement>(".home-editorial-hero-stage");
@@ -344,69 +550,6 @@ export function HomeEditorialMotion({ children }: HomeEditorialMotionProps) {
                 .to(heroWash, { yPercent: 0, duration: 0.16 }, 0.84);
             }
 
-            const storyStage = root.querySelector<HTMLElement>(".home-editorial-story-stage");
-            const storyPoster = storyStage?.querySelector<HTMLElement>(".home-editorial-story-poster");
-            const storyImage = storyPoster?.querySelector<HTMLElement>("img");
-            const storyCopy = storyPoster?.querySelector<HTMLElement>(".home-editorial-story-copy");
-            const storyStatus = storyPoster?.querySelector<HTMLElement>(".home-editorial-story-status");
-
-            if (storyStage && storyPoster && storyImage && storyCopy) {
-              gsap.set(storyPoster, {
-                scale: 0.82,
-                y: 72,
-                rotationY: -7,
-                transformPerspective: 1400,
-                transformOrigin: "50% 50%"
-              });
-              gsap.set(storyImage, { scale: 1.13, transformOrigin: "50% 50%" });
-              gsap.set(storyCopy, { autoAlpha: 0, yPercent: 22 });
-              if (storyStatus) gsap.set(storyStatus, { autoAlpha: 0, y: 18 });
-
-              const storyTimeline = gsap.timeline({
-                scrollTrigger: {
-                  trigger: storyStage,
-                  start: "top top+=112",
-                  end: () => `+=${Math.max(window.innerHeight * 1.65, 1200)}`,
-                  pin: storyStage,
-                  pinSpacing: true,
-                  scrub: 0.8,
-                  anticipatePin: 1,
-                  invalidateOnRefresh: true
-                }
-              });
-
-              storyTimeline
-                .to(
-                  storyPoster,
-                  {
-                    scale: 1,
-                    y: 0,
-                    rotationY: 0,
-                    clipPath: "inset(0% 0% 0% 0% round 0.45rem)",
-                    duration: 0.28,
-                    ease: "power2.out"
-                  },
-                  0
-                )
-                .to(storyImage, { scale: 1, duration: 0.3, ease: "power2.out" }, 0)
-                .to(storyCopy, { autoAlpha: 1, yPercent: 0, duration: 0.2, ease: "power2.out" }, 0.12)
-                .to(storyStatus ? [storyStatus] : [], { autoAlpha: 1, y: 0, duration: 0.16 }, 0.22)
-                .to({}, { duration: 0.3 })
-                .to(storyCopy, { autoAlpha: 0, yPercent: -16, duration: 0.18, ease: "power2.in" })
-                .to(storyStatus ? [storyStatus] : [], { autoAlpha: 0, y: -16, duration: 0.12 }, "<")
-                .to(
-                  storyPoster,
-                  {
-                    autoAlpha: 0.38,
-                    xPercent: -18,
-                    scale: 0.82,
-                    rotationY: 5,
-                    duration: 0.22,
-                    ease: "power2.in"
-                  },
-                  "<"
-                );
-            }
           }
         }
       );
