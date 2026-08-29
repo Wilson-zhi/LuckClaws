@@ -34,7 +34,7 @@ export function HomeEditorialMotion({ children }: HomeEditorialMotionProps) {
 
           if (reduceMotion) {
             gsap.set(
-              ".home-editorial-hero-reveal, .home-editorial-motion-reveal, [data-guide-title-piece], .home-editorial-guide-intro, .home-editorial-guide-layout, .home-editorial-guide-steps",
+              ".home-editorial-hero-reveal, .home-editorial-motion-reveal, [data-guide-title-piece], [data-route-title-piece], .home-editorial-guide-intro, .home-editorial-guide-layout, .home-guide-wayfinder, .home-guide-handoff, .home-route-deck-intro, .home-route-deck-stage, .home-route-deck-tab",
               { clearProps: "all" }
             );
             return;
@@ -107,13 +107,13 @@ export function HomeEditorialMotion({ children }: HomeEditorialMotionProps) {
               );
           }
 
-          const guideSteps = guide?.querySelector<HTMLElement>(".home-editorial-guide-steps");
+          const guideSteps = guide?.querySelector<HTMLElement>(".home-guide-wayfinder");
           const guideStepHeader = guideSteps?.querySelector<HTMLElement>("header");
           const guideStepButtons = guideSteps
-            ? gsap.utils.toArray<HTMLElement>(".home-editorial-guide-step-journey li", guideSteps)
+            ? gsap.utils.toArray<HTMLElement>(".home-guide-wayfinder-track li", guideSteps)
             : [];
           const guideStepDetail = guideSteps?.querySelector<HTMLElement>(
-            ".home-editorial-guide-step-journey > article"
+            ".home-guide-wayfinder-track > article"
           );
 
           if (guideSteps) {
@@ -149,6 +149,129 @@ export function HomeEditorialMotion({ children }: HomeEditorialMotionProps) {
                   ease: "power3.out"
                 },
                 "-=0.28"
+              );
+          }
+
+          const handoff = guide?.querySelector<HTMLElement>(".home-guide-handoff");
+          const handoffCopy = handoff?.querySelector<HTMLElement>(".home-guide-handoff-copy");
+          const handoffTrack = handoff?.querySelector<HTMLElement>(".home-guide-handoff-track");
+          const handoffRail = handoff?.querySelector<HTMLElement>(".home-guide-handoff-rail i");
+          const handoffTicket = handoff?.querySelector<HTMLElement>(".home-guide-handoff-ticket");
+          const handoffPaws = handoff
+            ? gsap.utils.toArray<SVGElement>(".home-guide-handoff-paws svg", handoff)
+            : [];
+          const handoffDestination = handoff?.querySelector<HTMLElement>(
+            ".home-guide-handoff-destination"
+          );
+
+          if (handoff && handoffTrack && handoffRail && handoffTicket && handoffDestination) {
+            gsap.from(handoffCopy ? [handoffCopy] : [], {
+              autoAlpha: 0,
+              x: -20,
+              duration: 0.5,
+              ease: "power3.out",
+              scrollTrigger: {
+                trigger: handoff,
+                start: "top 90%",
+                once: true
+              }
+            });
+
+            const travelDistance = () =>
+              Math.max(
+                0,
+                handoffTrack.clientWidth -
+                  handoffTicket.offsetWidth -
+                  handoffDestination.offsetWidth -
+                  (mobile ? 12 : 28)
+              );
+
+            gsap
+              .timeline({
+                defaults: { ease: "none" },
+                scrollTrigger: {
+                  trigger: handoff,
+                  start: "top 92%",
+                  end: "bottom 52%",
+                  scrub: 0.65,
+                  invalidateOnRefresh: true
+                }
+              })
+              .fromTo(handoffRail, { scaleX: 0 }, { scaleX: 1 }, 0)
+              .fromTo(
+                handoffTicket,
+                { x: 0, rotation: -4 },
+                { x: travelDistance, rotation: 3 },
+                0
+              )
+              .fromTo(
+                handoffPaws,
+                { autoAlpha: 0.16, scale: 0.72 },
+                {
+                  autoAlpha: 1,
+                  scale: 1,
+                  duration: 0.55,
+                  stagger: 0.08,
+                  ease: "power2.out"
+                },
+                0.08
+              )
+              .fromTo(
+                handoffDestination,
+                { scale: 0.94, rotation: 0 },
+                { scale: 1.03, rotation: -1, duration: 0.24, ease: "back.out(1.5)" },
+                0.68
+              );
+          }
+
+          const routeDeck = root.querySelector<HTMLElement>(".home-route-deck");
+          const routeDeckHeading = routeDeck?.querySelector<HTMLElement>(".home-route-deck-heading");
+          const routeTitlePieces = routeDeck
+            ? gsap.utils.toArray<HTMLElement>("[data-route-title-piece]", routeDeck)
+            : [];
+          const routeIntro = routeDeck?.querySelector<HTMLElement>(".home-route-deck-intro");
+          const routeStage = routeDeck?.querySelector<HTMLElement>(".home-route-deck-stage");
+          const routeTabs = routeDeck
+            ? gsap.utils.toArray<HTMLElement>(".home-route-deck-tab", routeDeck)
+            : [];
+
+          if (routeDeck && routeDeckHeading) {
+            gsap
+              .timeline({
+                scrollTrigger: {
+                  trigger: routeDeckHeading,
+                  start: "top 86%",
+                  once: true
+                }
+              })
+              .from(routeTitlePieces, {
+                y: 26,
+                rotation: (index) => [-4, 3, 8][index] ?? 0,
+                scale: 0.94,
+                duration: 0.68,
+                stagger: 0.1,
+                ease: "back.out(1.45)"
+              })
+              .from(
+                routeIntro ? [routeIntro] : [],
+                { autoAlpha: 0, x: mobile ? 0 : 32, y: mobile ? 18 : 0, duration: 0.55, ease: "power3.out" },
+                "-=0.42"
+              )
+              .from(
+                routeStage ? [routeStage] : [],
+                {
+                  autoAlpha: 0,
+                  y: mobile ? 28 : 48,
+                  clipPath: "inset(8% 5% 8% 5%)",
+                  duration: mobile ? 0.65 : 0.82,
+                  ease: "power3.out"
+                },
+                "-=0.22"
+              )
+              .from(
+                routeTabs,
+                { autoAlpha: 0, y: 20, duration: 0.42, stagger: 0.07, ease: "power2.out" },
+                "-=0.34"
               );
           }
 
@@ -220,26 +343,6 @@ export function HomeEditorialMotion({ children }: HomeEditorialMotionProps) {
                 .to(heroReveal, { y: -18, duration: 0.26 }, 0.72)
                 .to(heroWash, { yPercent: 0, duration: 0.16 }, 0.84);
             }
-
-            gsap.utils
-              .toArray<HTMLElement>(".home-editorial-collection-media img")
-              .forEach((image) => {
-                gsap.fromTo(
-                  image,
-                  { yPercent: -7, scale: 1.12 },
-                  {
-                    yPercent: 7,
-                    scale: 1.04,
-                    ease: "none",
-                    scrollTrigger: {
-                      trigger: image.closest(".home-editorial-collection") ?? image,
-                      start: "top bottom",
-                      end: "bottom top",
-                      scrub: 0.8
-                    }
-                  }
-                );
-              });
 
             const storyStage = root.querySelector<HTMLElement>(".home-editorial-story-stage");
             const storyPoster = storyStage?.querySelector<HTMLElement>(".home-editorial-story-poster");

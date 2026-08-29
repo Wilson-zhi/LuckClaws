@@ -529,6 +529,1111 @@ img {
   transform: rotate(-5deg);
 }
 
+/* Homepage route handoff and interactive lookbook */
+.home-editorial-guide {
+  padding-bottom: 0;
+}
+
+.home-guide-wayfinder {
+  display: grid;
+  grid-template-columns: minmax(12.5rem, 0.23fr) minmax(0, 1fr);
+  align-items: stretch;
+  gap: clamp(1.5rem, 3vw, 3.5rem);
+  margin-top: 2.75rem;
+}
+
+.home-guide-wayfinder-heading {
+  display: grid;
+  grid-template-columns: 4.25rem minmax(0, 1fr);
+  align-content: center;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.home-guide-wayfinder-count {
+  display: grid;
+  width: 4.1rem;
+  height: 4.55rem;
+  place-items: center;
+  align-content: center;
+  border: 1px solid #203027;
+  border-radius: 48% 52% 45% 55% / 52% 46% 54% 48%;
+  background: #f1bd48;
+  box-shadow: 0.25rem 0.25rem 0 #d85d42;
+  color: #203027;
+  transform: rotate(-5deg);
+}
+
+.home-guide-wayfinder-count strong,
+.home-guide-wayfinder-count small {
+  display: block;
+  line-height: 1;
+}
+
+.home-guide-wayfinder-count strong {
+  font-family: var(--font-heading), sans-serif;
+  font-size: 1.5rem;
+}
+
+.home-guide-wayfinder-count small {
+  margin-top: 0.2rem;
+  font-size: 0.46rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.home-guide-wayfinder-heading > div {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.28rem;
+}
+
+.home-guide-wayfinder-heading > div > span,
+.home-guide-wayfinder-position small {
+  color: #9b620b;
+  font-size: 0.55rem;
+  font-weight: 850;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.home-guide-wayfinder-heading > div > strong {
+  max-width: 10ch;
+  font-family: var(--font-heading), sans-serif;
+  font-size: 1.2rem;
+  line-height: 1.05;
+  text-wrap: balance;
+}
+
+.home-guide-wayfinder-heading em {
+  color: #31533e;
+  font-size: 0.72rem;
+  font-style: normal;
+  line-height: 1.2;
+}
+
+.home-guide-wayfinder-track {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: minmax(0, 1.35fr) minmax(15rem, 0.65fr);
+  overflow: hidden;
+  border-top: 1px solid #aaa99d;
+  border-bottom: 1px solid #aaa99d;
+  background: rgba(255, 253, 248, 0.72);
+}
+
+.home-guide-wayfinder-track ol {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+  padding: 0 0.8rem;
+  list-style: none;
+}
+
+.home-guide-wayfinder-track ol::before {
+  position: absolute;
+  top: 50%;
+  right: 12%;
+  left: 12%;
+  border-top: 2px dashed #c0b69e;
+  content: "";
+  pointer-events: none;
+}
+
+.home-guide-wayfinder-track li {
+  position: relative;
+  min-width: 0;
+}
+
+.home-guide-wayfinder-track button {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  width: 100%;
+  min-height: 9rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1.15rem 0.65rem;
+  border: 0;
+  background: transparent;
+  color: #203027;
+  text-align: left;
+  transition: transform 200ms ease;
+}
+
+.home-guide-wayfinder-track button:hover,
+.home-guide-wayfinder-track button:focus-visible {
+  transform: translateY(-0.18rem);
+}
+
+.home-guide-wayfinder-marker {
+  display: grid;
+  width: 2.8rem;
+  height: 2.8rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 2px solid #9d9c91;
+  border-radius: 50%;
+  background: #fffdf8;
+  color: #73756e;
+  transition: background-color 200ms ease, border-color 200ms ease, color 200ms ease,
+    transform 200ms ease;
+}
+
+.home-guide-wayfinder-marker svg {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+.home-guide-wayfinder-track li[data-active="true"] .home-guide-wayfinder-marker,
+.home-guide-wayfinder-track button:hover .home-guide-wayfinder-marker,
+.home-guide-wayfinder-track button:focus-visible .home-guide-wayfinder-marker {
+  border-color: #203027;
+  background: #f1bd48;
+  color: #203027;
+  transform: rotate(-8deg) scale(1.06);
+}
+
+.home-guide-wayfinder-track button > span:last-child {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.home-guide-wayfinder-track button small {
+  color: #9b620b;
+  font-size: 0.5rem;
+  font-weight: 850;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.home-guide-wayfinder-track button strong {
+  max-width: 11ch;
+  margin-top: 0.25rem;
+  font-family: var(--font-heading), sans-serif;
+  font-size: 0.82rem;
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
+.home-guide-wayfinder-track li[data-active="true"] button::after {
+  position: absolute;
+  top: 0.7rem;
+  right: 0.6rem;
+  padding: 0.18rem 0.35rem;
+  background: #d85d42;
+  box-shadow: 0.12rem 0.12rem 0 #203027;
+  color: #fff8e9;
+  content: "here";
+  font-family: var(--font-hand), "Segoe Print", cursive;
+  font-size: 0.46rem;
+  font-variation-settings: "wght" 720;
+  line-height: 1;
+  transform: rotate(5deg);
+}
+
+.home-guide-wayfinder-track > article {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  justify-content: center;
+  flex-direction: column;
+  padding: 1.45rem 1.7rem 1.45rem 2rem;
+  border-left: 1px dashed rgba(255, 248, 233, 0.32);
+  background: #203027;
+  color: #fff8e9;
+  animation: home-guide-step-swap 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.home-guide-wayfinder-track > article::before {
+  position: absolute;
+  top: 0.9rem;
+  bottom: 0.9rem;
+  left: 0.7rem;
+  width: 0.22rem;
+  border-radius: 999px;
+  background: #f1bd48;
+  content: "";
+}
+
+.home-guide-wayfinder-position {
+  display: flex;
+  align-items: baseline;
+  gap: 0.55rem;
+}
+
+.home-guide-wayfinder-position strong {
+  color: #f1bd48;
+  font-family: var(--font-heading), sans-serif;
+  font-size: 0.68rem;
+}
+
+.home-guide-wayfinder-track > article > strong {
+  margin-top: 0.45rem;
+  font-family: var(--font-hand), "Segoe Print", cursive;
+  font-size: 1.15rem;
+  font-variation-settings: "wght" 700;
+  line-height: 1.08;
+}
+
+.home-guide-wayfinder-track > article > p {
+  max-width: 31rem;
+  margin: 0.55rem 0 0;
+  color: rgba(255, 248, 233, 0.72);
+  font-size: 0.72rem;
+  line-height: 1.55;
+}
+
+.home-guide-handoff {
+  display: grid;
+  grid-template-columns: minmax(12.5rem, 0.23fr) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(1.5rem, 3vw, 3.5rem);
+  min-height: 11rem;
+  margin-top: 2.2rem;
+  border-top: 1px dashed #c7bca5;
+}
+
+.home-guide-handoff-copy {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.home-guide-handoff-copy > span {
+  display: grid;
+  width: 2.8rem;
+  height: 2.8rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  background: #d85d42;
+  box-shadow: 0.18rem 0.18rem 0 #203027;
+  color: #fff8e9;
+  transform: rotate(-7deg);
+}
+
+.home-guide-handoff-copy svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.home-guide-handoff-copy small,
+.home-guide-handoff-ticket small,
+.home-guide-handoff-destination small {
+  display: block;
+  color: #9b620b;
+  font-size: 0.5rem;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.home-guide-handoff-copy strong {
+  display: block;
+  max-width: 14ch;
+  margin-top: 0.2rem;
+  font-family: var(--font-heading), sans-serif;
+  font-size: 0.88rem;
+  line-height: 1.15;
+}
+
+.home-guide-handoff-track {
+  position: relative;
+  min-width: 0;
+  height: 7.25rem;
+}
+
+.home-guide-handoff-rail {
+  position: absolute;
+  top: 50%;
+  right: 9.8rem;
+  left: 3.1rem;
+  height: 0.28rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #d7d2c2;
+  transform: translateY(-50%);
+}
+
+.home-guide-handoff-rail i {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #d85d42 0%, #f1bd48 68%, #31533e 100%);
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+
+.home-guide-handoff-ticket {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  z-index: 2;
+  display: grid;
+  width: 6.2rem;
+  min-height: 3.65rem;
+  grid-template-columns: 1.65rem minmax(0, 1fr);
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.55rem;
+  border: 1px solid #203027;
+  background: #fff8e9;
+  box-shadow: 0.25rem 0.25rem 0 #f1bd48;
+  color: #203027;
+  transform: translateY(-50%) rotate(-4deg);
+}
+
+.home-guide-handoff-ticket > svg {
+  width: 1.45rem;
+  height: 1.45rem;
+  color: #d85d42;
+}
+
+.home-guide-handoff-ticket strong,
+.home-guide-handoff-destination strong {
+  display: block;
+  margin-top: 0.1rem;
+  font-family: var(--font-hand), "Segoe Print", cursive;
+  font-size: 0.78rem;
+  font-variation-settings: "wght" 720;
+  line-height: 1;
+}
+
+.home-guide-handoff-paws {
+  position: absolute;
+  top: 50%;
+  right: 10.5rem;
+  left: 8rem;
+  display: flex;
+  justify-content: space-around;
+  color: #9c650f;
+  transform: translateY(-50%);
+}
+
+.home-guide-handoff-paws svg {
+  width: 1rem;
+  height: 1rem;
+  opacity: 0.18;
+  transform: scale(0.8) rotate(-16deg);
+}
+
+.home-guide-handoff-paws svg:nth-child(even) {
+  transform: scale(0.8) rotate(14deg) translateY(0.7rem);
+}
+
+.home-guide-handoff-destination {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  display: flex;
+  width: 9.5rem;
+  min-height: 4.2rem;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid #203027;
+  background: #203027;
+  color: #fff8e9;
+  transform: translateY(-50%);
+}
+
+.home-guide-handoff-destination > svg {
+  width: 1.45rem;
+  height: 1.45rem;
+  flex: 0 0 auto;
+  color: #f1bd48;
+}
+
+.home-guide-handoff-destination small {
+  color: #f1bd48;
+}
+
+.home-editorial-products {
+  padding-top: 6rem;
+}
+
+.home-editorial-collections {
+  position: relative;
+  overflow: clip;
+  padding: 7rem 0 8rem;
+  background: #efbd47;
+  isolation: isolate;
+}
+
+.home-editorial-collections::before {
+  position: absolute;
+  top: 4rem;
+  right: -1vw;
+  z-index: -1;
+  color: transparent;
+  content: "ROUTES";
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(7rem, 16vw, 14rem);
+  font-weight: 900;
+  line-height: 0.8;
+  pointer-events: none;
+  -webkit-text-stroke: 1px rgba(32, 48, 39, 0.09);
+}
+
+.home-route-deck-heading {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(24rem, 0.75fr);
+  align-items: center;
+  gap: clamp(3rem, 8vw, 8rem);
+  margin-bottom: 3.75rem;
+}
+
+.home-route-deck-title-art {
+  position: relative;
+  width: fit-content;
+  max-width: 100%;
+  padding: 0 8rem 2rem 0;
+}
+
+.home-route-deck-title-art h2 {
+  display: flex;
+  max-width: 12ch;
+  flex-direction: column;
+  align-items: flex-start;
+  margin: 0.65rem 0 0;
+  color: #203027;
+  line-height: 0.9;
+}
+
+.home-route-deck-title-art h2 > span {
+  font-family: var(--font-hand), "Segoe Print", cursive;
+  font-size: clamp(3.5rem, 5.2vw, 5.25rem);
+  font-style: normal;
+  font-variation-settings: "wght" 760;
+  text-shadow: 0.07em 0.07em 0 #fff3c8;
+  transform: rotate(-1.5deg);
+}
+
+.home-route-deck-title-art h2 > em {
+  display: inline-block;
+  margin: 0.1em 0 0 0.55em;
+  padding: 0.08em 0.2em 0.13em;
+  background: #203027;
+  box-shadow: 0.16em 0.14em 0 #d85d42;
+  color: #fff8e9;
+  font-family: var(--font-hand), "Segoe Print", cursive;
+  font-size: clamp(2.55rem, 4vw, 4rem);
+  font-style: normal;
+  font-variation-settings: "wght" 720;
+  line-height: 0.95;
+  transform: rotate(1.4deg);
+}
+
+.home-route-deck-stamp {
+  position: absolute;
+  right: 0;
+  bottom: 0.5rem;
+  display: grid;
+  min-width: 7.4rem;
+  min-height: 3.55rem;
+  grid-template-columns: 1.9rem minmax(0, 1fr);
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid #203027;
+  background: #fff8e9;
+  box-shadow: 0.25rem 0.25rem 0 #d85d42;
+  color: #203027;
+  transform: rotate(4deg);
+}
+
+.home-route-deck-stamp > svg {
+  width: 1.65rem;
+  height: 1.65rem;
+  color: #9b620b;
+}
+
+.home-route-deck-stamp strong,
+.home-route-deck-stamp small {
+  display: block;
+  line-height: 1.05;
+  text-transform: uppercase;
+}
+
+.home-route-deck-stamp strong {
+  font-size: 0.6rem;
+  letter-spacing: 0.07em;
+}
+
+.home-route-deck-stamp small {
+  margin-top: 0.15rem;
+  color: #a56507;
+  font-size: 0.43rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+}
+
+.home-route-deck-intro {
+  display: grid;
+  grid-template-columns: 3rem minmax(0, 1fr);
+  align-items: center;
+  gap: 1rem;
+  padding: 1.2rem 0;
+  border-top: 1px dashed rgba(32, 48, 39, 0.48);
+  border-bottom: 1px dashed rgba(32, 48, 39, 0.48);
+}
+
+.home-route-deck-intro > span {
+  display: grid;
+  width: 3rem;
+  height: 3rem;
+  place-items: center;
+  border-radius: 50%;
+  background: #203027;
+  color: #f1bd48;
+  transform: rotate(-7deg);
+}
+
+.home-route-deck-intro svg {
+  width: 1.35rem;
+  height: 1.35rem;
+}
+
+.home-route-deck-intro small,
+.home-route-deck-copy-route {
+  color: #6b5119;
+  font-size: 0.55rem;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.home-route-deck-intro strong {
+  display: block;
+  margin-top: 0.2rem;
+  font-family: var(--font-hand), "Segoe Print", cursive;
+  font-size: 1.25rem;
+  font-variation-settings: "wght" 700;
+  line-height: 1.1;
+}
+
+.home-route-deck-intro p {
+  max-width: 35rem;
+  margin: 0.5rem 0 0;
+  color: #4a4d31;
+  font-size: 0.82rem;
+  line-height: 1.55;
+}
+
+.home-route-deck-stage {
+  display: grid;
+  min-height: 36rem;
+  grid-template-columns: minmax(0, 1.35fr) minmax(21rem, 0.65fr);
+  overflow: hidden;
+  border: 2px solid #203027;
+  background: #fff8e9;
+  box-shadow: 0.7rem 0.7rem 0 #d85d42;
+}
+
+.home-route-deck-visual {
+  position: relative;
+  min-width: 0;
+  min-height: 36rem;
+  overflow: hidden;
+  animation: home-route-visual-in 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.home-route-deck-visual::after {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 60%, rgba(24, 38, 28, 0.36) 100%);
+  content: "";
+  pointer-events: none;
+}
+
+.home-route-deck-visual img {
+  transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.home-route-deck-stage:hover .home-route-deck-visual img {
+  transform: scale(1.025);
+}
+
+.home-route-deck-image-index {
+  position: absolute;
+  top: 1.25rem;
+  left: 1.25rem;
+  z-index: 2;
+  display: grid;
+  width: 4.4rem;
+  height: 4.4rem;
+  place-items: center;
+  align-content: center;
+  border: 1px solid #203027;
+  border-radius: 50%;
+  background: #f1bd48;
+  box-shadow: 0.2rem 0.2rem 0 #fff8e9;
+  color: #203027;
+  transform: rotate(-8deg);
+}
+
+.home-route-deck-image-index small,
+.home-route-deck-image-index strong {
+  display: block;
+  line-height: 1;
+}
+
+.home-route-deck-image-index small {
+  font-size: 0.48rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.home-route-deck-image-index strong {
+  margin-top: 0.15rem;
+  font-family: var(--font-heading), sans-serif;
+  font-size: 1.35rem;
+}
+
+.home-route-deck-image-note {
+  position: absolute;
+  right: 1.25rem;
+  bottom: 1.25rem;
+  z-index: 2;
+  padding: 0.45rem 0.7rem 0.5rem;
+  background: #fff8e9;
+  box-shadow: 0.22rem 0.22rem 0 #f1bd48;
+  color: #203027;
+  font-size: 1rem;
+  transform: rotate(-2deg);
+}
+
+.home-route-deck-copy {
+  display: flex;
+  min-width: 0;
+  justify-content: center;
+  flex-direction: column;
+  padding: clamp(2.25rem, 4vw, 4rem);
+  border-left: 1px solid rgba(255, 248, 233, 0.22);
+  background: #203027;
+  color: #fff8e9;
+  animation: home-route-copy-in 460ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.home-route-deck-copy-route {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #f1bd48;
+}
+
+.home-route-deck-copy-route svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.home-route-deck-copy > .lc-hand-note {
+  margin: 1.4rem 0 0;
+  color: #f1bd48;
+  font-size: 1.05rem;
+}
+
+.home-route-deck-copy h3 {
+  max-width: 10ch;
+  margin: 0.45rem 0 0;
+  font-family: var(--font-heading), sans-serif;
+  font-size: clamp(2.55rem, 4vw, 4.2rem);
+  line-height: 0.92;
+  text-wrap: balance;
+}
+
+.home-route-deck-copy > p:not(.lc-hand-note) {
+  max-width: 31rem;
+  margin: 1rem 0 0;
+  color: rgba(255, 248, 233, 0.72);
+  font-size: 0.88rem;
+  line-height: 1.65;
+}
+
+.home-route-deck-copy blockquote {
+  max-width: 28rem;
+  margin: 1.5rem 0 0;
+  padding: 0.1rem 0 0.1rem 1rem;
+  border-left: 0.25rem solid #d85d42;
+  color: #fff8e9;
+  font-family: var(--font-hand), "Segoe Print", cursive;
+  font-size: 0.95rem;
+  font-variation-settings: "wght" 650;
+  line-height: 1.4;
+}
+
+.home-route-deck-copy > a {
+  display: inline-flex;
+  width: fit-content;
+  min-height: 3rem;
+  align-items: center;
+  gap: 0.7rem;
+  margin-top: 1.8rem;
+  padding: 0 1.25rem;
+  border: 1px solid #f1bd48;
+  border-radius: 999px;
+  background: #f1bd48;
+  color: #203027;
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+
+.home-route-deck-copy > a svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.home-route-deck-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: 2.5rem;
+  border-top: 1px solid rgba(32, 48, 39, 0.62);
+  border-bottom: 1px solid rgba(32, 48, 39, 0.62);
+}
+
+.home-route-deck-tab {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  min-height: 6.7rem;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 1rem 1.15rem;
+  border: 0;
+  border-right: 1px solid rgba(32, 48, 39, 0.35);
+  background: transparent;
+  color: #203027;
+  text-align: left;
+  transition: background-color 220ms ease, color 220ms ease, transform 220ms ease;
+}
+
+.home-route-deck-tab:last-child {
+  border-right: 0;
+}
+
+.home-route-deck-tab:hover,
+.home-route-deck-tab:focus-visible {
+  background: rgba(255, 248, 233, 0.45);
+}
+
+.home-route-deck-tab[data-active="true"] {
+  background: #203027;
+  color: #fff8e9;
+  transform: translateY(-0.35rem) rotate(-0.5deg);
+}
+
+.home-route-deck-tab > small {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  font-size: 0.56rem;
+  font-weight: 850;
+}
+
+.home-route-deck-tab > span {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.home-route-deck-tab em {
+  color: #6b5119;
+  font-size: 0.5rem;
+  font-style: normal;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.home-route-deck-tab[data-active="true"] em {
+  color: #f1bd48;
+}
+
+.home-route-deck-tab strong {
+  overflow: hidden;
+  margin-top: 0.25rem;
+  font-family: var(--font-hand), "Segoe Print", cursive;
+  font-size: 0.92rem;
+  font-variation-settings: "wght" 680;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.home-route-deck-tab > svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+@keyframes home-route-visual-in {
+  from {
+    opacity: 0.45;
+    clip-path: inset(0 0 16% 0);
+    transform: scale(1.035);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0);
+    transform: scale(1);
+  }
+}
+
+@keyframes home-route-copy-in {
+  from {
+    opacity: 0;
+    transform: translateX(1.25rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (max-width: 1023px) {
+  .home-guide-wayfinder,
+  .home-guide-handoff {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  .home-guide-wayfinder-heading,
+  .home-guide-handoff-copy {
+    max-width: 24rem;
+  }
+
+  .home-guide-handoff {
+    padding: 2rem 0;
+  }
+
+  .home-route-deck-heading {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+
+  .home-route-deck-intro {
+    max-width: 42rem;
+  }
+
+  .home-route-deck-stage {
+    min-height: 0;
+    grid-template-columns: 1fr;
+  }
+
+  .home-route-deck-visual {
+    min-height: 28rem;
+    aspect-ratio: 16 / 10;
+  }
+
+  .home-route-deck-copy {
+    min-height: 25rem;
+    border-top: 1px solid rgba(255, 248, 233, 0.22);
+    border-left: 0;
+  }
+
+  .home-route-deck-tabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .home-route-deck-tab:nth-child(2) {
+    border-right: 0;
+  }
+
+  .home-route-deck-tab:nth-child(-n + 2) {
+    border-bottom: 1px solid rgba(32, 48, 39, 0.35);
+  }
+}
+
+@media (max-width: 767px) {
+  .home-editorial-guide {
+    padding-bottom: 0;
+  }
+
+  .home-guide-wayfinder {
+    margin-top: 2rem;
+  }
+
+  .home-guide-wayfinder-track {
+    grid-template-columns: 1fr;
+  }
+
+  .home-guide-wayfinder-track ol {
+    grid-template-columns: 1fr;
+    padding: 0.4rem 0.75rem;
+  }
+
+  .home-guide-wayfinder-track ol::before {
+    top: 12%;
+    bottom: 12%;
+    left: 2.05rem;
+    right: auto;
+    border-top: 0;
+    border-left: 2px dashed #c0b69e;
+  }
+
+  .home-guide-wayfinder-track button {
+    min-height: 4.9rem;
+    justify-content: flex-start;
+    padding: 0.7rem 0.45rem;
+  }
+
+  .home-guide-wayfinder-track button strong {
+    max-width: none;
+    font-size: 0.9rem;
+  }
+
+  .home-guide-wayfinder-track li[data-active="true"] button::after {
+    top: 50%;
+    transform: translateY(-50%) rotate(5deg);
+  }
+
+  .home-guide-wayfinder-track > article {
+    min-height: 8.8rem;
+    padding: 1.4rem 1.25rem 1.35rem 1.7rem;
+    border-top: 1px dashed rgba(255, 248, 233, 0.32);
+    border-left: 0;
+  }
+
+  .home-guide-handoff {
+    min-height: 0;
+    margin-top: 1.5rem;
+  }
+
+  .home-guide-handoff-track {
+    height: 6.5rem;
+  }
+
+  .home-guide-handoff-rail {
+    right: 8.3rem;
+    left: 2.5rem;
+  }
+
+  .home-guide-handoff-ticket {
+    width: 5.35rem;
+    grid-template-columns: 1.3rem minmax(0, 1fr);
+    padding-inline: 0.42rem;
+  }
+
+  .home-guide-handoff-ticket > svg {
+    width: 1.2rem;
+    height: 1.2rem;
+  }
+
+  .home-guide-handoff-paws {
+    right: 8.7rem;
+    left: 6rem;
+  }
+
+  .home-guide-handoff-paws svg:nth-child(n + 4) {
+    display: none;
+  }
+
+  .home-guide-handoff-destination {
+    width: 8rem;
+    padding-inline: 0.55rem;
+  }
+
+  .home-guide-handoff-destination strong {
+    font-size: 0.7rem;
+  }
+
+  .home-editorial-products {
+    padding-top: 4.75rem;
+  }
+
+  .home-editorial-collections {
+    padding: 5rem 0 5.5rem;
+  }
+
+  .home-route-deck-title-art {
+    width: 100%;
+    padding: 0 0 4.8rem;
+  }
+
+  .home-route-deck-title-art h2 > span {
+    font-size: clamp(3rem, 15vw, 4.1rem);
+  }
+
+  .home-route-deck-title-art h2 > em {
+    margin-left: 0.18em;
+    font-size: clamp(2.2rem, 11vw, 3.15rem);
+  }
+
+  .home-route-deck-stamp {
+    right: auto;
+    bottom: 0.2rem;
+    left: 0.4rem;
+  }
+
+  .home-route-deck-intro {
+    grid-template-columns: 2.6rem minmax(0, 1fr);
+  }
+
+  .home-route-deck-intro > span {
+    width: 2.6rem;
+    height: 2.6rem;
+  }
+
+  .home-route-deck-visual {
+    min-height: 20rem;
+    aspect-ratio: 1.08;
+  }
+
+  .home-route-deck-copy {
+    min-height: 26rem;
+    padding: 1.6rem 1.35rem;
+  }
+
+  .home-route-deck-copy h3 {
+    font-size: clamp(2.45rem, 13vw, 3.25rem);
+  }
+
+  .home-route-deck-image-index {
+    top: 0.8rem;
+    left: 0.8rem;
+    width: 3.7rem;
+    height: 3.7rem;
+  }
+
+  .home-route-deck-image-note {
+    right: 0.8rem;
+    bottom: 0.8rem;
+    font-size: 0.85rem;
+  }
+
+  .home-route-deck-tabs {
+    margin-top: 1.8rem;
+  }
+
+  .home-route-deck-tab {
+    min-height: 5.7rem;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.65rem;
+    padding: 0.8rem;
+  }
+
+  .home-route-deck-tab > svg {
+    display: none;
+  }
+
+  .home-route-deck-tab strong {
+    font-size: 0.78rem;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .compact-trust-icon {
     transition: none;
@@ -7903,6 +9008,12 @@ img {
   .home-editorial-guide-step-journey > article,
   .home-editorial-guide-step-journey button,
   .home-editorial-guide-step-marker,
+  .home-guide-wayfinder-track > article,
+  .home-guide-wayfinder-track button,
+  .home-guide-wayfinder-marker,
+  .home-guide-handoff-ticket,
+  .home-guide-handoff-paws svg,
+  .home-guide-handoff-destination,
   .home-editorial-guide-routine-tags button,
   .home-editorial-guide-timeline i,
   .home-editorial-guide-tabs button,
@@ -7914,8 +9025,134 @@ img {
   .home-editorial-product-view,
   .home-editorial-product-pagination button span,
   .home-editorial-product-image img,
-  .home-editorial-collection-media img {
+  .home-editorial-collection-media img,
+  .home-route-deck-visual,
+  .home-route-deck-visual img,
+  .home-route-deck-copy,
+  .home-route-deck-tab {
     animation: none !important;
     transition: none !important;
+  }
+
+  .home-guide-handoff-rail i {
+    transform: scaleX(1) !important;
+  }
+
+  .home-guide-handoff-paws svg {
+    opacity: 1;
+  }
+}
+
+/* Final homepage route layout precedence */
+.home-editorial-guide {
+  padding-bottom: 0;
+}
+
+.home-editorial-products {
+  padding-top: 6rem;
+}
+
+.home-editorial-collections {
+  padding-top: 7rem;
+  padding-bottom: 8rem;
+}
+
+.home-guide-wayfinder-track button > span:last-child {
+  padding: 0.3rem 0.2rem;
+  background: #fffdf8;
+}
+
+.home-route-deck-title-art h2 > span,
+.home-route-deck-title-art h2 > em {
+  white-space: nowrap;
+}
+
+.home-route-deck-title-art h2 > span {
+  font-size: 5.25rem;
+}
+
+.home-route-deck-title-art h2 > em {
+  font-size: 4rem;
+}
+
+.home-route-deck-copy h3 {
+  font-size: 4.2rem;
+  font-weight: 900;
+}
+
+@media (max-width: 1279px) {
+  .home-route-deck-title-art h2 > span {
+    font-size: 4.5rem;
+  }
+
+  .home-route-deck-title-art h2 > em {
+    font-size: 3.45rem;
+  }
+
+  .home-route-deck-copy h3 {
+    font-size: 3.6rem;
+  }
+}
+
+@media (max-width: 1023px) {
+  .home-editorial-guide {
+    padding-bottom: 0;
+  }
+
+  .home-editorial-products {
+    padding-top: 5.25rem;
+  }
+
+  .home-editorial-collections {
+    padding-top: 6rem;
+    padding-bottom: 6rem;
+  }
+
+  .home-route-deck-title-art h2 > span {
+    font-size: 4.2rem;
+  }
+
+  .home-route-deck-title-art h2 > em {
+    font-size: 3.2rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .home-editorial-products {
+    padding-top: 4.75rem;
+  }
+
+  .home-editorial-collections {
+    padding-top: 5rem;
+    padding-bottom: 5.5rem;
+  }
+
+  .home-guide-wayfinder-track button > span:last-child {
+    padding-right: 0.5rem;
+  }
+
+  .home-route-deck-title-art h2 > span,
+  .home-route-deck-title-art h2 > em {
+    white-space: normal;
+  }
+
+  .home-route-deck-title-art h2 > span {
+    font-size: 3.65rem;
+  }
+
+  .home-route-deck-title-art h2 > em {
+    font-size: 2.85rem;
+  }
+
+  .home-route-deck-copy h3 {
+    font-size: 3.1rem;
+  }
+
+  .home-route-deck-tab strong {
+    overflow: visible;
+    font-size: 0.76rem;
+    line-height: 1.05;
+    text-overflow: clip;
+    white-space: normal;
   }
 }

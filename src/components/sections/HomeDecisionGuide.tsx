@@ -21,7 +21,9 @@ import {
   PawPrint,
   Play,
   Route,
-  SearchCheck
+  SearchCheck,
+  ShoppingBag,
+  TicketCheck
 } from "lucide-react";
 import type {
   HomepageDecisionGuideContent,
@@ -45,6 +47,30 @@ function guideIcon(icon: HomepageDecisionGuideIconKey) {
 }
 
 const guideAutoAdvanceMs = 5200;
+
+const refreshedRouteSteps = [
+  {
+    number: "01",
+    title: "Read the moment",
+    text: "Name what your pet needs now: play, a walk, rest, or a little help."
+  },
+  {
+    number: "02",
+    title: "Follow the shortlist",
+    text: "Jump straight to the few categories that fit instead of scanning every aisle."
+  },
+  {
+    number: "03",
+    title: "Choose with a why",
+    text: "Compare useful picks, understand the fit, and choose with more confidence."
+  }
+];
+
+const legacyRouteStepTitles = new Set([
+  "Pick the routine",
+  "Compare a shorter path",
+  "Shop with context"
+]);
 
 export function HomeDecisionGuide({ guide }: { guide: HomepageDecisionGuideContent }) {
   const guideOptions = guide.options;
@@ -145,7 +171,16 @@ export function HomeDecisionGuide({ guide }: { guide: HomepageDecisionGuideConte
   const titleLeadWords = titleLead.split(/\s+/).filter(Boolean);
   const titlePrimary = titleLeadWords[0] ?? normalizedTitle;
   const titleMiddle = titleLeadWords.slice(1).join(" ");
-  const activeStep = guide.steps[activeStepIndex] ?? guide.steps[0];
+  const routeSteps = guide.steps.map((step, index) => {
+    const refreshedStep = refreshedRouteSteps[index];
+
+    return refreshedStep && legacyRouteStepTitles.has(step.title) ? refreshedStep : step;
+  });
+  const activeStep = routeSteps[activeStepIndex] ?? routeSteps[0];
+  const routeStepsTitle = guide.stepsTitle === "How the route works"
+    ? "From moment to match"
+    : guide.stepsTitle;
+  const routeStepsBadge = guide.stepsBadge === "3 steps" ? "3 quick moves" : guide.stepsBadge;
 
   return (
     <section id="shop-by-routine" className="home-editorial-guide scroll-mt-24">
@@ -372,21 +407,21 @@ export function HomeDecisionGuide({ guide }: { guide: HomepageDecisionGuideConte
         </div>
 
         {activeStep ? (
-          <div className="home-editorial-guide-steps" aria-label={guide.stepsTitle}>
-            <header>
-              <span className="home-editorial-guide-steps-count" aria-hidden="true">
-                <strong>{guide.steps.length}</strong>
+          <div className="home-guide-wayfinder" aria-label={routeStepsTitle}>
+            <header className="home-guide-wayfinder-heading">
+              <span className="home-guide-wayfinder-count" aria-hidden="true">
+                <strong>{routeSteps.length}</strong>
                 <small>moves</small>
               </span>
               <div>
-                <span>{guide.stepsBadge}</span>
-                <strong>{guide.stepsTitle}</strong>
-                <em className="lc-hand-note">Pick. Match. Go.</em>
+                <span>{routeStepsBadge}</span>
+                <strong>{routeStepsTitle}</strong>
+                <em className="lc-hand-note">Notice. Narrow. Choose.</em>
               </div>
             </header>
-            <div className="home-editorial-guide-step-journey">
+            <div className="home-guide-wayfinder-track">
               <ol>
-                {guide.steps.map((step, index) => {
+                {routeSteps.map((step, index) => {
                   const isActive = index === activeStepIndex;
 
                   return (
@@ -401,21 +436,23 @@ export function HomeDecisionGuide({ guide }: { guide: HomepageDecisionGuideConte
                           if (event.pointerType === "mouse") setActiveStepIndex(index);
                         }}
                       >
-                        <span className="home-editorial-guide-step-marker" aria-hidden="true">
+                        <span className="home-guide-wayfinder-marker" aria-hidden="true">
                           <PawPrint />
                         </span>
-                        <small>Step {step.number}</small>
-                        <strong>{step.title}</strong>
+                        <span>
+                          <small>Step {step.number}</small>
+                          <strong>{step.title}</strong>
+                        </span>
                       </button>
                     </li>
                   );
                 })}
               </ol>
               <article key={activeStep.number} id="routine-step-detail">
-                <span className="home-editorial-guide-step-position">
-                  <small>Now following</small>
+                <span className="home-guide-wayfinder-position">
+                  <small>Route note</small>
                   <strong>
-                    {activeStep.number} / {String(guide.steps.length).padStart(2, "0")}
+                    {activeStep.number} / {String(routeSteps.length).padStart(2, "0")}
                   </strong>
                 </span>
                 <strong>{activeStep.title}</strong>
@@ -424,6 +461,42 @@ export function HomeDecisionGuide({ guide }: { guide: HomepageDecisionGuideConte
             </div>
           </div>
         ) : null}
+
+        <div className="home-guide-handoff" aria-label="Your routine shortlist is ready">
+          <div className="home-guide-handoff-copy">
+            <span>
+              <TicketCheck aria-hidden />
+            </span>
+            <div>
+              <small>Route ready</small>
+              <strong>Your useful picks are just ahead.</strong>
+            </div>
+          </div>
+          <div className="home-guide-handoff-track" aria-hidden="true">
+            <span className="home-guide-handoff-rail">
+              <i />
+            </span>
+            <span className="home-guide-handoff-ticket">
+              <PawPrint />
+              <span>
+                <small>Short list</small>
+                <strong>READY</strong>
+              </span>
+            </span>
+            <span className="home-guide-handoff-paws">
+              {Array.from({ length: 5 }, (_, index) => (
+                <PawPrint key={index} />
+              ))}
+            </span>
+            <span className="home-guide-handoff-destination">
+              <ShoppingBag />
+              <span>
+                <small>Next stop</small>
+                <strong>Fresh picks</strong>
+              </span>
+            </span>
+          </div>
+        </div>
       </div>
     </section>
   );

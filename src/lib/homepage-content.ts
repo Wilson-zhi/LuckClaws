@@ -236,24 +236,24 @@ export const defaultHomepageDecisionGuide: HomepageDecisionGuideContent = {
   eyebrow: "Routine advisor",
   title: "Choose by moment, not by aisle.",
   subtitle: "Start with what your pet needs today, then follow a shorter path to the products that make sense.",
-  stepsTitle: "How the route works",
-  stepsBadge: "3 steps",
+  stepsTitle: "From moment to match",
+  stepsBadge: "3 quick moves",
   routineTags: ["Play", "Walk", "Rest", "Support"],
   steps: [
     {
       number: "01",
-      title: "Pick the routine",
-      text: "Start with the moment your pet is in right now."
+      title: "Read the moment",
+      text: "Name what your pet needs now: play, a walk, rest, or a little help."
     },
     {
       number: "02",
-      title: "Compare a shorter path",
-      text: "See the most relevant categories before opening a grid."
+      title: "Follow the shortlist",
+      text: "Jump straight to the few categories that fit instead of scanning every aisle."
     },
     {
       number: "03",
-      title: "Shop with context",
-      text: "Move into product pages with clearer expectations."
+      title: "Choose with a why",
+      text: "Compare useful picks, understand the fit, and choose with more confidence."
     }
   ],
   options: [
