@@ -610,6 +610,11 @@ export function HomeEditorialMotion({ children }: HomeEditorialMotionProps) {
             ? gsap.utils.toArray<HTMLElement>(".home-editorial-newsletter-route > span", newsletter)
             : [];
           const newsletterStamp = newsletter?.querySelector<HTMLElement>(".home-editorial-newsletter-stamp");
+          const newsletterLetter = newsletter?.querySelector<HTMLElement>(".home-editorial-newsletter-letter");
+          const newsletterBridge = newsletter?.querySelector<HTMLElement>(".home-editorial-newsletter-bridge");
+          const newsletterTitleParts = newsletter
+            ? gsap.utils.toArray<HTMLElement>(".home-editorial-newsletter-copy h2 > *", newsletter)
+            : [];
 
           if (newsletter && newsletterCopy && newsletterPostcard) {
             gsap
@@ -621,32 +626,82 @@ export function HomeEditorialMotion({ children }: HomeEditorialMotionProps) {
                 }
               })
               .from(newsletterCopy, {
-                x: desktop ? -28 : 0,
-                y: mobile ? 18 : 0,
-                duration: 0.62,
+                x: desktop ? -20 : 0,
+                y: mobile ? 16 : 0,
+                duration: 0.54,
                 ease: "power3.out"
               })
               .from(
-                newsletterPostcard,
+                newsletterTitleParts,
                 {
-                  clipPath: "inset(5% 3% 5% 3% round 0.75rem)",
-                  x: desktop ? 32 : 0,
-                  y: mobile ? 22 : 0,
-                  rotation: desktop ? 1.6 : 0.5,
-                  duration: 0.72,
-                  ease: "power3.out"
+                  clipPath: "inset(0 0 100% 0)",
+                  y: 18,
+                  rotation: (index) => (index === 1 ? -1.5 : 0),
+                  duration: 0.58,
+                  stagger: 0.09,
+                  clearProps: "clipPath,transform",
+                  ease: "power4.out"
                 },
-                "-=0.44"
+                "-=0.38"
               )
               .from(
-                newsletterRouteStops,
-                { y: 10, stagger: 0.08, duration: 0.36, ease: "back.out(1.35)" },
+                newsletterBridge ? [newsletterBridge] : [],
+                {
+                  scaleX: 0,
+                  transformOrigin: "left center",
+                  duration: 0.52,
+                  clearProps: "transform",
+                  ease: "power3.inOut"
+                },
+                "-=0.32"
+              )
+              .from(
+                newsletterPostcard,
+                {
+                  clipPath: "inset(0 0 0 100% round 0.6rem)",
+                  x: desktop ? 36 : 0,
+                  y: mobile ? 20 : 0,
+                  duration: 0.7,
+                  clearProps: "clipPath,transform",
+                  ease: "power4.out"
+                },
                 "-=0.28"
               )
               .from(
+                newsletterLetter ? [newsletterLetter] : [],
+                {
+                  x: desktop ? 28 : 0,
+                  y: mobile ? 16 : 24,
+                  rotation: desktop ? 1.2 : 0,
+                  clipPath: "inset(0 0 18% 0 round 0.4rem)",
+                  duration: 0.58,
+                  clearProps: "clipPath,transform",
+                  ease: "power3.out"
+                },
+                "-=0.42"
+              )
+              .from(
+                newsletterRouteStops,
+                {
+                  x: desktop ? -10 : 0,
+                  y: mobile ? 8 : 0,
+                  stagger: 0.07,
+                  duration: 0.34,
+                  clearProps: "transform",
+                  ease: "power2.out"
+                },
+                "-=0.32"
+              )
+              .from(
                 newsletterStamp ? [newsletterStamp] : [],
-                { scale: 0.76, rotation: 14, duration: 0.42, ease: "back.out(1.5)" },
-                "-=0.24"
+                {
+                  scale: 0.82,
+                  rotation: 12,
+                  duration: 0.38,
+                  clearProps: "transform",
+                  ease: "back.out(1.35)"
+                },
+                "-=0.22"
               );
           }
 

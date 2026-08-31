@@ -116,14 +116,26 @@ export function NewsletterSignup({ content }: { content: HomepageNewsletterConte
               <span className="lc-hand-note">good mail for pet people</span>
               <Sparkles />
             </div>
+            <div className="home-editorial-newsletter-bridge" aria-hidden="true">
+              <span>
+                <Send />
+              </span>
+              <i />
+              <small>one useful note, on its way</small>
+            </div>
           </div>
 
           <div
             className="home-editorial-newsletter-postcard"
             data-state={submittedEmail ? "success" : error ? "error" : "ready"}
             data-busy={submitting || undefined}
+            data-has-value={Boolean(email.trim()) || undefined}
           >
             <div className="home-editorial-newsletter-route" aria-hidden="true">
+              <div className="home-editorial-newsletter-route-intro">
+                <small>MAIL ROUTE</small>
+                <strong>From our edit to your inbox</strong>
+              </div>
               <span>
                 <Mail />
                 <small>01</small>
@@ -228,6 +240,11 @@ export function NewsletterSignup({ content }: { content: HomepageNewsletterConte
                     </p>
                   </form>
                 )}
+              </div>
+              <div className="home-editorial-newsletter-letter-foot" aria-hidden="true">
+                <span>Useful picks</span>
+                <i />
+                <span>No endless scroll</span>
               </div>
             </div>
           </div>
