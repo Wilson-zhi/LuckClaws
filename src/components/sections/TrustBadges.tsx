@@ -77,7 +77,7 @@ export function TrustBadges({ section }: { section: HomepageServicePromisesConte
           </div>
           <div className="home-promise-header-note" aria-hidden="true">
             <span>{String(section.items.length).padStart(2, "0")}</span>
-            <p><small>Useful promises</small><strong>Pick one to inspect</strong></p>
+            <p><small>Store promises</small><strong>Choose one. Read it clearly.</strong></p>
             <ArrowRight />
           </div>
         </header>
@@ -135,7 +135,7 @@ export function TrustBadges({ section }: { section: HomepageServicePromisesConte
                 <p>Promise {String(activeIndex + 1).padStart(2, "0")} / {String(section.items.length).padStart(2, "0")}</p>
                 <h3>{activePromise.title}</h3>
                 <p>{activePromise.text}</p>
-                <span className="lc-hand-note">clear enough to remember</span>
+                <span className="lc-hand-note">plain words, useful details</span>
               </div>
               <div className="home-promise-progress" aria-hidden="true">
                 <i style={{ transform: `scaleX(${progress})` }} />

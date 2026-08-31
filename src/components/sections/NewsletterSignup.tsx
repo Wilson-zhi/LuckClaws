@@ -1,7 +1,7 @@
 "use client";
 
 import { type FormEvent, useState } from "react";
-import { ArrowRight, CheckCircle2, Mail, PawPrint, Sparkles } from "lucide-react";
+import { ArrowRight, CheckCircle2, Mail, PawPrint, Send, Sparkles } from "lucide-react";
 import type { HomepageNewsletterContent } from "@/lib/homepage-content";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
@@ -93,17 +93,22 @@ export function NewsletterSignup({ content }: { content: HomepageNewsletterConte
 
   const describedBy = error ? "newsletter-error newsletter-note" : "newsletter-note";
   const visibleSubmittedEmail = submittedEmail === "__newsletter_honeypot__" ? "" : submittedEmail;
+  const [titleLead, ...titleRest] = content.title.split(",");
+  const titleAccent = titleRest.join(",").trim();
 
   return (
     <section className="home-editorial-newsletter">
       <div className="section-shell">
-        <div className="home-editorial-newsletter-grid home-editorial-motion-reveal">
+        <div className="home-editorial-newsletter-grid">
           <div className="home-editorial-newsletter-copy">
             <span className="home-editorial-kicker inline-flex items-center gap-2">
               <Mail aria-hidden className="h-4 w-4" />
               {content.eyebrow}
             </span>
-            <h2>{content.title}</h2>
+            <h2>
+              <span>{titleLead.trim()}{titleAccent ? "," : ""}</span>
+              {titleAccent && <em>{titleAccent}</em>}
+            </h2>
             <p>{content.subtitle}</p>
             {content.offerText && <strong>{content.offerText}</strong>}
             <div className="home-editorial-newsletter-doodle" aria-hidden="true">
@@ -116,85 +121,114 @@ export function NewsletterSignup({ content }: { content: HomepageNewsletterConte
           <div
             className="home-editorial-newsletter-postcard"
             data-state={submittedEmail ? "success" : error ? "error" : "ready"}
+            data-busy={submitting || undefined}
           >
-            <div className="home-editorial-newsletter-stamp" aria-hidden="true">
-              <PawPrint />
-              <span>LUCK<br />MAIL</span>
+            <div className="home-editorial-newsletter-route" aria-hidden="true">
+              <span>
+                <Mail />
+                <small>01</small>
+                <strong>Write</strong>
+              </span>
+              <i />
+              <span>
+                <Send />
+                <small>02</small>
+                <strong>Send</strong>
+              </span>
+              <i />
+              <span>
+                <PawPrint />
+                <small>03</small>
+                <strong>Welcome</strong>
+              </span>
             </div>
-            <div className="home-editorial-newsletter-flap" aria-hidden="true" />
-            <div className="home-editorial-newsletter-form">
-              {submittedEmail ? (
-                <div className="home-editorial-newsletter-success" role="status" aria-live="polite">
-                  <CheckCircle2 aria-hidden className="h-7 w-7" />
-                  <h3>{content.successTitle}</h3>
-                  <p>{content.successMessage}</p>
-                  {visibleSubmittedEmail && <small>{visibleSubmittedEmail}</small>}
-                  <button type="button" onClick={editEmail}>
-                    {content.editButtonText}
-                  </button>
-                </div>
-              ) : (
-                <form noValidate onSubmit={handleSubmit} aria-label="Newsletter signup">
-                  <label className="sr-only" htmlFor="newsletter-company">
-                    Leave this field blank
-                  </label>
-                  <input
-                    id="newsletter-company"
-                    name="company"
-                    type="text"
-                    tabIndex={-1}
-                    autoComplete="off"
-                    value={honeypot}
-                    className="hidden"
-                    aria-hidden="true"
-                    onChange={(event) => setHoneypot(event.target.value)}
-                  />
-                  <label className="sr-only" htmlFor="newsletter-email">
-                    {content.placeholder}
-                  </label>
-                  <div className="home-editorial-newsletter-fields">
-                    <input
-                      id="newsletter-email"
-                      type="email"
-                      inputMode="email"
-                      autoComplete="email"
-                      placeholder={content.placeholder}
-                      value={email}
-                      aria-invalid={Boolean(error)}
-                      aria-describedby={describedBy}
-                      className="newsletter-input"
-                      onChange={(event) => {
-                        setEmail(event.target.value);
-
-                        if (error) {
-                          setError("");
-                        }
-
-                        if (message) {
-                          setMessage("");
-                        }
-                      }}
-                    />
-                    <button type="submit" disabled={submitting}>
-                      <span>{submitting ? content.submittingText : content.buttonText}</span>
-                      <ArrowRight aria-hidden />
+            <div className="home-editorial-newsletter-letter">
+              <div className="home-editorial-newsletter-letterhead" aria-hidden="true">
+                <span>LUCK CLAWS POST</span>
+                <strong>One useful note at a time.</strong>
+              </div>
+              <div className="home-editorial-newsletter-stamp" aria-hidden="true">
+                <PawPrint />
+                <span>LUCK<br />MAIL</span>
+              </div>
+              <div className="home-editorial-newsletter-form">
+                {submittedEmail ? (
+                  <div className="home-editorial-newsletter-success" role="status" aria-live="polite">
+                    <CheckCircle2 aria-hidden className="h-7 w-7" />
+                    <div>
+                      <small>Delivered</small>
+                      <h3>{content.successTitle}</h3>
+                      <p>{content.successMessage}</p>
+                      {visibleSubmittedEmail && <strong>{visibleSubmittedEmail}</strong>}
+                    </div>
+                    <button type="button" onClick={editEmail}>
+                      {content.editButtonText}
                     </button>
                   </div>
-                  {error && (
-                    <p id="newsletter-error" className="home-editorial-newsletter-error" role="alert">
-                      {error}
+                ) : (
+                  <form noValidate onSubmit={handleSubmit} aria-label="Newsletter signup">
+                    <label className="sr-only" htmlFor="newsletter-company">
+                      Leave this field blank
+                    </label>
+                    <input
+                      id="newsletter-company"
+                      name="company"
+                      type="text"
+                      tabIndex={-1}
+                      autoComplete="off"
+                      value={honeypot}
+                      className="hidden"
+                      aria-hidden="true"
+                      onChange={(event) => setHoneypot(event.target.value)}
+                    />
+                    <label className="home-editorial-newsletter-label" htmlFor="newsletter-email">
+                      <span>Email address</span>
+                      <small>For new arrivals and routine-first edits</small>
+                    </label>
+                    <div className="home-editorial-newsletter-fields">
+                      <input
+                        id="newsletter-email"
+                        type="email"
+                        inputMode="email"
+                        autoComplete="email"
+                        placeholder={content.placeholder}
+                        value={email}
+                        aria-invalid={Boolean(error)}
+                        aria-describedby={describedBy}
+                        className="newsletter-input"
+                        onChange={(event) => {
+                          setEmail(event.target.value);
+
+                          if (error) {
+                            setError("");
+                          }
+
+                          if (message) {
+                            setMessage("");
+                          }
+                        }}
+                      />
+                      <button type="submit" disabled={submitting} aria-busy={submitting}>
+                        <span>{submitting ? content.submittingText : content.buttonText}</span>
+                        <ArrowRight aria-hidden />
+                      </button>
+                    </div>
+                    {error && (
+                      <p id="newsletter-error" className="home-editorial-newsletter-error" role="alert">
+                        {error}
+                      </p>
+                    )}
+                    {message && (
+                      <p className="home-editorial-newsletter-message" role="status">
+                        {message}
+                      </p>
+                    )}
+                    <p id="newsletter-note" className="home-editorial-newsletter-note">
+                      {content.noteText}
                     </p>
-                  )}
-                  {message && (
-                    <p className="home-editorial-newsletter-message" role="status">
-                      {message}
-                    </p>
-                  )}
-                  <p id="newsletter-note" className="home-editorial-newsletter-note">
-                    {content.noteText}
-                  </p>
-                </form>
-              )}
+                  </form>
+                )}
+              </div>
             </div>
           </div>
         </div>

@@ -88,7 +88,7 @@ export function HomeStorySection({ story }: { story: HomepageStorySectionContent
         </div>
       </div>
 
-      <div className="section-shell">
+      <div className="section-shell home-editorial-story-shell">
         <div className="home-editorial-story-stage">
           <div className="home-editorial-story-poster">
             <div className="home-editorial-story-media">
@@ -133,7 +133,14 @@ export function HomeStorySection({ story }: { story: HomepageStorySectionContent
               <small>How it holds together</small>
               <strong>Three clear moves, one calmer shop.</strong>
             </span>
-            <p>Choose a stop to see how the routine continues beyond the picture.</p>
+            <div className="home-story-principles-prompt">
+              <span aria-hidden="true"><Route /></span>
+              <div>
+                <small>Pick a stop</small>
+                <strong>See the route in one glance.</strong>
+                <p>The detail changes here, so you can compare each step without losing your place.</p>
+              </div>
+            </div>
           </header>
 
           <div className="home-story-principles-board">

@@ -122,6 +122,19 @@ export function HomeRoutineRoute({ categories }: { categories: PublicCategoryCar
               <strong>Where is their day headed?</strong>
               <p>Play, explore, layer up, or slow down. Start with the moment and open the route that fits.</p>
             </div>
+            <div className="home-route-deck-intro-track" aria-hidden="true">
+              {[
+                ["01", "Play"],
+                ["02", "Explore"],
+                ["03", "Layer"],
+                ["04", "Rest"]
+              ].map(([number, label]) => (
+                <span key={number}>
+                  <small>{number}</small>
+                  <strong>{label}</strong>
+                </span>
+              ))}
+            </div>
           </div>
         </header>
 

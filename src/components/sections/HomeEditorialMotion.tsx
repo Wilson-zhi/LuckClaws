@@ -230,6 +230,9 @@ export function HomeEditorialMotion({ children }: HomeEditorialMotionProps) {
             ? gsap.utils.toArray<HTMLElement>("[data-route-title-piece]", routeDeck)
             : [];
           const routeIntro = routeDeck?.querySelector<HTMLElement>(".home-route-deck-intro");
+          const routeIntroStops = routeDeck
+            ? gsap.utils.toArray<HTMLElement>(".home-route-deck-intro-track > span", routeDeck)
+            : [];
           const routeStage = routeDeck?.querySelector<HTMLElement>(".home-route-deck-stage");
           const routeTabs = routeDeck
             ? gsap.utils.toArray<HTMLElement>(".home-route-deck-tab", routeDeck)
@@ -238,11 +241,11 @@ export function HomeEditorialMotion({ children }: HomeEditorialMotionProps) {
           if (routeDeck && routeDeckHeading) {
             gsap
               .timeline({
-                scrollTrigger: {
-                  trigger: routeDeckHeading,
-                  start: "top 86%",
-                  once: true
-                }
+                  scrollTrigger: {
+                    trigger: routeDeckHeading,
+                    start: "top bottom+=16%",
+                    once: true
+                  }
               })
               .from(routeTitlePieces, {
                 y: 26,
@@ -254,23 +257,27 @@ export function HomeEditorialMotion({ children }: HomeEditorialMotionProps) {
               })
               .from(
                 routeIntro ? [routeIntro] : [],
-                { autoAlpha: 0, x: mobile ? 0 : 32, y: mobile ? 18 : 0, duration: 0.55, ease: "power3.out" },
+                { x: mobile ? 0 : 28, y: mobile ? 16 : 0, rotation: desktop ? 1.2 : 0, duration: 0.55, ease: "power3.out" },
                 "-=0.42"
+              )
+              .from(
+                routeIntroStops,
+                { y: 10, stagger: 0.07, duration: 0.34, ease: "back.out(1.35)" },
+                "-=0.28"
               )
               .from(
                 routeStage ? [routeStage] : [],
                 {
-                  autoAlpha: 0,
                   y: mobile ? 28 : 48,
-                  clipPath: "inset(8% 5% 8% 5%)",
+                  clipPath: "inset(6% 3% 7% 3% round 0.5rem)",
                   duration: mobile ? 0.65 : 0.82,
                   ease: "power3.out"
                 },
-                "-=0.22"
+                "-=0.2"
               )
               .from(
                 routeTabs,
-                { autoAlpha: 0, y: 20, duration: 0.42, stagger: 0.07, ease: "power2.out" },
+                { y: 18, duration: 0.4, stagger: 0.065, ease: "power2.out" },
                 "-=0.34"
               );
           }
@@ -302,22 +309,52 @@ export function HomeEditorialMotion({ children }: HomeEditorialMotionProps) {
           const routeStoryDestination = routeStoryBridge?.querySelector<HTMLElement>(
             ".home-route-story-destination"
           );
+          const story = root.querySelector<HTMLElement>(".home-editorial-story");
+          const storyStage = story?.querySelector<HTMLElement>(".home-editorial-story-stage");
+          const storyPoster = storyStage?.querySelector<HTMLElement>(".home-editorial-story-poster");
+          const storyMedia = storyPoster?.querySelector<HTMLElement>(".home-editorial-story-media");
+          const storyImage = storyMedia?.querySelector<HTMLElement>("img");
+          const storyCopy = storyPoster?.querySelector<HTMLElement>(".home-editorial-story-copy");
+          const storySeal = storyCopy?.querySelector<HTMLElement>(".home-editorial-story-seal");
+          const storyStatus = storyMedia?.querySelector<HTMLElement>(".home-editorial-story-status");
+
+          if (desktop && storyPoster && storyImage && storyCopy) {
+            gsap.set(storyPoster, {
+              scale: 0.9,
+              y: 96,
+              rotationY: -5,
+              clipPath: "inset(2% 1% 2% 1% round 1.1rem)",
+              transformPerspective: 1400,
+              transformOrigin: "50% 50%"
+            });
+            gsap.set(storyImage, { scale: 1.11, transformOrigin: "50% 50%" });
+            gsap.set(storyCopy, { autoAlpha: 0, yPercent: 14 });
+            gsap.set(storySeal ? [storySeal] : [], { rotation: 18, scale: 0.72 });
+            if (storyStatus) gsap.set(storyStatus, { autoAlpha: 0, y: 18 });
+          }
 
           if (routeStoryBridge && routeStoryLine && routeStoryTicket && routeStoryDestination) {
-            gsap
+            const routeStoryTimeline = gsap
               .timeline({
                 scrollTrigger: {
                   trigger: routeStoryBridge,
-                  start: "top 92%",
-                  end: "bottom 58%",
-                  scrub: mobile ? 0.35 : 0.65
+                  start: desktop ? "top 96%" : "top 92%",
+                  endTrigger: desktop && storyStage ? storyStage : routeStoryBridge,
+                  end: desktop && storyStage ? "top 80%" : "bottom 58%",
+                  scrub: mobile ? 0.35 : 0.55,
+                  invalidateOnRefresh: true
                 }
               })
-              .fromTo(routeStoryLine, { scaleX: 0 }, { scaleX: 1, ease: "none" }, 0)
+              .fromTo(
+                routeStoryLine,
+                { scaleX: 0 },
+                { scaleX: 1, duration: 0.52, ease: "none" },
+                0
+              )
               .fromTo(
                 routeStoryTicket,
                 { x: mobile ? -4 : -18, y: 16, rotation: -7 },
-                { x: 0, y: 0, rotation: -2, ease: "power2.out" },
+                { x: 0, y: 0, rotation: -2, duration: 0.42, ease: "power2.out" },
                 0
               )
               .fromTo(
@@ -328,42 +365,54 @@ export function HomeEditorialMotion({ children }: HomeEditorialMotionProps) {
                   y: 0,
                   scale: 1,
                   rotation: (index) => [-14, 12, -8][index] ?? 0,
-                  stagger: 0.12,
+                  duration: 0.32,
+                  stagger: 0.08,
                   ease: "back.out(1.6)"
                 },
-                0.16
+                0.06
               )
               .fromTo(
                 routeStoryDestination,
                 { x: mobile ? 4 : 18, y: 12, scale: 0.88, rotation: 7 },
-                { x: 0, y: 0, scale: 1, rotation: 2, ease: "back.out(1.45)" },
-                0.48
+                { x: 0, y: 0, scale: 1, rotation: 2, duration: 0.38, ease: "back.out(1.45)" },
+                0.28
               );
-          }
 
-          const story = root.querySelector<HTMLElement>(".home-editorial-story");
-          const storyStage = story?.querySelector<HTMLElement>(".home-editorial-story-stage");
-          const storyPoster = storyStage?.querySelector<HTMLElement>(".home-editorial-story-poster");
-          const storyMedia = storyPoster?.querySelector<HTMLElement>(".home-editorial-story-media");
-          const storyImage = storyMedia?.querySelector<HTMLElement>("img");
-          const storyCopy = storyPoster?.querySelector<HTMLElement>(".home-editorial-story-copy");
-          const storySeal = storyCopy?.querySelector<HTMLElement>(".home-editorial-story-seal");
-          const storyStatus = storyMedia?.querySelector<HTMLElement>(".home-editorial-story-status");
+            if (desktop && storyPoster && storyImage && storyCopy) {
+              routeStoryTimeline
+                .to(
+                  storyPoster,
+                  {
+                    scale: 1,
+                    y: 0,
+                    rotationY: 0,
+                    clipPath: "inset(0% 0% 0% 0% round 0.5rem)",
+                    duration: 0.72,
+                    ease: "power2.out"
+                  },
+                  0.18
+                )
+                .to(storyImage, { scale: 1, duration: 0.75, ease: "power2.out" }, 0.2)
+                .to(
+                  storyCopy,
+                  { autoAlpha: 1, yPercent: 0, duration: 0.42, ease: "power2.out" },
+                  0.24
+                )
+                .to(
+                  storySeal ? [storySeal] : [],
+                  { rotation: -6, scale: 1, duration: 0.3, ease: "back.out(1.4)" },
+                  0.36
+                )
+                .to(
+                  storyStatus ? [storyStatus] : [],
+                  { autoAlpha: 1, y: 0, duration: 0.24, ease: "power2.out" },
+                  0.4
+                );
+            }
+          }
 
           if (storyStage && storyPoster && storyMedia && storyImage && storyCopy) {
             if (desktop) {
-              gsap.set(storyPoster, {
-                scale: 0.82,
-                y: 72,
-                rotationY: -7,
-                transformPerspective: 1400,
-                transformOrigin: "50% 50%"
-              });
-              gsap.set(storyImage, { scale: 1.13, transformOrigin: "50% 50%" });
-              gsap.set(storyCopy, { autoAlpha: 0, yPercent: 22 });
-              gsap.set(storySeal ? [storySeal] : [], { rotation: 18, scale: 0.72 });
-              if (storyStatus) gsap.set(storyStatus, { autoAlpha: 0, y: 18 });
-
               const storyTimeline = gsap.timeline({
                 scrollTrigger: {
                   trigger: storyStage,
@@ -379,26 +428,17 @@ export function HomeEditorialMotion({ children }: HomeEditorialMotionProps) {
 
               storyTimeline
                 .to(
-                  storyPoster,
-                  {
-                    scale: 1,
-                    y: 0,
-                    rotationY: 0,
-                    clipPath: "inset(0% 0% 0% 0% round 0.5rem)",
-                    duration: 0.28,
-                    ease: "power2.out"
-                  },
+                  storyImage,
+                  { scale: 1.035, duration: 0.22, ease: "none" },
                   0
                 )
-                .to(storyImage, { scale: 1, duration: 0.3, ease: "power2.out" }, 0)
-                .to(storyCopy, { autoAlpha: 1, yPercent: 0, duration: 0.2, ease: "power2.out" }, 0.12)
                 .to(
                   storySeal ? [storySeal] : [],
-                  { rotation: -6, scale: 1, duration: 0.18, ease: "back.out(1.4)" },
-                  0.18
+                  { rotation: -3, scale: 1.03, duration: 0.2, ease: "sine.inOut" },
+                  0
                 )
-                .to(storyStatus ? [storyStatus] : [], { autoAlpha: 1, y: 0, duration: 0.16 }, 0.22)
-                .to({}, { duration: 0.28 })
+                .to(storyCopy, { yPercent: -1.5, duration: 0.22, ease: "none" }, 0)
+                .to({}, { duration: 0.38 })
                 .to(storyCopy, { autoAlpha: 0.18, yPercent: -12, duration: 0.18, ease: "power2.in" })
                 .to(storyStatus ? [storyStatus] : [], { autoAlpha: 0, y: -12, duration: 0.12 }, "<")
                 .to(
@@ -418,7 +458,7 @@ export function HomeEditorialMotion({ children }: HomeEditorialMotionProps) {
                 .timeline({
                   scrollTrigger: {
                     trigger: storyStage,
-                    start: "top 84%",
+                    start: "top bottom+=18%",
                     once: true
                   }
                 })
@@ -461,26 +501,25 @@ export function HomeEditorialMotion({ children }: HomeEditorialMotionProps) {
           if (storyPrinciples) {
             gsap
               .timeline({
-                scrollTrigger: {
-                  trigger: storyPrinciples,
-                  start: "top 86%",
-                  once: true
-                }
-              })
+                  scrollTrigger: {
+                    trigger: storyPrinciples,
+                    start: "top bottom+=18%",
+                    once: true
+                  }
+                })
               .from(storyPrinciplesHeading ? [storyPrinciplesHeading] : [], {
-                autoAlpha: 0,
                 y: 24,
                 duration: 0.5,
                 ease: "power3.out"
               })
               .from(
                 storyPrincipleButtons,
-                { autoAlpha: 0, x: mobile ? 0 : -24, y: mobile ? 16 : 0, stagger: 0.09, duration: 0.48, ease: "power3.out" },
+                { x: mobile ? 0 : -18, y: mobile ? 14 : 0, stagger: 0.08, duration: 0.44, ease: "power3.out" },
                 "-=0.2"
               )
               .from(
                 storyPrinciplePanel ? [storyPrinciplePanel] : [],
-                { autoAlpha: 0, x: desktop ? 34 : 0, y: mobile ? 18 : 0, duration: 0.56, ease: "power3.out" },
+                { clipPath: "inset(0 0 10% 0 round 0.45rem)", x: desktop ? 26 : 0, y: mobile ? 16 : 0, duration: 0.56, ease: "power3.out" },
                 "-=0.28"
               );
           }
@@ -527,11 +566,11 @@ export function HomeEditorialMotion({ children }: HomeEditorialMotionProps) {
           if (promises && promiseHeader && promiseBoard) {
             gsap
               .timeline({
-                scrollTrigger: {
-                  trigger: promises,
-                  start: "top 82%",
-                  once: true
-                }
+                  scrollTrigger: {
+                    trigger: promises,
+                    start: "top bottom+=18%",
+                    once: true
+                  }
               })
               .from(promiseTitlePieces, {
                 y: 30,
@@ -542,23 +581,72 @@ export function HomeEditorialMotion({ children }: HomeEditorialMotionProps) {
               })
               .from(
                 promiseHeaderNote ? [promiseHeaderNote] : [],
-                { autoAlpha: 0, x: desktop ? 28 : 0, y: mobile ? 18 : 0, duration: 0.5, ease: "power3.out" },
+                { x: desktop ? 24 : 0, y: mobile ? 16 : 0, duration: 0.48, ease: "power3.out" },
                 "-=0.36"
               )
               .from(
                 promiseBoard,
-                { autoAlpha: 0, y: 40, clipPath: "inset(4% 3% 4% 3% round 1rem)", duration: 0.72, ease: "power3.out" },
+                { y: 32, clipPath: "inset(4% 2% 5% 2% round 0.7rem)", duration: 0.68, ease: "power3.out" },
                 "-=0.15"
               )
               .from(
                 promiseButtons,
-                { autoAlpha: 0, x: -20, duration: 0.38, stagger: 0.06, ease: "power2.out" },
+                { y: 14, duration: 0.36, stagger: 0.055, ease: "power2.out" },
                 "-=0.4"
               )
               .from(
                 promiseShowcase ? [promiseShowcase] : [],
-                { autoAlpha: 0, x: desktop ? 28 : 0, duration: 0.5, ease: "power3.out" },
+                { clipPath: "inset(0 0 10% 0)", x: desktop ? 22 : 0, duration: 0.48, ease: "power3.out" },
                 "-=0.34"
+              );
+          }
+
+          const newsletter = root.querySelector<HTMLElement>(".home-editorial-newsletter");
+          const newsletterCopy = newsletter?.querySelector<HTMLElement>(".home-editorial-newsletter-copy");
+          const newsletterPostcard = newsletter?.querySelector<HTMLElement>(
+            ".home-editorial-newsletter-postcard"
+          );
+          const newsletterRouteStops = newsletter
+            ? gsap.utils.toArray<HTMLElement>(".home-editorial-newsletter-route > span", newsletter)
+            : [];
+          const newsletterStamp = newsletter?.querySelector<HTMLElement>(".home-editorial-newsletter-stamp");
+
+          if (newsletter && newsletterCopy && newsletterPostcard) {
+            gsap
+              .timeline({
+                scrollTrigger: {
+                  trigger: newsletter,
+                  start: "top bottom+=16%",
+                  once: true
+                }
+              })
+              .from(newsletterCopy, {
+                x: desktop ? -28 : 0,
+                y: mobile ? 18 : 0,
+                duration: 0.62,
+                ease: "power3.out"
+              })
+              .from(
+                newsletterPostcard,
+                {
+                  clipPath: "inset(5% 3% 5% 3% round 0.75rem)",
+                  x: desktop ? 32 : 0,
+                  y: mobile ? 22 : 0,
+                  rotation: desktop ? 1.6 : 0.5,
+                  duration: 0.72,
+                  ease: "power3.out"
+                },
+                "-=0.44"
+              )
+              .from(
+                newsletterRouteStops,
+                { y: 10, stagger: 0.08, duration: 0.36, ease: "back.out(1.35)" },
+                "-=0.28"
+              )
+              .from(
+                newsletterStamp ? [newsletterStamp] : [],
+                { scale: 0.76, rotation: 14, duration: 0.42, ease: "back.out(1.5)" },
+                "-=0.24"
               );
           }
 
