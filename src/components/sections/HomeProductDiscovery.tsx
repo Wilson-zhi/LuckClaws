@@ -2,7 +2,14 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent
+} from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -114,7 +121,10 @@ export function HomeProductDiscovery({ featuredProduct, products }: HomeProductD
   const [activeIndex, setActiveIndex] = useState(0);
   const [autoPlay, setAutoPlay] = useState(true);
   const [isInteracting, setIsInteracting] = useState(false);
+  const [isInView, setIsInView] = useState(false);
+  const carouselRef = useRef<HTMLDivElement>(null);
   const shelfRef = useRef<HTMLDivElement>(null);
+  const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const scrollFrameRef = useRef<number | null>(null);
   const activeTabContent = discoveryTabs.find((tab) => tab.key === activeTab) ?? discoveryTabs[0];
   const tabProducts = useMemo(() => {
@@ -132,6 +142,13 @@ export function HomeProductDiscovery({ featuredProduct, products }: HomeProductD
     return uniqueBySlug([featuredProduct, ...products]);
   }, [activeTab, featuredProduct, products]);
   const visibleProducts = tabProducts.slice(0, 8);
+  const activeTabIndex = Math.max(0, discoveryTabs.findIndex((tab) => tab.key === activeTab));
+
+  const selectTab = useCallback((requestedIndex: number) => {
+    const nextIndex = (requestedIndex + discoveryTabs.length) % discoveryTabs.length;
+    setActiveTab(discoveryTabs[nextIndex].key);
+    setAutoPlay(false);
+  }, []);
 
   const scrollToProduct = useCallback(
     (requestedIndex: number, behavior: ScrollBehavior = "smooth") => {
@@ -155,17 +172,41 @@ export function HomeProductDiscovery({ featuredProduct, products }: HomeProductD
   }, [activeTab]);
 
   useEffect(() => {
-    if (!autoPlay || isInteracting || visibleProducts.length < 2) return;
+    const element = carouselRef.current;
+    if (!element || typeof IntersectionObserver === "undefined") {
+      setIsInView(true);
+      return;
+    }
 
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduceMotion) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsInView(entry.isIntersecting),
+      { rootMargin: "160px 0px", threshold: 0.15 }
+    );
+
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const syncMotionPreference = () => {
+      if (reducedMotion.matches) setAutoPlay(false);
+    };
+
+    syncMotionPreference();
+    reducedMotion.addEventListener("change", syncMotionPreference);
+    return () => reducedMotion.removeEventListener("change", syncMotionPreference);
+  }, []);
+
+  useEffect(() => {
+    if (!autoPlay || !isInView || isInteracting || visibleProducts.length < 2) return;
 
     const timer = window.setInterval(() => {
       scrollToProduct(activeIndex + 1);
     }, 4200);
 
     return () => window.clearInterval(timer);
-  }, [activeIndex, autoPlay, isInteracting, scrollToProduct, visibleProducts.length]);
+  }, [activeIndex, autoPlay, isInView, isInteracting, scrollToProduct, visibleProducts.length]);
 
   useEffect(
     () => () => {
@@ -199,6 +240,21 @@ export function HomeProductDiscovery({ featuredProduct, products }: HomeProductD
 
       setActiveIndex(closestIndex);
     });
+  };
+
+  const handleTabKeyDown = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
+    let nextIndex: number | null = null;
+
+    if (event.key === "ArrowRight" || event.key === "ArrowDown") nextIndex = index + 1;
+    if (event.key === "ArrowLeft" || event.key === "ArrowUp") nextIndex = index - 1;
+    if (event.key === "Home") nextIndex = 0;
+    if (event.key === "End") nextIndex = discoveryTabs.length - 1;
+    if (nextIndex === null) return;
+
+    event.preventDefault();
+    const normalizedIndex = (nextIndex + discoveryTabs.length) % discoveryTabs.length;
+    selectTab(normalizedIndex);
+    tabRefs.current[normalizedIndex]?.focus();
   };
 
   return (
@@ -239,11 +295,22 @@ export function HomeProductDiscovery({ featuredProduct, products }: HomeProductD
                 return (
                   <button
                     key={tab.key}
+                    ref={(element) => {
+                      tabRefs.current[index] = element;
+                    }}
+                    id={`home-product-tab-${tab.key}`}
                     type="button"
                     role="tab"
                     aria-selected={activeTab === tab.key}
+                    aria-controls="home-product-discovery-panel"
+                    tabIndex={activeTab === tab.key ? 0 : -1}
                     data-active={activeTab === tab.key}
-                    onClick={() => setActiveTab(tab.key)}
+                    onClick={() => selectTab(index)}
+                    onFocus={() => {
+                      setActiveTab(tab.key);
+                      setAutoPlay(false);
+                    }}
+                    onKeyDown={(event) => handleTabKeyDown(event, index)}
                   >
                     <span aria-hidden="true">
                       <TabIcon />
@@ -260,18 +327,25 @@ export function HomeProductDiscovery({ featuredProduct, products }: HomeProductD
         </header>
 
         <div
-          className="home-editorial-product-carousel"
-          aria-roledescription="carousel"
-          aria-label={`${activeTabContent.label} products`}
-          onMouseEnter={() => setIsInteracting(true)}
-          onMouseLeave={() => setIsInteracting(false)}
-          onFocusCapture={() => setIsInteracting(true)}
-          onBlurCapture={(event) => {
-            if (!event.currentTarget.contains(event.relatedTarget)) {
-              setIsInteracting(false);
-            }
-          }}
+          id="home-product-discovery-panel"
+          role="tabpanel"
+          aria-labelledby={`home-product-tab-${discoveryTabs[activeTabIndex].key}`}
         >
+          <div
+            ref={carouselRef}
+            className="home-editorial-product-carousel"
+            role="region"
+            aria-roledescription="carousel"
+            aria-label={`${activeTabContent.label} products`}
+            onMouseEnter={() => setIsInteracting(true)}
+            onMouseLeave={() => setIsInteracting(false)}
+            onFocusCapture={() => setIsInteracting(true)}
+            onBlurCapture={(event) => {
+              if (!event.currentTarget.contains(event.relatedTarget)) {
+                setIsInteracting(false);
+              }
+            }}
+          >
           <div className="home-editorial-product-toolbar">
             <p aria-live="polite">
               <small>On the shelf</small>
@@ -285,7 +359,6 @@ export function HomeProductDiscovery({ featuredProduct, products }: HomeProductD
               <button
                 type="button"
                 aria-label={autoPlay ? "Pause product carousel" : "Play product carousel"}
-                aria-pressed={!autoPlay}
                 onClick={() => setAutoPlay((current) => !current)}
               >
                 {autoPlay ? <Pause aria-hidden /> : <Play aria-hidden />}
@@ -303,7 +376,6 @@ export function HomeProductDiscovery({ featuredProduct, products }: HomeProductD
             <div
               ref={shelfRef}
               className="home-editorial-product-shelf"
-              role="tabpanel"
               aria-live={autoPlay ? "off" : "polite"}
               onScroll={handleShelfScroll}
               onPointerDown={() => setIsInteracting(true)}
@@ -407,6 +479,7 @@ export function HomeProductDiscovery({ featuredProduct, products }: HomeProductD
                 <span>{String(index + 1).padStart(2, "0")}</span>
               </button>
             ))}
+          </div>
           </div>
         </div>
 

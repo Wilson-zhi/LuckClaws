@@ -4,7 +4,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import { Heart, Menu, PawPrint, Search, ShoppingBag, User, X } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { topLevelNavigation, type NavigationItem } from "@/data/navigation";
 import { brandName } from "@/data/products";
 import { cn } from "@/lib/utils";
@@ -38,6 +38,7 @@ export function Header({ initialNavigationItems }: { initialNavigationItems?: Na
   const [recentlyAdded, setRecentlyAdded] = useState<RecentlyAddedItem | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountHref, setAccountHref] = useState("/account/login");
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
   const fallbackNavigationItems = useMemo(
     () => (initialNavigationItems && initialNavigationItems.length > 0 ? initialNavigationItems : topLevelNavigation),
     [initialNavigationItems]
@@ -48,6 +49,25 @@ export function Header({ initialNavigationItems }: { initialNavigationItems?: Na
   const setWishlistProductIds = useWishlistStore((state) => state.setProductIds);
   const setWishlistSyncReady = useWishlistStore((state) => state.setAccountSyncReady);
   const totals = getCartTotals(items);
+
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+
+    const closeMenu = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+
+      event.preventDefault();
+      setMenuOpen(false);
+      window.requestAnimationFrame(() => menuButtonRef.current?.focus());
+    };
+
+    window.addEventListener("keydown", closeMenu);
+    return () => window.removeEventListener("keydown", closeMenu);
+  }, [menuOpen]);
 
   useEffect(() => {
     const openCartDrawer = (event: Event) => {
@@ -243,6 +263,7 @@ export function Header({ initialNavigationItems }: { initialNavigationItems?: Na
                 <li key={item.label}>
                   <Link
                     href={item.href}
+                    aria-current={pathname === item.href ? "page" : undefined}
                     className={cn(
                       "site-nav-link focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
                       pathname === item.href && "is-active",
@@ -307,10 +328,13 @@ export function Header({ initialNavigationItems }: { initialNavigationItems?: Na
 
         <div className="section-shell flex h-16 items-center justify-between xl:hidden">
           <button
+            ref={menuButtonRef}
             type="button"
             className="grid h-11 w-11 place-items-center rounded-full border border-[#E8D6BF] bg-white/70 text-[#5C4834] transition hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             onClick={() => setMenuOpen((value) => !value)}
             aria-label={menuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={menuOpen}
+            aria-controls="mobile-site-navigation"
           >
             {menuOpen ? <X aria-hidden className="h-5 w-5" /> : <Menu aria-hidden className="h-5 w-5" />}
           </button>
@@ -338,12 +362,17 @@ export function Header({ initialNavigationItems }: { initialNavigationItems?: Na
         </div>
 
         {menuOpen && (
-          <nav className="border-t border-[#E8D6BF] bg-[#FFF9EF] px-4 py-4 shadow-soft xl:hidden" aria-label="Mobile navigation">
+          <nav
+            id="mobile-site-navigation"
+            className="border-t border-[#E8D6BF] bg-[#FFF9EF] px-4 py-4 shadow-soft xl:hidden"
+            aria-label="Mobile navigation"
+          >
             <ul className="grid gap-2">
               {navigationItems.map((item) => (
                 <li key={item.label}>
                   <Link
                     href={item.href}
+                    aria-current={pathname === item.href ? "page" : undefined}
                     className={cn(
                       "site-mobile-nav-link block rounded-full px-4 py-3 text-[#5C4834] transition hover:bg-white hover:text-primary",
                       pathname === item.href && "bg-primary-container text-on-primary-container shadow-soft",

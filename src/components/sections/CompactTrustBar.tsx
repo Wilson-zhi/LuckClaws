@@ -16,7 +16,7 @@ type CompactTrustBarProps = {
 export function CompactTrustBar({ items, columns = "balanced", className = "" }: CompactTrustBarProps) {
   const columnClass =
     columns === "wide"
-      ? "auto-cols-[minmax(220px,1fr)] grid-flow-col overflow-x-auto sm:grid-flow-row sm:grid-cols-2 sm:overflow-visible lg:grid-cols-4"
+      ? "auto-cols-[minmax(220px,1fr)] grid-flow-col snap-x snap-proximity overflow-x-auto overscroll-x-contain sm:grid-flow-row sm:grid-cols-2 sm:overflow-visible lg:grid-cols-4"
       : "sm:grid-cols-2";
 
   return (
@@ -24,7 +24,7 @@ export function CompactTrustBar({ items, columns = "balanced", className = "" }:
       {items.map(({ key, label, Icon }) => (
         <div
           key={key}
-          className="home-editorial-trust-item"
+          className="home-editorial-trust-item snap-start"
         >
           <span aria-hidden>
             <Icon className="h-5 w-5" />

@@ -16,8 +16,13 @@ export function SiteShell({
 }) {
   return (
     <div className="min-h-screen bg-[#FFF9EF] text-[#24170E]">
+      <a href="#main-content" className="site-skip-link">
+        Skip to main content
+      </a>
       <Header initialNavigationItems={navigationItems} />
-      <main>{children}</main>
+      <main id="main-content" tabIndex={-1}>
+        {children}
+      </main>
       <Footer />
       <WishlistFeedback />
     </div>
