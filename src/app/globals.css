@@ -1400,14 +1400,13 @@ img {
 }
 
 .home-route-deck-tab strong {
-  overflow: hidden;
   margin-top: 0.25rem;
   font-family: var(--font-hand), "Segoe Print", cursive;
   font-size: 0.92rem;
   font-variation-settings: "wght" 680;
   line-height: 1.1;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  text-wrap: balance;
+  white-space: normal;
 }
 
 .home-route-deck-tab > svg {
@@ -6802,15 +6801,12 @@ img {
 }
 
 .home-editorial-guide-result-copy > p:last-child {
-  display: -webkit-box;
-  overflow: hidden;
   max-width: 34rem;
   margin: 0.85rem 0 0;
   color: rgba(255, 248, 233, 0.7);
   font-size: 0.82rem;
   line-height: 1.6;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  text-wrap: pretty;
 }
 
 .home-editorial-guide-result-actions {
@@ -8387,19 +8383,19 @@ img {
 
 .home-editorial-product-name::after {
   display: block;
-  width: 42%;
+  width: 86%;
   height: 0.16rem;
   margin-top: 0.18rem;
   background: #d85d42;
   content: "";
-  transform: rotate(-2deg);
+  transform: rotate(-2deg) scaleX(0.49);
   transform-origin: left center;
-  transition: width 220ms ease;
+  transition: transform 220ms ease;
 }
 
 .home-editorial-product-name:hover::after,
 .home-editorial-product-name:focus-visible::after {
-  width: 86%;
+  transform: rotate(-2deg) scaleX(1);
 }
 
 .home-editorial-product-copy h3 {
@@ -10191,6 +10187,38 @@ img {
 
   .home-route-deck-copy h3 {
     font-size: 3.6rem;
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .home-editorial-guide-layout,
+  .home-editorial-guide-media {
+    min-height: 32rem;
+  }
+
+  .home-editorial-guide-result {
+    grid-template-columns: 1fr;
+    align-content: center;
+    gap: 0.85rem;
+    padding: 1rem 1.35rem;
+  }
+
+  .home-editorial-guide-result h3 {
+    max-width: 21ch;
+  }
+
+  .home-editorial-guide-result-actions {
+    padding: 0.8rem 0 0;
+    border-top: 1px solid rgba(255, 248, 233, 0.18);
+    border-left: 0;
+  }
+
+  .home-editorial-guide-result-actions ul {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .home-editorial-guide-result-links {
+    margin-top: 0.7rem;
   }
 }
 
